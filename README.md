@@ -1,0 +1,2 @@
+# terminal
+Trading bot dashboard
