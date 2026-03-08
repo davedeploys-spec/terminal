@@ -7,819 +7,342 @@
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:#070709;color:#b8bcc8;font-family:'Courier New',monospace;font-size:12px;min-height:100vh;padding:10px;}
-
-  /* ── TOP BAR ── */
-  .topbar{display:flex;justify-content:space-between;align-items:center;background:#0c0c10;border:1px solid #1e1e2a;border-radius:6px;padding:8px 16px;margin-bottom:8px;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;background:#0c0c10;border:1px solid #1e1e2a;border-radius:6px;padding:8px 16px;margin-bottom:8px;flex-wrap:wrap;gap:8px;}
   .fund-name{font-size:14px;font-weight:700;letter-spacing:3px;color:#60a5fa;}
-  .topbar-right{display:flex;gap:14px;align-items:center;}
+  .topbar-right{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
   .clock{color:#60a5fa;font-size:11px;font-weight:600;letter-spacing:1px;}
   .badge{font-size:9px;color:#f0c040;letter-spacing:1px;padding:2px 6px;border:1px solid #3a3010;border-radius:3px;}
   .refresh-btn{background:#111118;border:1px solid #2a2a3c;color:#60a5fa;font-family:'Courier New',monospace;font-size:10px;padding:4px 12px;cursor:pointer;border-radius:4px;letter-spacing:1px;transition:all .15s;}
   .refresh-btn:hover{border-color:#60a5fa;background:#161628;}
-  .last-update{font-size:9px;color:#333;letter-spacing:1px;}
-
-  /* ── PAT OVERLAY ── */
-  .pat-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:999;}
-  .pat-box{background:#0c0c10;border:1px solid #2a2a3c;border-radius:8px;padding:28px 32px;width:420px;}
+  .refresh-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .last-update{font-size:9px;color:#555;letter-spacing:1px;}
+  .settings-btn{background:none;border:1px solid #2a2a3c;color:#555;font-family:'Courier New',monospace;font-size:10px;padding:4px 8px;cursor:pointer;border-radius:4px;transition:all .15s;}
+  .settings-btn:hover{border-color:#444;color:#888;}
+  .pat-overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;z-index:999;}
+  .pat-overlay.hidden{display:none;}
+  .pat-box{background:#0c0c10;border:1px solid #2a2a3c;border-radius:8px;padding:28px 32px;width:420px;max-width:calc(100vw - 32px);}
   .pat-title{font-size:13px;font-weight:700;letter-spacing:2px;color:#60a5fa;margin-bottom:8px;}
-  .pat-sub{font-size:10px;color:#444;line-height:1.6;margin-bottom:16px;}
+  .pat-sub{font-size:10px;color:#555;line-height:1.7;margin-bottom:16px;}
+  .pat-sub a{color:#60a5fa;text-decoration:none;}
   .pat-input{width:100%;background:#06060a;border:1px solid #2a2a3c;color:#e8eaf0;font-family:'Courier New',monospace;font-size:11px;padding:8px 10px;border-radius:4px;outline:none;margin-bottom:10px;}
   .pat-input:focus{border-color:#60a5fa;}
-  .pat-btn{background:#1a2a4a;border:1px solid #2a4a7a;color:#60a5fa;font-family:'Courier New',monospace;font-size:11px;padding:7px 18px;border-radius:4px;cursor:pointer;letter-spacing:1px;}
-  .pat-btn:hover{background:#1e3060;}
-  .pat-err{font-size:10px;color:#ef4444;margin-top:6px;display:none;}
-
-  /* ── NAV CARDS ── */
-  .nav-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:8px;}
-  .nav-card{background:#0c0c10;border:1px solid #1e1e2a;border-radius:6px;padding:10px 14px;}
-  .nav-card .lbl{font-size:9px;color:#444;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
-  .nav-card .val{font-size:20px;font-weight:700;color:#e8eaf0;}
-  .nav-card .sub{font-size:9px;color:#444;margin-top:2px;}
-
-  /* ── MAIN GRID ── */
-  .main-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
-  .full-width{grid-column:1/-1;}
-
-  /* ── PANEL ── */
-  .panel{background:#0c0c10;border:1px solid #1e1e2a;border-radius:6px;overflow:hidden;}
-  .panel-head{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;background:#101015;border-bottom:1px solid #1e1e2a;}
-  .panel-title{font-size:10px;font-weight:700;letter-spacing:2px;color:#60a5fa;text-transform:uppercase;}
-  .panel-meta{font-size:9px;color:#444;}
-  .pill{font-size:9px;padding:1px 6px;border-radius:3px;border:1px solid #333;color:#555;letter-spacing:1px;}
-  .pill.live{border-color:#22c55e;color:#22c55e;}
-  .pill.stale{border-color:#ef4444;color:#ef4444;}
-  .panel-body{padding:10px 12px;}
-
-  /* ── STAT GRID ── */
-  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-bottom:8px;}
-  .stat{display:flex;justify-content:space-between;padding:2px 0;}
-  .stat .k{color:#444;}
-  .stat .v{font-weight:600;}
-
-  /* ── KPI BAR ── */
-  .kpi-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#1a1a24;border-radius:4px;overflow:hidden;margin-bottom:10px;}
-  .kpi{background:#0c0c10;padding:7px 10px;}
-  .kpi .k{font-size:9px;color:#333;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}
-  .kpi .v{font-size:15px;font-weight:700;}
-
-  /* ── TABLE ── */
-  .section-lbl{font-size:9px;color:#2a2a3a;letter-spacing:2px;text-transform:uppercase;margin:8px 0 4px;}
-  .scroll-wrap{max-height:260px;overflow-y:auto;}
-  .scroll-wrap::-webkit-scrollbar{width:3px;}
-  .scroll-wrap::-webkit-scrollbar-thumb{background:#1e1e2a;}
-  table{width:100%;border-collapse:collapse;font-size:11px;}
-  th{color:#333;font-weight:400;text-align:left;padding:4px 6px;border-bottom:1px solid #14141c;font-size:9px;letter-spacing:1px;text-transform:uppercase;}
-  td{padding:4px 6px;border-bottom:1px solid #0e0e14;color:#888;}
+  .pat-btn{width:100%;background:#1a2a4a;border:1px solid #2a4a7a;color:#60a5fa;font-family:'Courier New',monospace;font-size:11px;padding:9px;border-radius:4px;cursor:pointer;letter-spacing:1px;transition:all .15s;}
+  .pat-btn:hover{background:#1e3460;}
+  .pat-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .pat-err{font-size:10px;color:#f87171;margin-top:8px;min-height:14px;}
+  .pat-status{font-size:10px;color:#4ade80;margin-top:8px;min-height:14px;}
+  .toast{position:fixed;bottom:20px;right:20px;background:#0c0c10;border:1px solid #2a2a3c;color:#b8bcc8;font-size:10px;letter-spacing:1px;padding:10px 16px;border-radius:6px;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;z-index:1000;}
+  .toast.show{opacity:1;transform:translateY(0);}
+  .toast.ok{border-color:#166534;color:#4ade80;}
+  .toast.err{border-color:#7f1d1d;color:#f87171;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  @media(max-width:600px){.grid{grid-template-columns:1fr;}}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;}
+  @media(max-width:700px){.grid-3{grid-template-columns:1fr 1fr;}}
+  @media(max-width:420px){.grid-3{grid-template-columns:1fr;}}
+  .panel{background:#0c0c10;border:1px solid #1e1e2a;border-radius:6px;padding:14px;}
+  .panel-title{font-size:9px;letter-spacing:2px;color:#444;margin-bottom:10px;text-transform:uppercase;}
+  .panel-title span{float:right;font-size:8px;letter-spacing:1px;}
+  .stat-card{background:#0c0c10;border:1px solid #1e1e2a;border-radius:6px;padding:12px 16px;}
+  .stat-label{font-size:9px;letter-spacing:2px;color:#444;margin-bottom:4px;text-transform:uppercase;}
+  .stat-value{font-size:20px;font-weight:700;color:#e8eaf0;letter-spacing:1px;}
+  .stat-sub{font-size:9px;color:#555;margin-top:3px;}
+  .skeleton{background:linear-gradient(90deg,#111118 25%,#16161f 50%,#111118 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:3px;display:inline-block;}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .skel-val{height:24px;width:80px;}
+  .skel-sub{height:10px;width:60px;margin-top:4px;}
+  .skel-row{height:12px;width:100%;margin-bottom:6px;}
+  .skel-row.short{width:60%;}
+  table{width:100%;border-collapse:collapse;}
+  th{font-size:8px;letter-spacing:1.5px;color:#333;text-align:left;padding:0 0 6px 0;text-transform:uppercase;border-bottom:1px solid #161620;}
+  td{padding:5px 0;border-bottom:1px solid #0f0f14;vertical-align:top;}
   tr:last-child td{border-bottom:none;}
-  tr:hover td{background:#101018;}
-
-  /* ── TAGS ── */
-  .tag{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:1px;}
-  .tag-exit{background:#2d1010;color:#ef4444;}
-  .tag-hold{background:#0a2010;color:#22c55e;}
-  .tag-long{background:#0a2010;color:#22c55e;}
-  .tag-short{background:#2d1010;color:#ef4444;}
-  .tag-cat{background:#10102a;color:#60a5fa;}
-  .tag-fav{background:#1a1a10;color:#f0c040;}
-  .tag-yes{background:#0a2010;color:#22c55e;}
-  .tag-no{background:#2d1010;color:#ef4444;}
-
-  /* ── LOG ── */
-  .log-box{background:#06060a;border:1px solid #141420;border-radius:4px;height:80px;overflow-y:auto;padding:6px 8px;margin-top:6px;}
-  .log-box::-webkit-scrollbar{width:3px;}
-  .log-box::-webkit-scrollbar-thumb{background:#1e1e2a;}
-  .log-line{font-size:9px;line-height:1.7;}
-  .log-line .ts{color:#222;margin-right:6px;}
-  .log-line .msg{color:#444;}
-  .log-line.sig .msg{color:#f0c040;}
-  .log-line.tr .msg{color:#22c55e;}
-  .log-line.warn .msg{color:#ef4444;}
-
-  /* ── SIGNALS GRID ── */
-  .sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
-  .sig-card{background:#0c0c10;border:1px solid #1e1e2a;border-radius:6px;padding:8px 12px;}
-  .sig-ticker{font-size:11px;font-weight:700;color:#e8eaf0;margin-bottom:2px;}
-  .sig-price{font-size:16px;font-weight:700;margin-bottom:4px;}
-  .sig-text{font-size:9px;color:#444;line-height:1.5;}
-  .sig-label{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;margin-bottom:4px;font-weight:700;}
-  .sig-bull{background:#0a2010;color:#22c55e;border:1px solid #1a4020;}
-  .sig-bear{background:#2d1010;color:#ef4444;border:1px solid #4a1818;}
-  .sig-neutral{background:#10101c;color:#60a5fa;border:1px solid #1a1a30;}
-
-  /* ── COLORS ── */
-  .green{color:#22c55e;} .red{color:#ef4444;} .yellow{color:#f0c040;} .blue{color:#60a5fa;} .white{color:#e8eaf0;} .muted{color:#333;}
-
-  /* ── PUMP PANEL ── */
-  .pump-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px;}
-  .pump-kpi-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:#1a1a24;border-radius:4px;overflow:hidden;margin-bottom:10px;}
-  .pump-pos-tag{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:1px;}
-  .pump-kol{background:#1a1008;color:#f97316;border:1px solid #3a2008;}
-  .pump-scan{background:#0a1020;color:#60a5fa;border:1px solid #0a1a30;}
-  .pump-copy{background:#10101a;color:#a78bfa;border:1px solid #1a1030;}
-  .pump-token{background:#10200a;color:#22c55e;border:1px solid #1a3010;}
-  .pump-sig-row{padding:4px 0;border-bottom:1px solid #0e0e14;font-size:10px;display:flex;gap:8px;align-items:flex-start;}
-  .pump-sig-handle{color:#f97316;font-weight:700;min-width:90px;}
-  .pump-sig-mint{color:#444;font-size:9px;font-family:'Courier New',monospace;}
-  .pump-sig-text{color:#555;font-size:9px;flex:1;line-height:1.4;}
-  .pump-acted{color:#22c55e;font-size:9px;font-weight:700;}
-  .pump-skipped{color:#333;font-size:9px;}
-
-  /* ── STATUS BAR ── */
-  .statusbar{display:flex;gap:20px;padding:5px 12px;background:#0a0a0e;border:1px solid #1e1e2a;border-radius:6px;margin-top:8px;font-size:9px;color:#2a2a38;letter-spacing:1px;}
-  .statusbar span{color:#3a3a4a;}
-
-  /* ── ERROR / EMPTY ── */
-  .err{color:#ef4444;font-size:10px;text-align:center;padding:16px;}
-  .empty{color:#2a2a3a;font-size:10px;text-align:center;padding:16px;}
-  .loading{color:#333;font-size:10px;text-align:center;padding:16px;animation:pulse 1.5s infinite;}
-  @keyframes pulse{0%,100%{opacity:.4;}50%{opacity:1;}}
+  .pill{display:inline-block;font-size:8px;padding:1px 6px;border-radius:3px;letter-spacing:1px;}
+  .pill-green{background:#052210;color:#4ade80;border:1px solid #0a3a18;}
+  .pill-red{background:#1f0808;color:#f87171;border:1px solid #3a1010;}
+  .pill-yellow{background:#1a1400;color:#f0c040;border:1px solid #3a3010;}
+  .pill-blue{background:#0a1628;color:#60a5fa;border:1px solid #1a3060;}
+  .pill-gray{background:#111118;color:#666;border:1px solid #222230;}
+  .error-state{text-align:center;padding:32px 16px;color:#333;}
+  .error-state p{font-size:10px;letter-spacing:1px;line-height:1.7;}
+  .error-state button{margin-top:12px;background:#1a2a4a;border:1px solid #2a4a7a;color:#60a5fa;font-family:'Courier New',monospace;font-size:10px;padding:6px 14px;cursor:pointer;border-radius:4px;}
+  .divider{height:1px;background:#0f0f14;margin:8px 0;}
+  .row-key{color:#555;min-width:90px;display:inline-block;}
+  .section-gap{margin-bottom:8px;}
+  .spinning{animation:spin .8s linear infinite;display:inline-block;}
+  @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 
-<!-- PAT OVERLAY -->
-<div class="pat-overlay" id="pat-overlay">
+<div class="pat-overlay" id="patOverlay">
   <div class="pat-box">
-    <div class="pat-title">GITHUB ACCESS TOKEN</div>
-    <div class="pat-sub">Your bot state files are in private repos. Enter a GitHub Personal Access Token (PAT) with <strong style="color:#e8eaf0;">repo</strong> scope to load live data.<br><br>Generate one at: github.com/settings/tokens → New token → select <em>repo</em></div>
-    <input class="pat-input" type="password" id="pat-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
-    <br>
-    <button class="pat-btn" onclick="savePat()">&#8594; LOAD TERMINAL</button>
-    <div class="pat-err" id="pat-err">Invalid token or access denied. Check the token has repo scope.</div>
+    <div class="pat-title">// GITHUB ACCESS TOKEN</div>
+    <div class="pat-sub">
+      A classic PAT with <strong style="color:#b8bcc8">repo</strong> scope is required to read private repo state.<br><br>
+      Generate at <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a>. Stored in your browser only.
+    </div>
+    <input class="pat-input" id="patInput" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false"/>
+    <button class="pat-btn" id="patBtn" onclick="savePat()">CONNECT</button>
+    <div class="pat-err" id="patErr"></div>
+    <div class="pat-status" id="patStatus"></div>
   </div>
 </div>
 
-<!-- TOP BAR -->
+<div class="toast" id="toast"></div>
+
 <div class="topbar">
-  <div class="fund-name">DEGEN+POLY CAPITAL</div>
+  <div class="fund-name">DEGEN+POLY FUND</div>
   <div class="topbar-right">
-    <span class="clock" id="clock">--:--:-- EST</span>
-    <span class="badge">PAPER TRADING</span>
-    <span class="last-update" id="last-update">not loaded</span>
-    <button class="refresh-btn" onclick="loadAll()">&#8635; REFRESH</button>
+    <span class="clock" id="clock">--:--:-- UTC</span>
+    <span class="badge">PAPER</span>
+    <span class="last-update" id="lastUpdate">never synced</span>
+    <button class="settings-btn" onclick="resetPat()">TOKEN</button>
+    <button class="refresh-btn" id="refreshBtn" onclick="loadAll()">&#8635; REFRESH</button>
   </div>
 </div>
 
-<!-- NAV CARDS -->
-<div class="nav-row">
-  <div class="nav-card">
-    <div class="lbl">Fund NAV</div>
-    <div class="val" id="nav-total">--</div>
-    <div class="sub" id="nav-change">starting $2,000</div>
+<div class="grid-3 section-gap">
+  <div class="stat-card">
+    <div class="stat-label">FUND NAV</div>
+    <div class="stat-value" id="nav" style="color:#60a5fa"><span class="skeleton skel-val"></span></div>
+    <div class="stat-sub" id="navSub"><span class="skeleton skel-sub"></span></div>
   </div>
-  <div class="nav-card">
-    <div class="lbl">Total P&amp;L</div>
-    <div class="val" id="total-pnl">--</div>
-    <div class="sub" id="total-pnl-sub">realized + unrealized</div>
+  <div class="stat-card">
+    <div class="stat-label">TOTAL P&amp;L</div>
+    <div class="stat-value" id="totalPnl"><span class="skeleton skel-val"></span></div>
+    <div class="stat-sub" id="totalPnlSub"><span class="skeleton skel-sub"></span></div>
   </div>
-  <div class="nav-card">
-    <div class="lbl">Degen Bankroll</div>
-    <div class="val" id="degen-bankroll">--</div>
-    <div class="sub" id="degen-pnl-sub">perps P&amp;L</div>
-  </div>
-  <div class="nav-card">
-    <div class="lbl">Poly NAV</div>
-    <div class="val" id="poly-nav">--</div>
-    <div class="sub" id="poly-pnl-sub">prediction markets</div>
-  </div>
-  <div class="nav-card">
-    <div class="lbl">Open Positions</div>
-    <div class="val" id="open-count">--</div>
-    <div class="sub" id="open-sub">across both books</div>
+  <div class="stat-card">
+    <div class="stat-label">WIN RATE</div>
+    <div class="stat-value" id="winRate"><span class="skeleton skel-val"></span></div>
+    <div class="stat-sub" id="winRateSub"><span class="skeleton skel-sub"></span></div>
   </div>
 </div>
 
-<!-- MAIN GRID: DEGEN + POLY SIDE BY SIDE -->
-<div class="main-grid">
-
-  <!-- ── DEGEN PANEL ── -->
+<div class="grid">
   <div class="panel">
-    <div class="panel-head">
-      <span class="panel-title">DEGEN / HYPERLIQUID PERPS</span>
-      <span id="degen-pill" class="pill">LOADING</span>
-    </div>
-    <div class="panel-body">
-      <div class="kpi-bar">
-        <div class="kpi"><div class="k">BANKROLL</div><div class="v blue" id="d-bankroll">--</div></div>
-        <div class="kpi"><div class="k">TOTAL P&amp;L</div><div class="v" id="d-pnl">--</div></div>
-        <div class="kpi"><div class="k">WIN RATE</div><div class="v" id="d-winrate">--</div></div>
-        <div class="kpi"><div class="k">OPEN POS</div><div class="v blue" id="d-openpos">--</div></div>
-      </div>
-
-      <div class="section-lbl">OPEN POSITIONS</div>
-      <div class="scroll-wrap" style="max-height:120px;">
-        <table>
-          <thead><tr><th>Symbol</th><th>Side</th><th>Entry</th><th>Mark</th><th>PnL</th><th>Size</th></tr></thead>
-          <tbody id="degen-pos-body"><tr><td colspan="6" class="loading">loading...</td></tr></tbody>
-        </table>
-      </div>
-
-      <div class="section-lbl">MARKET PRICES</div>
-      <div class="stat-grid" id="degen-prices"></div>
-
-      <div class="section-lbl">SIGNAL LOG</div>
-      <div class="log-box" id="degen-log"><div class="log-line loading" style="text-align:center;padding:8px;">loading...</div></div>
-    </div>
+    <div class="panel-title">DEGEN // HYPERLIQUID PERPS <span id="degenStatus"></span></div>
+    <div id="degenContent"><div class="skel-row skeleton"></div><div class="skel-row skeleton short"></div><div class="skel-row skeleton"></div></div>
   </div>
-
-  <!-- ── POLY PANEL ── -->
   <div class="panel">
-    <div class="panel-head">
-      <span class="panel-title">POLY / POLYMARKET</span>
-      <span id="poly-pill" class="pill">LOADING</span>
-    </div>
-    <div class="panel-body">
-      <div class="kpi-bar">
-        <div class="kpi"><div class="k">CURRENT</div><div class="v blue" id="p-current">--</div></div>
-        <div class="kpi"><div class="k">UNREAL P&amp;L</div><div class="v" id="p-upnl">--</div></div>
-        <div class="kpi"><div class="k">REAL P&amp;L</div><div class="v" id="p-rpnl">--</div></div>
-        <div class="kpi"><div class="k">NAV CHANGE</div><div class="v" id="p-nav-pct">--</div></div>
-      </div>
-
-      <!-- strategy breakdown -->
-      <div class="stat-grid" style="margin-bottom:8px;">
-        <div class="stat"><span class="k">Catalyst trades</span><span class="v blue" id="p-cat-open">--</span></div>
-        <div class="stat"><span class="k">Catalyst P&amp;L</span><span class="v" id="p-cat-pnl">--</span></div>
-        <div class="stat"><span class="k">Favorite trades</span><span class="v blue" id="p-fav-open">--</span></div>
-        <div class="stat"><span class="k">Favorite P&amp;L</span><span class="v" id="p-fav-pnl">--</span></div>
-        <div class="stat"><span class="k">Deployed</span><span class="v yellow" id="p-deployed">--</span></div>
-        <div class="stat"><span class="k">Cash</span><span class="v green" id="p-cash">--</span></div>
-      </div>
-
-      <div class="section-lbl">OPEN POSITIONS (EXIT first)</div>
-      <div class="scroll-wrap">
-        <table>
-          <thead><tr><th>ID</th><th>Market</th><th>Side</th><th>Strat</th><th>Entry</th><th>Now</th><th>P&amp;L</th><th>Status</th></tr></thead>
-          <tbody id="poly-pos-body"><tr><td colspan="8" class="loading">loading...</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- DEGEN SIGNALS GRID -->
-<div style="margin-bottom:8px;">
-  <div style="font-size:9px;color:#2a2a3a;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">DEGEN SIGNAL ANALYSIS</div>
-  <div class="sig-grid" id="degen-signals">
-    <div class="sig-card"><div class="loading">loading signals...</div></div>
-    <div class="sig-card"></div>
-    <div class="sig-card"></div>
-    <div class="sig-card"></div>
+    <div class="panel-title">POLY // PREDICTION MARKETS <span id="polyStatus"></span></div>
+    <div id="polyContent"><div class="skel-row skeleton"></div><div class="skel-row skeleton short"></div><div class="skel-row skeleton"></div></div>
   </div>
 </div>
 
-<!-- DEGEN WATCH LIST -->
-<div class="panel" style="margin-bottom:8px;">
-  <div class="panel-head">
-    <span class="panel-title">DEGEN WATCH LIST</span>
-    <span class="panel-meta" id="degen-notes-meta"></span>
-  </div>
-  <div class="panel-body" id="degen-watchlist"><div class="loading">loading...</div></div>
-</div>
-
-<!-- ══ PUMP.FUN PANEL ══ -->
-<div class="panel" style="margin-bottom:8px;">
-  <div class="panel-head">
-    <span class="panel-title">PUMP / PUMP.FUN LAUNCHER + KOL SNIPER</span>
-    <span id="pump-pill" class="pill">LOADING</span>
-  </div>
-  <div class="panel-body">
-
-    <!-- KPI bar -->
-    <div class="pump-kpi-bar">
-      <div class="kpi"><div class="k">INVESTED</div><div class="v blue" id="pk-invested">--</div></div>
-      <div class="kpi"><div class="k">REALIZED P&amp;L</div><div class="v" id="pk-rpnl">--</div></div>
-      <div class="kpi"><div class="k">FEES CLAIMED</div><div class="v green" id="pk-fees">--</div></div>
-      <div class="kpi"><div class="k">WIN RATE</div><div class="v" id="pk-winrate">--</div></div>
-      <div class="kpi"><div class="k">OPEN POS</div><div class="v blue" id="pk-openpos">--</div></div>
-    </div>
-
-    <!-- Open positions -->
-    <div class="section-lbl">OPEN POSITIONS</div>
-    <div class="scroll-wrap" style="max-height:140px;">
-      <table>
-        <thead><tr><th>Token</th><th>Strategy</th><th>KOL</th><th>Entry SOL</th><th>Current X</th><th>High X</th><th>Partial TP</th><th>Pump.fun</th></tr></thead>
-        <tbody id="pump-pos-body"><tr><td colspan="8" class="loading">loading...</td></tr></tbody>
-      </table>
-    </div>
-
-    <!-- Two-column bottom section -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
-
-      <!-- KOL signals -->
-      <div>
-        <div class="section-lbl">KOL SIGNALS</div>
-        <div class="scroll-wrap" style="max-height:160px;" id="pump-kol-signals">
-          <div class="loading">loading...</div>
-        </div>
-      </div>
-
-      <!-- Scanner hits + deployed tokens -->
-      <div>
-        <div class="section-lbl">SCANNER HITS</div>
-        <div class="scroll-wrap" style="max-height:80px;" id="pump-scanner-hits">
-          <div class="loading">loading...</div>
-        </div>
-        <div class="section-lbl" style="margin-top:6px;">DEPLOYED TOKENS (CREATOR FEES)</div>
-        <div class="scroll-wrap" style="max-height:70px;" id="pump-deployed">
-          <div class="loading">loading...</div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Activity log -->
-    <div class="section-lbl">BOT LOG</div>
-    <div class="log-box" id="pump-log"></div>
-
-  </div>
-</div>
-
-<!-- STATUS BAR -->
-<div class="statusbar">
-  <span>DEGEN: <span id="sb-degen-scan">--</span></span>
-  <span>POLY: <span id="sb-poly-updated">--</span></span>
-  <span>PUMP: <span id="sb-pump-scan">--</span></span>
-  <span>DEGEN REPO: davedeploys-spec/hyperliquid-bot-v1</span>
-  <span>POLY REPO: davedeploys-spec/polymarket-bot-v1</span>
-  <span>PUMP REPO: davedeploys-spec/pumpfun-deploy-v1</span>
-  <span>AUTO-REFRESH: 30s</span>
+<div class="panel" style="margin-top:8px;">
+  <div class="panel-title">TRADE LOG <span id="tradeLogMeta"></span></div>
+  <div id="tradeLogContent"><div class="skel-row skeleton"></div><div class="skel-row skeleton short"></div><div class="skel-row skeleton"></div></div>
 </div>
 
 <script>
-// ── CONFIG ──────────────────────────────────────────────────────────────────
-// GitHub Contents API — works for private repos with a PAT (repo scope)
-const DEGEN_API = 'https://api.github.com/repos/davedeploys-spec/hyperliquid-bot-v1/contents/bot-state-degen.json';
-const POLY_API  = 'https://api.github.com/repos/davedeploys-spec/polymarket-bot-v1/contents/bot-state-poly.json';
-const PUMP_API  = 'https://api.github.com/repos/davedeploys-spec/pumpfun-deploy-v1/contents/pump-bot-state.json';
+const OWNER = 'davedeploys-spec';
+const REPOS = {
+  degen: { repo: 'degen-bot',  file: 'bot-state.json' },
+  poly:  { repo: 'poly-bot',   file: 'bot-state-poly.json' }
+};
+const PAT_KEY = 'gh_pat_terminal';
+let pat = localStorage.getItem(PAT_KEY) || '';
+let degenState = null, polyState = null;
 
-// ── PAT MANAGEMENT ──────────────────────────────────────────────────────────
-function getToken() { return localStorage.getItem('gh_pat') || ''; }
+function tickClock(){
+  const n = new Date();
+  document.getElementById('clock').textContent =
+    String(n.getUTCHours()).padStart(2,'0')+':'+String(n.getUTCMinutes()).padStart(2,'0')+':'+String(n.getUTCSeconds()).padStart(2,'0')+' UTC';
+}
+setInterval(tickClock,1000); tickClock();
 
-function savePat() {
-  const val = document.getElementById('pat-input').value.trim();
-  if (!val) return;
-  localStorage.setItem('gh_pat', val);
-  document.getElementById('pat-overlay').style.display = 'none';
-  loadAll();
+let toastTimer;
+function showToast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show '+type;
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>{t.className='toast';},2800);
 }
 
-// Allow pressing Enter in the PAT input
-document.getElementById('pat-input').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') savePat();
-});
-
-// On load: if token already saved, skip overlay
-window.addEventListener('DOMContentLoaded', function() {
-  const saved = getToken();
-  if (saved) {
-    document.getElementById('pat-overlay').style.display = 'none';
-    loadAll();
-  } else {
-    document.getElementById('pat-overlay').style.display = 'flex';
-  }
-});
-
-// ── CLOCK ───────────────────────────────────────────────────────────────────
-function updateClock() {
-  const now = new Date();
-  const est = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-  const h = String(est.getHours()).padStart(2,'0');
-  const m = String(est.getMinutes()).padStart(2,'0');
-  const s = String(est.getSeconds()).padStart(2,'0');
-  const label = est.getHours() < 12 ? 'AM' : 'PM';
-  document.getElementById('clock').textContent = h + ':' + m + ':' + s + ' EST';
-}
-setInterval(updateClock, 1000);
-updateClock();
-
-// ── HELPERS ──────────────────────────────────────────────────────────────────
-function fmt$(n, decimals=0) {
-  if (n == null || isNaN(n)) return '--';
-  const abs = Math.abs(n);
-  const str = abs.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-  return (n < 0 ? '-$' : '$') + str;
-}
-function fmtPct(n) {
-  if (n == null || isNaN(n)) return '--';
-  return (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
-}
-function colorClass(n) {
-  if (n > 0) return 'green';
-  if (n < 0) return 'red';
-  return 'muted';
-}
-function staleCheck(isoStr) {
-  if (!isoStr) return true;
-  const diff = (Date.now() - new Date(isoStr).getTime()) / 60000; // minutes
-  return diff > 15;
-}
-function timeAgo(isoStr) {
-  if (!isoStr) return 'never';
-  const diff = Math.round((Date.now() - new Date(isoStr).getTime()) / 60000);
-  if (diff < 1) return 'just now';
-  if (diff < 60) return diff + 'm ago';
-  return Math.round(diff/60) + 'h ago';
+function showPatOverlay(){document.getElementById('patOverlay').classList.remove('hidden');}
+function hidePatOverlay(){document.getElementById('patOverlay').classList.add('hidden');}
+function resetPat(){
+  document.getElementById('patInput').value='';
+  document.getElementById('patErr').textContent='';
+  document.getElementById('patStatus').textContent='';
+  showPatOverlay();
 }
 
-// ── FETCH ────────────────────────────────────────────────────────────────────
-async function fetchJSON(apiUrl) {
-  const token = getToken();
-  const headers = { 'Accept': 'application/vnd.github.v3.raw', 'Cache-Control': 'no-store' };
-  if (token) headers['Authorization'] = 'token ' + token;
-  const res = await fetch(apiUrl + '?t=' + Date.now(), { headers });
-  if (res.status === 401 || res.status === 403) {
-    // Bad token — show overlay again
-    document.getElementById('pat-err').style.display = 'block';
-    document.getElementById('pat-overlay').style.display = 'flex';
-    localStorage.removeItem('gh_pat');
-    throw new Error('Auth failed: ' + res.status);
+async function savePat(){
+  const val=document.getElementById('patInput').value.trim();
+  if(!val){document.getElementById('patErr').textContent='Token cannot be empty.';return;}
+  const btn=document.getElementById('patBtn');
+  btn.disabled=true; btn.textContent='VERIFYING...';
+  document.getElementById('patErr').textContent='';
+  document.getElementById('patStatus').textContent='';
+  try{
+    const r=await fetch('https://api.github.com/user',{headers:{Authorization:'token '+val,Accept:'application/json'}});
+    if(r.status===401){document.getElementById('patErr').textContent='Invalid token.';btn.disabled=false;btn.textContent='CONNECT';return;}
+    if(!r.ok){document.getElementById('patErr').textContent='GitHub error: '+r.status;btn.disabled=false;btn.textContent='CONNECT';return;}
+    const u=await r.json();
+    document.getElementById('patStatus').textContent='Connected as @'+u.login;
+    localStorage.setItem(PAT_KEY,val); pat=val;
+    setTimeout(()=>{hidePatOverlay();loadAll();},800);
+  }catch(e){
+    document.getElementById('patErr').textContent='Network error.';
+    btn.disabled=false;btn.textContent='CONNECT';
   }
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const text = await res.text();
-  return JSON.parse(text);
 }
 
-// ── RENDER DEGEN ─────────────────────────────────────────────────────────────
-function renderDegen(d) {
-  const stale = staleCheck(d.last_scan);
-  const pill = document.getElementById('degen-pill');
-  pill.textContent = stale ? 'STALE' : 'LIVE';
-  pill.className = 'pill ' + (stale ? 'stale' : 'live');
-
-  // KPIs
-  document.getElementById('d-bankroll').textContent = fmt$(d.bankroll);
-  const pnlEl = document.getElementById('d-pnl');
-  pnlEl.textContent = fmt$(d.total_pnl, 2);
-  pnlEl.className = 'v ' + colorClass(d.total_pnl);
-  const wins = d.wins || 0, losses = d.losses || 0, total = wins + losses;
-  document.getElementById('d-winrate').textContent = total > 0 ? Math.round(wins/total*100) + '%' : '--';
-  document.getElementById('d-openpos').textContent = (d.open_positions || []).length;
-
-  // nav cards
-  document.getElementById('degen-bankroll').textContent = fmt$(d.bankroll);
-  const degenPnlSub = document.getElementById('degen-pnl-sub');
-  degenPnlSub.textContent = fmt$(d.total_pnl, 2) + ' total P&L (' + wins + 'W/' + losses + 'L)';
-  degenPnlSub.className = 'sub ' + colorClass(d.total_pnl);
-
-  // Open positions
-  const posBody = document.getElementById('degen-pos-body');
-  const positions = d.open_positions || [];
-  if (positions.length === 0) {
-    posBody.innerHTML = '<tr><td colspan="6" class="empty">No open positions</td></tr>';
-  } else {
-    posBody.innerHTML = positions.map(p => {
-      const sideTag = p.side === 'LONG'
-        ? '<span class="tag tag-long">LONG</span>'
-        : '<span class="tag tag-short">SHORT</span>';
-      const pnlColor = colorClass(p.unrealized_pnl || 0);
-      return `<tr>
-        <td class="white">${p.symbol || p.coin || '--'}</td>
-        <td>${sideTag}</td>
-        <td>${p.entry_price != null ? fmt$(p.entry_price, 2) : '--'}</td>
-        <td>${p.mark_price != null ? fmt$(p.mark_price, 2) : '--'}</td>
-        <td class="${pnlColor}">${fmt$(p.unrealized_pnl || 0, 2)}</td>
-        <td>${p.size != null ? fmt$(p.size, 2) : '--'}</td>
-      </tr>`;
-    }).join('');
-  }
-
-  // Prices
-  const pricesEl = document.getElementById('degen-prices');
-  if (d.current_prices) {
-    pricesEl.innerHTML = Object.entries(d.current_prices).map(([sym, price]) => {
-      const p = parseFloat(price);
-      const fmtd = isNaN(p) ? String(price) : fmt$(p, sym === 'XRP' ? 4 : 0);
-      return `<div class="stat"><span class="k">${sym}</span><span class="v white">${fmtd}</span></div>`;
-    }).join('');
-  }
-
-  // Signals grid
-  const sigGrid = document.getElementById('degen-signals');
-  const tickers = ['BTC','ETH','SOL','XRP'];
-  const prices = d.current_prices || {};
-  const sigs = d.signal_summary || {};
-  sigGrid.innerHTML = tickers.map(sym => {
-    const sigText = sigs[sym] || 'No signal data';
-    const price = prices[sym];
-    const fmtPrice = price && !isNaN(parseFloat(price)) ? fmt$(parseFloat(price), sym==='XRP'?4:0) : (price || '--');
-    const isBull = /BULL|LONG|BUY/i.test(sigText);
-    const isBear = /BEAR|SHORT|SELL/i.test(sigText);
-    const sigLabelClass = isBull ? 'sig-bull' : (isBear ? 'sig-bear' : 'sig-neutral');
-    const sigLabelText = isBull ? 'BULL' : (isBear ? 'BEAR' : 'NEUTRAL');
-    const priceClass = isBull ? 'green' : (isBear ? 'red' : 'blue');
-    return `<div class="sig-card">
-      <div class="sig-ticker">${sym}</div>
-      <div class="sig-price ${priceClass}">${fmtPrice}</div>
-      <div><span class="sig-label ${sigLabelClass}">${sigLabelText}</span></div>
-      <div class="sig-text">${sigText}</div>
-    </div>`;
-  }).join('');
-
-  // Watch list
-  const wl = document.getElementById('degen-watchlist');
-  const watches = d.watch_list || [];
-  if (watches.length === 0) {
-    wl.innerHTML = '<div class="empty">No items on watch list</div>';
-  } else {
-    wl.innerHTML = watches.map(w =>
-      `<div style="padding:3px 0;border-bottom:1px solid #0e0e14;font-size:10px;color:#555;">&rsaquo; ${w}</div>`
-    ).join('');
-  }
-  document.getElementById('degen-notes-meta').textContent = d.notes ? d.notes.substring(0, 80) + '...' : '';
-
-  // Status bar
-  document.getElementById('sb-degen-scan').textContent = 'Scan #' + (d.scan_number || '--') + ' · ' + timeAgo(d.last_scan);
+async function fetchJSON(repo,file){
+  const url='https://api.github.com/repos/'+OWNER+'/'+repo+'/contents/'+file+'?ref=main&_t='+Date.now();
+  const r=await fetch(url,{headers:{Authorization:'token '+pat,Accept:'application/vnd.github.v3.raw'}});
+  if(r.status===401)throw new Error('auth');
+  if(r.status===404)throw new Error('notfound');
+  if(!r.ok)throw new Error('http_'+r.status);
+  const text=await r.text();
+  try{return JSON.parse(text);}catch(e){throw new Error('parse_error');}
 }
 
-// ── RENDER POLY ───────────────────────────────────────────────────────────────
-function renderPoly(p) {
-  const stale = staleCheck(p.updated_at);
-  const pill = document.getElementById('poly-pill');
-  pill.textContent = stale ? 'STALE' : 'LIVE';
-  pill.className = 'pill ' + (stale ? 'stale' : 'live');
-
-  const bk = p.bankroll || {};
-  const sp = p.strategy_pnl || {};
-  const cat = sp.catalyst || {};
-  const fav = sp.favorite || {};
-
-  // KPIs
-  document.getElementById('p-current').textContent = fmt$(bk.current, 2);
-  const upnlEl = document.getElementById('p-upnl');
-  upnlEl.textContent = fmt$(bk.unrealized_pnl, 2);
-  upnlEl.className = 'v ' + colorClass(bk.unrealized_pnl);
-  const rpnlEl = document.getElementById('p-rpnl');
-  rpnlEl.textContent = fmt$(bk.realized_pnl, 2);
-  rpnlEl.className = 'v ' + colorClass(bk.realized_pnl);
-  const navEl = document.getElementById('p-nav-pct');
-  navEl.textContent = fmtPct(bk.nav_change_pct);
-  navEl.className = 'v ' + colorClass(bk.nav_change_pct);
-
-  // Strategy breakdown
-  document.getElementById('p-cat-open').textContent = (cat.open_trades || 0) + ' open / ' + (cat.queued_trades || 0) + ' queued';
-  const catPnlEl = document.getElementById('p-cat-pnl');
-  catPnlEl.textContent = fmt$(cat.total, 2);
-  catPnlEl.className = 'v ' + colorClass(cat.total);
-  document.getElementById('p-fav-open').textContent = (fav.open_trades || 0) + ' open / ' + (fav.queued_trades || 0) + ' queued';
-  const favPnlEl = document.getElementById('p-fav-pnl');
-  favPnlEl.textContent = fmt$(fav.total, 2);
-  favPnlEl.className = 'v ' + colorClass(fav.total);
-  document.getElementById('p-deployed').textContent = fmt$(bk.deployed, 2) + ' (' + (bk.deployed_pct || 0).toFixed(1) + '%)';
-  document.getElementById('p-cash').textContent = fmt$(bk.cash, 2);
-
-  // Nav cards
-  document.getElementById('poly-nav').textContent = fmt$(bk.current, 2);
-  const polyPnlSub = document.getElementById('poly-pnl-sub');
-  const polyTotalPnl = (bk.unrealized_pnl || 0) + (bk.realized_pnl || 0);
-  polyPnlSub.textContent = fmt$(polyTotalPnl, 2) + ' total P&L';
-  polyPnlSub.className = 'sub ' + colorClass(polyTotalPnl);
-
-  // Fund-level nav cards
-  const degenBankroll = parseFloat(document.getElementById('d-bankroll').textContent.replace(/[$,]/g,'')) || 0;
-  const fundNAV = (bk.current || 0) + degenBankroll;
-  document.getElementById('nav-total').textContent = fmt$(fundNAV, 0);
-  const degenPnl = parseFloat(document.getElementById('d-pnl').textContent.replace(/[$,]/g,'').replace('--','0')) || 0;
-  const fundPnl = polyTotalPnl + degenPnl;
-  const totalPnlEl = document.getElementById('total-pnl');
-  totalPnlEl.textContent = fmt$(fundPnl, 2);
-  totalPnlEl.className = 'val ' + colorClass(fundPnl);
-  document.getElementById('total-pnl-sub').textContent = fmtPct((fundPnl / 2000) * 100) + ' vs $2k start';
-
-  // Positions table — EXIT first
-  const positions = (p.positions || []).sort((a,b) => {
-    if (a.status === 'EXIT' && b.status !== 'EXIT') return -1;
-    if (b.status === 'EXIT' && a.status !== 'EXIT') return 1;
-    return 0;
-  });
-  const posBody = document.getElementById('poly-pos-body');
-  if (positions.length === 0) {
-    posBody.innerHTML = '<tr><td colspan="8" class="empty">No open positions</td></tr>';
-  } else {
-    posBody.innerHTML = positions.map(pos => {
-      const sideTag = pos.side === 'YES'
-        ? '<span class="tag tag-yes">YES</span>'
-        : '<span class="tag tag-no">NO</span>';
-      const stratTag = pos.strategy === 'CATALYST'
-        ? '<span class="tag tag-cat">CAT</span>'
-        : '<span class="tag tag-fav">FAV</span>';
-      const statusTag = pos.status === 'EXIT'
-        ? '<span class="tag tag-exit">EXIT</span>'
-        : '<span class="tag tag-hold">HOLD</span>';
-      const pnlColor = colorClass(pos.unrealized_pnl || 0);
-      const market = pos.market || '--';
-      const shortMarket = market.length > 32 ? market.substring(0, 32) + '...' : market;
-      return `<tr>
-        <td class="muted">${pos.id || '--'}</td>
-        <td class="white" title="${market}">${shortMarket}</td>
-        <td>${sideTag}</td>
-        <td>${stratTag}</td>
-        <td>${pos.entry != null ? pos.entry.toFixed(3) : '--'}</td>
-        <td>${pos.current_price != null ? pos.current_price.toFixed(3) : '--'}</td>
-        <td class="${pnlColor}">${fmt$(pos.unrealized_pnl || 0, 2)}</td>
-        <td>${statusTag}</td>
-      </tr>`;
-    }).join('');
-  }
-
-  // Open count card
-  const polyOpen = positions.filter(x => x.status !== 'CLOSED').length;
-  const degenOpen = parseInt(document.getElementById('d-openpos').textContent) || 0;
-  document.getElementById('open-count').textContent = (polyOpen + degenOpen);
-  document.getElementById('open-sub').textContent = degenOpen + ' degen · ' + polyOpen + ' poly';
-
-  // Status bar
-  document.getElementById('sb-poly-updated').textContent = timeAgo(p.updated_at);
-}
-
-// ── RENDER PUMP ───────────────────────────────────────────────────────────────
-function renderPump(p) {
-  const stale = staleCheck(p.last_scan);
-  const pill = document.getElementById('pump-pill');
-  pill.textContent = p.dry_run ? 'DRY RUN' : (stale ? 'STALE' : 'LIVE');
-  pill.className   = 'pill ' + (p.dry_run ? '' : (stale ? 'stale' : 'live'));
-  if (p.dry_run) pill.style.cssText = 'border-color:#f97316;color:#f97316;';
-
-  // KPIs
-  document.getElementById('pk-invested').textContent = (p.total_invested_sol || 0).toFixed(3) + ' SOL';
-  const rpnl = p.realized_pnl_sol || 0;
-  const rpnlEl = document.getElementById('pk-rpnl');
-  rpnlEl.textContent  = (rpnl >= 0 ? '+' : '') + rpnl.toFixed(4) + ' SOL';
-  rpnlEl.className    = 'v ' + colorClass(rpnl);
-  document.getElementById('pk-fees').textContent    = (p.fees_claimed_sol || 0).toFixed(4) + ' SOL';
-  const wins   = p.wins   || 0;
-  const losses = p.losses || 0;
-  const total  = wins + losses;
-  document.getElementById('pk-winrate').textContent  = total > 0 ? Math.round(wins / total * 100) + '%  (' + wins + 'W/' + losses + 'L)' : '--';
-  const openPos = p.open_positions || [];
-  document.getElementById('pk-openpos').textContent  = openPos.length;
-
-  // Open positions table
-  const posBody = document.getElementById('pump-pos-body');
-  if (openPos.length === 0) {
-    posBody.innerHTML = '<tr><td colspan="8" class="empty">No open positions</td></tr>';
-  } else {
-    posBody.innerHTML = openPos.map(pos => {
-      const stratMap = { KOL_SNIPE: 'pump-kol', SCANNER: 'pump-scan', COPY_TRADE: 'pump-copy' };
-      const stratLabel = { KOL_SNIPE: 'KOL', SCANNER: 'SCAN', COPY_TRADE: 'COPY' };
-      const stratClass = stratMap[pos.strategy] || 'pump-scan';
-      const stratText  = stratLabel[pos.strategy] || pos.strategy;
-      const cx = pos.current_x || 1;
-      const hx = pos.high_x   || 1;
-      const cxColor = cx >= 2 ? 'green' : (cx < 0.7 ? 'red' : 'yellow');
-      const tpTag = pos.partial_sold
-        ? '<span class="tag tag-yes" style="font-size:9px;">50% SOLD</span>'
-        : '<span class="muted">–</span>';
-      return `<tr>
-        <td class="white">${pos.symbol || pos.mint.slice(0,8)}</td>
-        <td><span class="pump-pos-tag ${stratClass}">${stratText}</span></td>
-        <td class="muted" style="font-size:9px;">${pos.kol ? '@' + pos.kol : '–'}</td>
-        <td class="blue">${(pos.entry_sol || 0).toFixed(3)}</td>
-        <td class="${cxColor}">${cx.toFixed(2)}x</td>
-        <td class="yellow">${hx.toFixed(2)}x</td>
-        <td>${tpTag}</td>
-        <td><a href="https://pump.fun/${pos.mint}" target="_blank" style="color:#333;font-size:9px;text-decoration:none;">pump.fun ↗</a></td>
-      </tr>`;
-    }).join('');
-  }
-
-  // KOL signals
-  const kolEl = document.getElementById('pump-kol-signals');
-  const sigs  = p.kol_signals || [];
-  if (sigs.length === 0) {
-    kolEl.innerHTML = '<div class="empty">No KOL signals yet</div>';
-  } else {
-    kolEl.innerHTML = sigs.slice(0, 15).map(s => {
-      const actedTag = s.acted
-        ? '<span class="pump-acted">SNIPED</span>'
-        : '<span class="pump-skipped">SKIPPED</span>';
-      return `<div class="pump-sig-row">
-        <span class="pump-sig-handle">@${s.handle}</span>
-        <div style="flex:1;">
-          <div class="pump-sig-mint">${s.mint}</div>
-          <div class="pump-sig-text">${(s.tweet || '').slice(0, 80)}</div>
-        </div>
-        ${actedTag}
-      </div>`;
-    }).join('');
-  }
-
-  // Scanner hits
-  const scanEl = document.getElementById('pump-scanner-hits');
-  const hits   = p.scanner_hits || [];
-  if (hits.length === 0) {
-    scanEl.innerHTML = '<div class="empty">No scanner hits yet</div>';
-  } else {
-    scanEl.innerHTML = hits.slice(0, 8).map(h => {
-      const actedTag = h.acted
-        ? '<span class="pump-acted">BOUGHT</span>'
-        : '<span class="pump-skipped">PASSED</span>';
-      return `<div style="display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid #0e0e14;font-size:9px;">
-        <span class="white">${h.symbol || '--'}</span>
-        <span class="muted">${h.holders || 0} holders · $${Math.round(h.volume || 0).toLocaleString()}</span>
-        ${actedTag}
-      </div>`;
-    }).join('');
-  }
-
-  // Deployed tokens
-  const deplEl  = document.getElementById('pump-deployed');
-  const deploys = p.deployed_tokens || [];
-  if (deploys.length === 0) {
-    deplEl.innerHTML = '<div class="empty">No tokens deployed yet</div>';
-  } else {
-    deplEl.innerHTML = deploys.map(t => {
-      return `<div style="display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid #0e0e14;font-size:9px;">
-        <span class="white">${t.symbol}</span>
-        <span class="muted">${t.name}</span>
-        <span class="green">${(t.fees_claimed || 0).toFixed(4)} SOL claimed</span>
-        <a href="https://pump.fun/${t.mint}" target="_blank" style="color:#333;text-decoration:none;">↗</a>
-      </div>`;
-    }).join('');
-  }
-
-  // Bot log
-  const logEl  = document.getElementById('pump-log');
-  const logs   = p.log || [];
-  if (logs.length === 0) {
-    logEl.innerHTML = '<div class="log-line"><span class="msg">No log entries yet</span></div>';
-  } else {
-    const levelClass = { BUY: 'tr', SELL: 'tr', CLOSE: 'tr', KOL: 'sig', TOKEN: 'sig', WARN: 'warn', ERROR: 'warn', FATAL: 'warn' };
-    logEl.innerHTML = logs.slice(0, 30).map(l => {
-      const cls = levelClass[l.level ? l.level.trim() : ''] || '';
-      const ts  = l.ts ? l.ts.slice(11, 19) : '';
-      return `<div class="log-line ${cls}"><span class="ts">${ts}</span><span class="msg">[${(l.level||'').padEnd(5)}] ${l.msg}</span></div>`;
-    }).join('');
-  }
-
-  // Status bar
-  document.getElementById('sb-pump-scan').textContent = 'Scan #' + (p.scan_number || '--') + ' · ' + timeAgo(p.last_scan);
-}
-
-// ── LOAD ALL ──────────────────────────────────────────────────────────────────
-async function loadAll() {
-  document.getElementById('last-update').textContent = 'loading...';
-  const results = await Promise.allSettled([
-    fetchJSON(DEGEN_API),
-    fetchJSON(POLY_API),
-    fetchJSON(PUMP_API),
+async function loadAll(){
+  if(!pat){showPatOverlay();return;}
+  const btn=document.getElementById('refreshBtn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinning">&#8635;</span> LOADING';
+  const [d,p]=await Promise.allSettled([
+    fetchJSON(REPOS.degen.repo,REPOS.degen.file),
+    fetchJSON(REPOS.poly.repo,REPOS.poly.file)
   ]);
-
-  const degenResult = results[0];
-  const polyResult  = results[1];
-  const pumpResult  = results[2];
-
-  if (degenResult.status === 'fulfilled') {
-    try { renderDegen(degenResult.value); }
-    catch(e) { console.error('Degen render error:', e); document.getElementById('degen-pos-body').innerHTML = '<tr><td colspan="6" class="err">Render error: ' + e.message + '</td></tr>'; }
-  } else {
-    document.getElementById('degen-pill').textContent = 'ERROR';
-    document.getElementById('degen-pill').className = 'pill stale';
-    document.getElementById('degen-pos-body').innerHTML = '<tr><td colspan="6" class="err">Failed to load: ' + degenResult.reason + '</td></tr>';
-    document.getElementById('degen-signals').innerHTML = '<div class="sig-card"><div class="err">Load failed</div></div>';
-    console.error('Degen fetch failed:', degenResult.reason);
-  }
-
-  if (polyResult.status === 'fulfilled') {
-    try { renderPoly(polyResult.value); }
-    catch(e) { console.error('Poly render error:', e); document.getElementById('poly-pos-body').innerHTML = '<tr><td colspan="8" class="err">Render error: ' + e.message + '</td></tr>'; }
-  } else {
-    document.getElementById('poly-pill').textContent = 'ERROR';
-    document.getElementById('poly-pill').className = 'pill stale';
-    document.getElementById('poly-pos-body').innerHTML = '<tr><td colspan="8" class="err">Failed to load: ' + polyResult.reason + '</td></tr>';
-    console.error('Poly fetch failed:', polyResult.reason);
-  }
-
-  if (pumpResult.status === 'fulfilled') {
-    try { renderPump(pumpResult.value); }
-    catch(e) { console.error('Pump render error:', e); document.getElementById('pump-pos-body').innerHTML = '<tr><td colspan="8" class="err">Render error: ' + e.message + '</td></tr>'; }
-  } else {
-    document.getElementById('pump-pill').textContent = 'NO DATA';
-    document.getElementById('pump-pill').className = 'pill stale';
-    document.getElementById('pump-pos-body').innerHTML = '<tr><td colspan="8" class="muted" style="text-align:center;padding:10px;">State file not yet found — deploy pump-bot.js to davedeploys-spec/pumpfun-deploy-v1</td></tr>';
-    document.getElementById('pump-kol-signals').innerHTML = '<div class="empty">Awaiting bot deployment</div>';
-    document.getElementById('pump-scanner-hits').innerHTML = '<div class="empty">–</div>';
-    document.getElementById('pump-deployed').innerHTML = '<div class="empty">–</div>';
-    document.getElementById('sb-pump-scan').textContent = 'not connected';
-  }
-
-  const now = new Date();
-  document.getElementById('last-update').textContent = 'updated ' + now.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'America/New_York'}) + ' EST';
+  let authErr=false;
+  if(d.status==='fulfilled'){degenState=d.value;renderDegen(d.value);}
+  else{if(d.reason.message==='auth')authErr=true;else renderError('degenContent','degenStatus',d.reason.message);}
+  if(p.status==='fulfilled'){polyState=p.value;renderPoly(p.value);}
+  else{if(p.reason.message==='auth')authErr=true;else renderError('polyContent','polyStatus',p.reason.message);}
+  if(authErr){pat='';localStorage.removeItem(PAT_KEY);showPatOverlay();return;}
+  renderSummary(); renderTradeLog();
+  const n=new Date();
+  document.getElementById('lastUpdate').textContent='synced '+String(n.getUTCHours()).padStart(2,'0')+':'+String(n.getUTCMinutes()).padStart(2,'0')+' UTC';
+  showToast('DATA SYNCED','ok');
+  btn.disabled=false; btn.textContent='\u21BB REFRESH';
 }
 
-// ── INIT ─────────────────────────────────────────────────────────────────────
-// loadAll() is triggered by DOMContentLoaded above (after PAT check).
-// Also add a "reset token" link to the status bar for convenience.
-document.addEventListener('DOMContentLoaded', function() {
-  const sb = document.querySelector('.statusbar');
-  if (sb) {
-    const resetSpan = document.createElement('span');
-    resetSpan.innerHTML = '<a href="#" style="color:#2a2a3a;text-decoration:none;" onclick="localStorage.removeItem(\'gh_pat\');location.reload();return false;">RESET TOKEN</a>';
-    sb.appendChild(resetSpan);
+const fmt$=v=>v==null?'--':'$'+Number(v).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+const fmtPct=v=>v==null?'--':(v>=0?'+':'')+Number(v).toFixed(1)+'%';
+const clr=v=>v>=0?'#4ade80':'#f87171';
+const pill=(txt,cls)=>'<span class="pill pill-'+cls+'">'+txt+'</span>';
+
+function renderError(cid,sid,msg){
+  const friendly=msg==='notfound'?'State file not found.':msg==='parse_error'?'JSON parse error.':'Fetch failed ('+msg+')';
+  document.getElementById(cid).innerHTML='<div class="error-state"><p>'+friendly+'</p><button onclick="loadAll()">RETRY</button></div>';
+  if(sid)document.getElementById(sid).innerHTML=pill('ERR','red');
+}
+
+function renderDegen(s){
+  const el=document.getElementById('degenContent');
+  const bankroll=s.bankroll??s.portfolio_value??0;
+  const start=s.start_bankroll??1000;
+  const pnl=bankroll-start;
+  const pnlPct=(pnl/start)*100;
+  const regime=s.regime??s.market_regime??'UNKNOWN';
+  const trades=Array.isArray(s.trades)?s.trades:[];
+  const open=trades.filter(t=>t.status==='open'||t.status==='OPEN');
+  const closed=trades.filter(t=>t.status!=='open'&&t.status!=='OPEN');
+  const wins=closed.filter(t=>(t.pnl??t.realized_pnl??0)>0);
+  const wr=closed.length?((wins.length/closed.length)*100).toFixed(0):'--';
+  document.getElementById('degenStatus').innerHTML=regime.includes('BEAR')?pill('BEAR','red'):regime.includes('BULL')?pill('BULL','green'):pill(regime,'gray');
+  let html='<table><tr><th>METRIC</th><th>VALUE</th></tr>'+
+    '<tr><td><span class="row-key">Bankroll</span></td><td style="color:#60a5fa;font-weight:700">'+fmt$(bankroll)+'</td></tr>'+
+    '<tr><td><span class="row-key">P&amp;L</span></td><td style="color:'+clr(pnl)+'">'+fmt$(pnl)+' <span style="color:#555">('+fmtPct(pnlPct)+')</span></td></tr>'+
+    '<tr><td><span class="row-key">Regime</span></td><td>'+regime+'</td></tr>'+
+    '<tr><td><span class="row-key">Open</span></td><td>'+open.length+'</td></tr>'+
+    '<tr><td><span class="row-key">Closed</span></td><td>'+closed.length+'</td></tr>'+
+    '<tr><td><span class="row-key">Win Rate</span></td><td style="color:'+(wr>=50?'#4ade80':'#f87171')+'">'+wr+'%</td></tr></table>';
+  if(open.length){
+    html+='<div class="divider"></div><div class="panel-title" style="margin-bottom:6px">OPEN POSITIONS</div><table><tr><th>PAIR</th><th>SIDE</th><th>ENTRY</th><th>SIZE</th><th>P&L</th></tr>';
+    open.slice(0,5).forEach(t=>{
+      const tp=t.pnl??t.unrealized_pnl??0;
+      html+='<tr><td style="color:#e8eaf0">'+(t.symbol??t.pair??'--')+'</td><td>'+((t.side??t.direction??'').toUpperCase()==='LONG'?pill('LONG','green'):pill('SHORT','red'))+'</td><td>'+fmt$(t.entry_price??t.entry??null)+'</td><td>'+fmt$(t.size??t.position_size??null)+'</td><td style="color:'+clr(tp)+'">'+fmt$(tp)+'</td></tr>';
+    });
+    html+='</table>';
   }
-});
-setInterval(function() { if (getToken()) loadAll(); }, 30000); // auto-refresh every 30s only if token set
+  el.innerHTML=html;
+}
+
+function renderPoly(s){
+  const el=document.getElementById('polyContent');
+  const nav=s.nav??s.portfolio_value??s.bankroll??0;
+  const start=s.start_bankroll??s.start_nav??1000;
+  const pnl=nav-start;
+  const pnlPct=(pnl/start)*100;
+  const trades=Array.isArray(s.trades)?s.trades:[];
+  const open=trades.filter(t=>{const st=(t.status??'').toUpperCase();return st==='OPEN'||st==='WIN_EXPECTED'||st==='ACTIVE';});
+  const closed=trades.filter(t=>{const st=(t.status??'').toUpperCase();return st==='RESOLVED_WIN'||st==='RESOLVED_LOSS'||st==='CLOSED';});
+  const wins=closed.filter(t=>(t.status??'').toUpperCase()==='RESOLVED_WIN');
+  const wr=closed.length?((wins.length/closed.length)*100).toFixed(0):'--';
+  const scans=s.scan_count??s.total_scans??'--';
+  document.getElementById('polyStatus').innerHTML=pill('LIVE','blue');
+  let html='<table><tr><th>METRIC</th><th>VALUE</th></tr>'+
+    '<tr><td><span class="row-key">NAV</span></td><td style="color:#60a5fa;font-weight:700">'+fmt$(nav)+'</td></tr>'+
+    '<tr><td><span class="row-key">P&amp;L</span></td><td style="color:'+clr(pnl)+'">'+fmt$(pnl)+' <span style="color:#555">('+fmtPct(pnlPct)+')</span></td></tr>'+
+    '<tr><td><span class="row-key">Open</span></td><td>'+open.length+'</td></tr>'+
+    '<tr><td><span class="row-key">Closed</span></td><td>'+closed.length+'</td></tr>'+
+    '<tr><td><span class="row-key">Win Rate</span></td><td style="color:'+(wr>=50?'#4ade80':'#f87171')+'">'+wr+'%</td></tr>'+
+    '<tr><td><span class="row-key">Scans</span></td><td>'+scans+'</td></tr></table>';
+  if(open.length){
+    html+='<div class="divider"></div><div class="panel-title" style="margin-bottom:6px">OPEN POSITIONS</div><table><tr><th>MARKET</th><th>STATUS</th><th>ENTRY</th><th>SIZE</th><th>CURR</th></tr>';
+    open.slice(0,5).forEach(t=>{
+      const st=(t.status??'').toUpperCase();
+      const pc=st==='WIN_EXPECTED'?'green':st==='OPEN'||st==='ACTIVE'?'blue':'yellow';
+      const mkt=(t.market??t.question??'--').substring(0,32);
+      html+='<tr><td style="color:#e8eaf0;font-size:10px">'+mkt+'</td><td>'+pill(st,pc)+'</td><td>'+(t.entry_price!=null?(t.entry_price*100).toFixed(1)+'c':'--')+'</td><td>'+fmt$(t.size??t.amount??null)+'</td><td>'+(t.current_price!=null?(t.current_price*100).toFixed(1)+'c':'--')+'</td></tr>';
+    });
+    html+='</table>';
+  }
+  el.innerHTML=html;
+}
+
+function renderSummary(){
+  const db=degenState?(degenState.bankroll??degenState.portfolio_value??0):0;
+  const ds=degenState?(degenState.start_bankroll??1000):1000;
+  const pn=polyState?(polyState.nav??polyState.portfolio_value??polyState.bankroll??0):0;
+  const ps=polyState?(polyState.start_bankroll??polyState.start_nav??1000):1000;
+  const nav=db+pn, start=ds+ps, pnl=nav-start, pct=(pnl/start)*100;
+  const all=[...(Array.isArray(degenState?.trades)?degenState.trades:[]),...(Array.isArray(polyState?.trades)?polyState.trades:[])];
+  const closed=all.filter(t=>{const st=(t.status??'').toUpperCase();return['RESOLVED_WIN','RESOLVED_LOSS','CLOSED'].includes(st)||(st!=='OPEN'&&st!=='WIN_EXPECTED'&&st!=='ACTIVE'&&t.pnl!=null);});
+  const wins=closed.filter(t=>{const st=(t.status??'').toUpperCase();return st==='RESOLVED_WIN'||(t.pnl??t.realized_pnl??0)>0;});
+  const wr=closed.length?((wins.length/closed.length)*100).toFixed(0)+'%':'--';
+  document.getElementById('nav').textContent=fmt$(nav);
+  document.getElementById('navSub').textContent='DEGEN '+fmt$(db)+' + POLY '+fmt$(pn);
+  document.getElementById('totalPnl').innerHTML='<span style="color:'+clr(pnl)+'">'+fmt$(pnl)+'</span>';
+  document.getElementById('totalPnlSub').textContent=fmtPct(pct)+' since inception';
+  document.getElementById('totalPnlSub').style.color=clr(pnl);
+  document.getElementById('winRate').textContent=wr;
+  document.getElementById('winRate').style.color=closed.length&&(wins.length/closed.length)>=0.5?'#4ade80':'#f87171';
+  document.getElementById('winRateSub').textContent=wins.length+'W / '+(closed.length-wins.length)+'L of '+closed.length+' closed';
+}
+
+function renderTradeLog(){
+  const el=document.getElementById('tradeLogContent');
+  const dt=(Array.isArray(degenState?.trades)?degenState.trades:[]).map(t=>({...t,_book:'DEGEN'}));
+  const pt=(Array.isArray(polyState?.trades)?polyState.trades:[]).map(t=>({...t,_book:'POLY'}));
+  const all=[...dt,...pt].sort((a,b)=>new Date(b.timestamp??b.opened_at??b.created_at??0)-new Date(a.timestamp??a.opened_at??a.created_at??0));
+  document.getElementById('tradeLogMeta').textContent=all.length+' total';
+  if(!all.length){el.innerHTML='<div class="error-state"><p>NO TRADES RECORDED YET</p></div>';return;}
+  let html='<table><tr><th>BOOK</th><th>MARKET / PAIR</th><th>STATUS</th><th>ENTRY</th><th>SIZE</th><th>P&L</th><th>DATE</th></tr>';
+  all.slice(0,30).forEach(t=>{
+    const st=(t.status??'OPEN').toUpperCase();
+    const pc=st==='RESOLVED_WIN'?'green':st==='RESOLVED_LOSS'?'red':st==='WIN_EXPECTED'?'green':st==='OPEN'||st==='ACTIVE'?'blue':'gray';
+    const mkt=(t.market??t.symbol??t.pair??t.question??'--').substring(0,28);
+    const pnl=t.pnl??t.realized_pnl??t.unrealized_pnl??null;
+    const entry=t.entry_price??t.entry??null;
+    const ef=entry==null?'--':t._book==='POLY'?(entry*100).toFixed(1)+'c':fmt$(entry);
+    const dr=t.timestamp??t.opened_at??t.created_at??null;
+    const df=dr?new Date(dr).toISOString().substring(5,10):'--';
+    html+='<tr><td>'+pill(t._book,t._book==='DEGEN'?'yellow':'blue')+'</td><td style="color:#e8eaf0;font-size:10px">'+mkt+'</td><td>'+pill(st.length>12?st.substring(0,12):st,pc)+'</td><td>'+ef+'</td><td>'+fmt$(t.size??t.amount??null)+'</td><td style="color:'+(pnl==null?'#555':clr(pnl))+'">'+(pnl==null?'--':fmt$(pnl))+'</td><td style="color:#555">'+df+'</td></tr>';
+  });
+  html+='</table>';
+  if(all.length>30)html+='<div style="text-align:center;padding:8px;color:#555;font-size:9px">+'+(all.length-30)+' MORE TRADES</div>';
+  el.innerHTML=html;
+}
+
+if(pat){hidePatOverlay();loadAll();}else{showPatOverlay();}
+document.getElementById('patInput').addEventListener('keydown',e=>{if(e.key==='Enter')savePat();});
 </script>
 </body>
 </html>
