@@ -4,1077 +4,638 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DaveDeploys Command Center</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #0A0A0F;
-  --bg-card: #12121A;
-  --bg-card-hover: #1a1a28;
-  --bg-hud: rgba(12,12,20,0.85);
-  --text: #E0E0E0;
-  --text-dim: #888;
-  --text-bright: #fff;
-  --cyan: #00F0FF;
-  --purple: #A855F7;
-  --green: #22C55E;
-  --orange: #F97316;
-  --blue: #3B82F6;
-  --red: #EF4444;
-  --yellow: #EAB308;
-  --gold: #FFD700;
-  --diamond: #60A5FA;
-  --border: rgba(255,255,255,0.06);
-  --border-glow: rgba(0,240,255,0.15);
-  --radius: 10px;
-  --radius-sm: 6px;
-  --font: 'Inter', -apple-system, sans-serif;
-  --mono: 'JetBrains Mono', monospace;
-  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0a0a1a;--card:#111827;--text:#e5e7eb;--white:#ffffff;
+--trading:#00ff88;--intel:#a855f7;--ops:#f97316;--eng:#06b6d4;--comms:#eab308;
+--bronze:#cd7f32;--silver:#c0c0c0;--gold:#ffd700;--diamond:#b9f2ff;--legendary:#ff6b6b;
+--radius:12px;--transition:0.3s ease;
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-html, body { height:100%; overflow:hidden; }
-body {
-  font-family: var(--font);
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.5;
-}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.5;overflow-x:hidden;min-height:100vh}
+#particle-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.app-container{position:relative;z-index:1}
 
 /* ===== SCROLLBAR ===== */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
-::-webkit-scrollbar-thumb { background: rgba(0,240,255,0.2); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0,240,255,0.4); }
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:#0d0d20}
+::-webkit-scrollbar-thumb{background:#1e293b;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#334155}
 
-/* ===== ANIMATED BACKGROUND PARTICLES ===== */
-.particles { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; overflow:hidden; }
-.particle {
-  position: absolute;
-  width: 2px; height: 2px;
-  background: var(--cyan);
-  border-radius: 50%;
-  opacity: 0;
-  animation: floatUp linear infinite;
-}
-@keyframes floatUp {
-  0% { transform: translateY(100vh) scale(0); opacity: 0; }
-  10% { opacity: 0.6; }
-  90% { opacity: 0.3; }
-  100% { transform: translateY(-10vh) scale(1); opacity: 0; }
-}
+/* ===== HEADER HUD ===== */
+.hud{position:sticky;top:0;z-index:100;background:rgba(10,10,26,0.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.06);padding:12px 24px}
+.hud-inner{max-width:1600px;margin:0 auto;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.hud-title-group{display:flex;align-items:center;gap:14px;flex-shrink:0}
+.hud-title{font-size:1.3rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(90deg,#00ff88,#06b6d4,#a855f7,#eab308);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 40px rgba(0,255,136,0.3);animation:glowText 3s ease-in-out infinite alternate}
+@keyframes glowText{0%{filter:brightness(1)}100%{filter:brightness(1.3)}}
+.rank-badge{background:linear-gradient(135deg,#ffd700,#f59e0b);color:#0a0a1a;font-size:0.65rem;font-weight:800;padding:4px 10px;border-radius:20px;letter-spacing:1px;white-space:nowrap;animation:badgePulse 2s ease-in-out infinite}
+@keyframes badgePulse{0%,100%{box-shadow:0 0 8px rgba(255,215,0,0.4)}50%{box-shadow:0 0 20px rgba(255,215,0,0.8)}}
+.hud-stats{display:flex;gap:12px;flex:1;justify-content:flex-end;flex-wrap:wrap}
+.stat-card{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 16px;display:flex;align-items:center;gap:10px;min-width:150px;position:relative;overflow:hidden;transition:var(--transition);animation:statFadeIn 0.6s ease forwards;opacity:0}
+.stat-card:nth-child(1){animation-delay:0.1s}
+.stat-card:nth-child(2){animation-delay:0.2s}
+.stat-card:nth-child(3){animation-delay:0.3s}
+.stat-card:nth-child(4){animation-delay:0.4s}
+@keyframes statFadeIn{to{opacity:1;transform:translateY(0)}from{transform:translateY(10px)}}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent-color),transparent)}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,0.3)}
+.stat-icon{font-size:1.5rem;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(255,255,255,0.05)}
+.stat-info{display:flex;flex-direction:column}
+.stat-label{font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:#9ca3af}
+.stat-value{font-size:1.1rem;font-weight:700;color:var(--white)}
 
-/* ===== PULSE ANIMATIONS ===== */
-@keyframes pulse-green { 0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); } 50% { box-shadow: 0 0 8px 3px rgba(34,197,94,0.3); } }
-@keyframes pulse-yellow { 0%,100% { box-shadow: 0 0 0 0 rgba(234,179,8,0.5); } 50% { box-shadow: 0 0 8px 3px rgba(234,179,8,0.3); } }
-@keyframes pulse-red { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); } 50% { box-shadow: 0 0 8px 3px rgba(239,68,68,0.3); } }
-@keyframes xpFill { from { width: 0%; } }
-@keyframes countUp { from { opacity: 0.3; } to { opacity: 1; } }
-@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-@keyframes glowPulse { 0%,100% { filter: drop-shadow(0 0 3px var(--cyan)); } 50% { filter: drop-shadow(0 0 8px var(--cyan)); } }
-
-/* ===== HUD (Top Bar) ===== */
-.hud {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  height: 68px;
-  background: var(--bg-hud);
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center;
-  padding: 0 20px;
-  gap: 6px;
-}
-.hud-logo {
-  font-family: var(--mono);
-  font-weight: 800; font-size: 14px;
-  color: var(--cyan);
-  letter-spacing: 1px;
-  margin-right: 16px;
-  white-space: nowrap;
-  text-shadow: 0 0 10px rgba(0,240,255,0.3);
-}
-.hud-logo span { color: var(--text-dim); font-weight: 400; font-size: 11px; letter-spacing: 0; }
-.hud-stats { display: flex; gap: 4px; flex: 1; overflow-x: auto; }
-.hud-stat {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 6px 12px;
-  display: flex; flex-direction: column;
-  min-width: 120px;
-  cursor: pointer;
-  transition: var(--transition);
-}
-.hud-stat:hover { background: rgba(255,255,255,0.06); border-color: var(--border-glow); }
-.hud-stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); font-weight: 600; }
-.hud-stat-value { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--text-bright); }
-.hud-stat-value.green { color: var(--green); }
-.hud-stat-value.cyan { color: var(--cyan); }
-.hud-xp-bar {
-  width: 100%; height: 3px; background: rgba(255,255,255,0.1);
-  border-radius: 2px; margin-top: 3px; overflow: hidden;
-}
-.hud-xp-fill {
-  height: 100%; border-radius: 2px;
-  background: linear-gradient(90deg, var(--cyan), var(--purple));
-  transition: width 1.5s ease;
-  animation: xpFill 1.5s ease;
-}
-.hud-ring {
-  width: 20px; height: 20px; border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.1);
-  border-top-color: var(--green);
-  border-right-color: var(--green);
-  border-bottom-color: var(--green);
-  display: inline-block; vertical-align: middle; margin-right: 4px;
-}
-.hud-actions { display: flex; gap: 8px; margin-left: 8px; }
-.hud-btn {
-  background: rgba(0,240,255,0.1); border: 1px solid rgba(0,240,255,0.2);
-  color: var(--cyan); font-family: var(--mono); font-size: 11px; font-weight: 600;
-  padding: 6px 14px; border-radius: var(--radius-sm);
-  cursor: pointer; transition: var(--transition); white-space: nowrap;
-}
-.hud-btn:hover { background: rgba(0,240,255,0.2); border-color: var(--cyan); }
+/* ===== PROGRESS THERMOMETER ===== */
+.thermometer-section{max-width:1600px;margin:24px auto;padding:0 24px}
+.thermo-card{background:var(--card);border:1px solid rgba(255,255,255,0.06);border-radius:var(--radius);padding:24px 28px;position:relative;overflow:hidden}
+.thermo-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.thermo-title{font-size:1rem;font-weight:700;color:var(--white);letter-spacing:1px;text-transform:uppercase}
+.thermo-pct{font-size:0.85rem;font-weight:700;color:#00ff88}
+.thermo-bar-wrap{position:relative;height:28px;background:#1a1a2e;border-radius:14px;overflow:hidden}
+.thermo-bar-fill{height:100%;border-radius:14px;background:linear-gradient(90deg,#00ff88,#06b6d4,#a855f7);position:relative;transition:width 2s cubic-bezier(0.4,0,0.2,1);box-shadow:0 0 20px rgba(0,255,136,0.4)}
+.thermo-bar-fill::after{content:'';position:absolute;right:0;top:0;bottom:0;width:40px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3));animation:thermoShimmer 2s ease-in-out infinite}
+@keyframes thermoShimmer{0%,100%{opacity:0.3}50%{opacity:0.8}}
+.thermo-milestones{display:flex;justify-content:space-between;margin-top:10px;position:relative}
+.milestone{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}
+.milestone-dot{width:14px;height:14px;border-radius:50%;border:2px solid #334155;background:#1a1a2e;transition:var(--transition)}
+.milestone-dot.reached{background:var(--gold);border-color:var(--gold);box-shadow:0 0 10px rgba(255,215,0,0.6)}
+.milestone-dot.current{background:#00ff88;border-color:#00ff88;box-shadow:0 0 12px rgba(0,255,136,0.8);animation:currentMilestone 1.5s ease-in-out infinite}
+@keyframes currentMilestone{0%,100%{box-shadow:0 0 8px rgba(0,255,136,0.6)}50%{box-shadow:0 0 24px rgba(0,255,136,1)}}
+.milestone-label{font-size:0.6rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px}
+.milestone-label.reached{color:var(--gold)}
+.milestone-label.current{color:#00ff88}
 
 /* ===== MAIN LAYOUT ===== */
-.app-layout {
-  position: relative; z-index: 1;
-  display: flex; flex-direction: column;
-  height: 100vh; padding-top: 68px;
-}
-.main-area {
-  display: flex; flex: 1; overflow: hidden;
-}
-.content-area {
-  flex: 1; overflow-y: auto; padding: 16px;
-}
-.sidebar {
-  width: 260px; min-width: 260px;
-  border-left: 1px solid var(--border);
-  overflow-y: auto; padding: 16px;
-  background: rgba(0,0,0,0.2);
-}
+.main-content{max-width:1600px;margin:0 auto;padding:0 24px 24px}
+.content-grid{display:grid;grid-template-columns:1fr 340px;gap:24px}
+@media(max-width:1100px){.content-grid{grid-template-columns:1fr}}
+
+/* ===== SEARCH BAR ===== */
+.search-wrap{margin-bottom:20px;position:relative}
+.search-input{width:100%;background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 16px 12px 44px;color:var(--white);font-size:0.9rem;outline:none;transition:var(--transition)}
+.search-input:focus{border-color:rgba(0,255,136,0.4);box-shadow:0 0 0 3px rgba(0,255,136,0.1)}
+.search-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#6b7280;font-size:1rem}
 
 /* ===== DIVISION TABS ===== */
-.div-tabs {
-  display: flex; gap: 4px; margin-bottom: 16px;
-  overflow-x: auto; padding-bottom: 4px;
-}
-.div-tab {
-  padding: 7px 16px; border-radius: var(--radius-sm);
-  font-size: 12px; font-weight: 600; cursor: pointer;
-  border: 1px solid var(--border); background: rgba(255,255,255,0.02);
-  color: var(--text-dim); transition: var(--transition);
-  white-space: nowrap; display: flex; align-items: center; gap: 6px;
-}
-.div-tab:hover { background: rgba(255,255,255,0.05); }
-.div-tab.active { color: var(--text-bright); }
-.div-tab.active[data-div="all"] { border-color: var(--cyan); background: rgba(0,240,255,0.1); }
-.div-tab.active[data-div="alpha"] { border-color: var(--cyan); background: rgba(0,240,255,0.1); color: var(--cyan); }
-.div-tab.active[data-div="council"] { border-color: var(--purple); background: rgba(168,85,247,0.1); color: var(--purple); }
-.div-tab.active[data-div="engineering"] { border-color: var(--green); background: rgba(34,197,94,0.1); color: var(--green); }
-.div-tab.active[data-div="comms"] { border-color: var(--orange); background: rgba(249,115,22,0.1); color: var(--orange); }
-.div-tab.active[data-div="intel"] { border-color: var(--blue); background: rgba(59,130,246,0.1); color: var(--blue); }
-.div-count {
-  font-family: var(--mono); font-size: 10px;
-  background: rgba(255,255,255,0.1); padding: 1px 6px;
-  border-radius: 8px;
-}
+.div-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.div-tab{background:var(--card);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 16px;font-size:0.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:var(--transition);color:#9ca3af;position:relative;overflow:hidden}
+.div-tab:hover{color:var(--white);border-color:rgba(255,255,255,0.15)}
+.div-tab.active{color:var(--white);border-color:var(--tab-color);box-shadow:0 0 12px color-mix(in srgb,var(--tab-color) 30%,transparent)}
+.div-tab.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--tab-color)}
 
-/* ===== AGENT CARDS ===== */
-.agent-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 12px;
-}
-.agent-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 14px 12px 18px;
-  border-left: 4px solid var(--cyan);
-  transition: var(--transition);
-  animation: slideUp 0.4s ease backwards;
-  cursor: default;
-}
-.agent-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--border-glow);
-  background: var(--bg-card-hover);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
-}
-.agent-card[data-division="alpha"] { border-left-color: var(--cyan); }
-.agent-card[data-division="council"] { border-left-color: var(--purple); }
-.agent-card[data-division="engineering"] { border-left-color: var(--green); }
-.agent-card[data-division="comms"] { border-left-color: var(--orange); }
-.agent-card[data-division="intel"] { border-left-color: var(--blue); }
+/* ===== AGENT GRID ===== */
+.agent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+@media(max-width:768px){.agent-grid{grid-template-columns:1fr}}
+@media(min-width:1400px){.agent-grid{grid-template-columns:repeat(3,1fr)}}
 
-.agent-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
-.agent-name { font-weight: 700; font-size: 14px; color: var(--text-bright); display: flex; align-items: center; gap: 6px; }
-.agent-role { font-size: 11px; color: var(--text-dim); margin-bottom: 8px; }
+/* ===== AGENT CARD ===== */
+.agent-card{background:var(--card);border:1px solid rgba(255,255,255,0.06);border-radius:var(--radius);border-left:3px solid var(--division-color);padding:16px;cursor:pointer;transition:all 0.3s ease;position:relative;overflow:hidden}
+.agent-card:hover{transform:translateY(-4px);box-shadow:0 8px 30px rgba(0,0,0,0.4),0 0 20px color-mix(in srgb,var(--division-color) 15%,transparent);border-color:rgba(255,255,255,0.12)}
+.agent-card-header{display:flex;align-items:center;gap:12px}
+.agent-avatar{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;color:var(--bg);flex-shrink:0;background:var(--division-color);box-shadow:0 0 12px color-mix(in srgb,var(--division-color) 40%,transparent)}
+.agent-meta{flex:1;min-width:0}
+.agent-name-row{display:flex;align-items:center;gap:8px}
+.agent-name{font-weight:700;font-size:0.95rem;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agent-status{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.agent-status.active{background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,0.6);animation:statusPulse 2s ease-in-out infinite}
+.agent-status.disabled{background:#ef4444;box-shadow:0 0 8px rgba(239,68,68,0.4)}
+@keyframes statusPulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.agent-subtitle{font-size:0.7rem;color:#9ca3af;display:flex;align-items:center;gap:6px;margin-top:2px}
+.agent-class{background:rgba(255,255,255,0.06);padding:1px 6px;border-radius:4px;font-size:0.6rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.agent-level{display:flex;align-items:center;gap:4px;font-weight:700;font-size:0.8rem;color:var(--white);margin-left:auto;flex-shrink:0}
+.agent-level .star{color:var(--gold);font-size:0.7rem}
+.agent-bars{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.bar-row{display:flex;align-items:center;gap:8px}
+.bar-label{font-size:0.6rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;width:28px;color:#9ca3af}
+.bar-track{flex:1;height:6px;background:#1a1a2e;border-radius:3px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:3px;transition:width 1.5s cubic-bezier(0.4,0,0.2,1)}
+.bar-fill.xp{background:linear-gradient(90deg,var(--division-color),color-mix(in srgb,var(--division-color) 60%,white))}
+.bar-fill.hp{background:linear-gradient(90deg,#22c55e,#4ade80)}
+.bar-value{font-size:0.6rem;color:#6b7280;width:52px;text-align:right;font-variant-numeric:tabular-nums}
 
-/* Status dots */
-.status-dot {
-  width: 8px; height: 8px; border-radius: 50%; display: inline-block;
-}
-.status-dot.active { background: var(--green); animation: pulse-green 2s infinite; }
-.status-dot.warning { background: var(--yellow); animation: pulse-yellow 2s infinite; }
-.status-dot.error { background: var(--red); animation: pulse-red 2s infinite; }
-.status-dot.idle { background: #555; }
-
-/* Rank badges */
-.rank-badge {
-  font-size: 12px; display: inline-block;
-}
-.rank-bronze { color: #CD7F32; }
-.rank-silver { color: #C0C0C0; }
-.rank-gold { color: var(--gold); }
-.rank-diamond { color: var(--diamond); text-shadow: 0 0 6px rgba(96,165,250,0.5); }
-.rank-legendary { color: var(--purple); text-shadow: 0 0 6px rgba(168,85,247,0.5); }
-
-/* XP bars */
-.agent-level { font-family: var(--mono); font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
-.xp-bar {
-  width: 100%; height: 4px; background: rgba(255,255,255,0.06);
-  border-radius: 2px; overflow: hidden; margin-bottom: 8px;
-}
-.xp-fill {
-  height: 100%; border-radius: 2px;
-  transition: width 1.2s ease;
-}
-.agent-card[data-division="alpha"] .xp-fill { background: linear-gradient(90deg, #006880, var(--cyan)); }
-.agent-card[data-division="council"] .xp-fill { background: linear-gradient(90deg, #6b21a8, var(--purple)); }
-.agent-card[data-division="engineering"] .xp-fill { background: linear-gradient(90deg, #166534, var(--green)); }
-.agent-card[data-division="comms"] .xp-fill { background: linear-gradient(90deg, #9a3412, var(--orange)); }
-.agent-card[data-division="intel"] .xp-fill { background: linear-gradient(90deg, #1e40af, var(--blue)); }
-
-.agent-stats {
-  display: flex; gap: 12px; font-family: var(--mono);
-  font-size: 10px; color: var(--text-dim); margin-bottom: 10px;
-}
-.agent-stats span { display: flex; align-items: center; gap: 3px; }
-.agent-actions { display: flex; gap: 6px; }
-.agent-btn {
-  font-family: var(--mono); font-size: 10px; font-weight: 600;
-  padding: 4px 10px; border-radius: 4px;
-  border: 1px solid var(--border); background: rgba(255,255,255,0.03);
-  color: var(--text-dim); cursor: pointer; transition: var(--transition);
-}
-.agent-btn:hover { color: var(--cyan); border-color: rgba(0,240,255,0.3); background: rgba(0,240,255,0.05); }
-
-/* ===== THERMOMETER SIDEBAR ===== */
-.thermo-title {
-  font-family: var(--mono); font-weight: 700; font-size: 12px;
-  color: var(--cyan); text-transform: uppercase; letter-spacing: 1px;
-  margin-bottom: 16px; text-align: center;
-}
-.thermo-container {
-  position: relative; height: 420px;
-  display: flex; justify-content: flex-start;
-  padding-left: 20px;
-  margin-bottom: 16px;
-}
-.thermo-track {
-  width: 16px; height: 100%; background: rgba(255,255,255,0.04);
-  border-radius: 8px; position: relative; overflow: visible;
-}
-.thermo-fill {
-  position: absolute; bottom: 0; width: 100%;
-  background: linear-gradient(to top, var(--cyan), var(--green));
-  border-radius: 8px;
-  box-shadow: 0 0 15px rgba(0,240,255,0.3);
-  transition: height 2s ease;
-}
-.thermo-marker {
-  position: absolute; width: 10px; height: 10px;
-  border-radius: 50%; background: var(--cyan);
-  left: 50%; transform: translateX(-50%);
-  box-shadow: 0 0 10px var(--cyan);
-  animation: glowPulse 2s infinite;
-}
-.milestone {
-  position: absolute; right: -8px; transform: translateX(100%);
-  font-family: var(--mono); font-size: 9px; white-space: nowrap;
-  display: flex; align-items: center; gap: 4px;
-}
-.milestone.reached { color: var(--cyan); }
-.milestone.locked { color: #444; }
-.milestone .ms-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  border: 1px solid currentColor;
-}
-.milestone.reached .ms-dot { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
-.thermo-info {
-  text-align: center; font-family: var(--mono); font-size: 10px; color: var(--text-dim);
-  padding: 12px; background: var(--bg-card); border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-}
-.thermo-info strong { color: var(--cyan); }
-
-/* ===== BATTLE LOG ===== */
-.battle-log-container {
-  height: 240px; min-height: 50px;
-  border-top: 1px solid var(--border);
-  background: rgba(0,0,0,0.3);
-  display: flex; flex-direction: column;
-  transition: height var(--transition);
-}
-.battle-log-container.collapsed { height: 36px; }
-.blog-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 6px 16px; min-height: 36px;
-  background: rgba(255,255,255,0.02);
-  border-bottom: 1px solid var(--border);
-}
-.blog-title {
-  font-family: var(--mono); font-size: 11px; font-weight: 700;
-  color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;
-}
-.blog-filters { display: flex; gap: 4px; }
-.blog-filter {
-  font-family: var(--mono); font-size: 10px;
-  padding: 2px 8px; border-radius: 3px;
-  border: 1px solid transparent; background: transparent;
-  color: var(--text-dim); cursor: pointer; transition: var(--transition);
-}
-.blog-filter:hover { color: var(--text); }
-.blog-filter.active { color: var(--cyan); border-color: rgba(0,240,255,0.3); background: rgba(0,240,255,0.05); }
-.blog-toggle {
-  background: none; border: none; color: var(--text-dim);
-  cursor: pointer; font-size: 14px; padding: 2px 6px;
-  transition: var(--transition);
-}
-.blog-toggle:hover { color: var(--cyan); }
-.blog-entries {
-  flex: 1; overflow-y: auto; padding: 8px 16px;
-  font-family: var(--mono); font-size: 11px; line-height: 1.8;
-}
-.blog-entry { white-space: nowrap; animation: slideUp 0.3s ease; }
-.blog-time { color: #555; }
-.blog-tag { font-weight: 700; }
-.blog-tag.trade { color: var(--cyan); }
-.blog-tag.quest { color: var(--green); }
-.blog-tag.alert { color: var(--red); }
-.blog-tag.intel { color: var(--blue); }
-.blog-tag.comms { color: var(--orange); }
-.blog-tag.rank { color: var(--purple); }
-.blog-tag.system { color: #666; }
-.blog-tag.achievement { color: var(--gold); }
-.blog-xp { color: var(--cyan); margin-left: 8px; }
-.blog-msg { color: var(--text-dim); }
-
-/* ===== MODAL OVERLAY ===== */
-.modal-overlay {
-  position: fixed; top:0; left:0; right:0; bottom:0;
-  background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(4px);
-  z-index: 200; display: none;
-  justify-content: center; align-items: center;
-  padding: 40px;
-}
-.modal-overlay.open { display: flex; }
-.modal {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  max-width: 900px; width: 100%;
-  max-height: 80vh; overflow-y: auto;
-  padding: 24px;
-  animation: slideUp 0.3s ease;
-}
-.modal-header {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 20px;
-}
-.modal-title {
-  font-family: var(--mono); font-weight: 800; font-size: 18px;
-  color: var(--cyan); text-transform: uppercase; letter-spacing: 1px;
-}
-.modal-close {
-  background: none; border: none; color: var(--text-dim);
-  font-size: 24px; cursor: pointer; padding: 4px 8px;
-  transition: var(--transition);
-}
-.modal-close:hover { color: var(--red); }
+/* Agent expanded details */
+.agent-details{max-height:0;overflow:hidden;transition:max-height 0.4s ease,opacity 0.3s ease;opacity:0}
+.agent-card.expanded .agent-details{max-height:400px;opacity:1;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06)}
+.agent-desc{font-size:0.8rem;color:#9ca3af;margin-bottom:10px;line-height:1.6}
+.agent-abilities{display:flex;flex-wrap:wrap;gap:6px}
+.ability-tag{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:3px 8px;font-size:0.65rem;font-weight:600;color:var(--division-color);letter-spacing:0.3px}
 
 /* ===== QUEST BOARD ===== */
-.quest-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.quest-card {
-  background: rgba(255,255,255,0.02); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 12px;
-  transition: var(--transition);
-}
-.quest-card:hover { border-color: var(--border-glow); background: rgba(255,255,255,0.04); }
-.quest-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-.quest-name { font-weight: 700; font-size: 13px; color: var(--text-bright); }
-.quest-freq {
-  font-family: var(--mono); font-size: 9px; padding: 2px 6px;
-  border-radius: 3px; font-weight: 600;
-}
-.quest-freq.daily { background: rgba(0,240,255,0.1); color: var(--cyan); }
-.quest-freq.weekly { background: rgba(168,85,247,0.1); color: var(--purple); }
-.quest-freq.hourly { background: rgba(34,197,94,0.1); color: var(--green); }
-.quest-freq.monthly { background: rgba(249,115,22,0.1); color: var(--orange); }
-.quest-meta { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-bottom: 8px; }
-.quest-footer { display: flex; justify-content: space-between; align-items: center; }
-.quest-status {
-  font-family: var(--mono); font-size: 10px; font-weight: 600;
-  padding: 2px 8px; border-radius: 3px;
-}
-.quest-status.completed { background: rgba(34,197,94,0.15); color: var(--green); }
-.quest-status.available { background: rgba(0,240,255,0.1); color: var(--cyan); }
-.quest-status.running { background: rgba(234,179,8,0.15); color: var(--yellow); }
-.quest-run-btn {
-  font-family: var(--mono); font-size: 10px; font-weight: 600;
-  padding: 3px 10px; border-radius: 4px;
-  border: 1px solid rgba(0,240,255,0.2); background: rgba(0,240,255,0.05);
-  color: var(--cyan); cursor: pointer; transition: var(--transition);
-}
-.quest-run-btn:hover { background: rgba(0,240,255,0.15); border-color: var(--cyan); }
+.sidebar-section{display:flex;flex-direction:column;gap:20px}
+.quest-board,.leaderboard-panel,.achievements-panel,.battle-log-panel{background:var(--card);border:1px solid rgba(255,255,255,0.06);border-radius:var(--radius);overflow:hidden}
+.panel-header{padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px}
+.panel-header h3{font-size:0.8rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--white)}
+.panel-header .panel-icon{font-size:1rem}
+.quest-list{padding:8px;display:flex;flex-direction:column;gap:6px;max-height:450px;overflow-y:auto}
+.quest-item{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;transition:var(--transition)}
+.quest-item:hover{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.08)}
+.quest-icon{font-size:1.1rem;flex-shrink:0}
+.quest-info{flex:1;min-width:0}
+.quest-name{font-size:0.78rem;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.quest-meta{display:flex;align-items:center;gap:6px;margin-top:2px}
+.quest-type{font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:1px 6px;border-radius:3px;background:rgba(168,85,247,0.15);color:#a855f7}
+.quest-type.recurring{background:rgba(6,182,212,0.15);color:#06b6d4}
+.quest-xp{font-size:0.65rem;font-weight:700;color:var(--gold);white-space:nowrap}
+.quest-status{display:flex;align-items:center;gap:4px;font-size:0.6rem;font-weight:700;color:#22c55e;text-transform:uppercase;letter-spacing:0.5px;flex-shrink:0}
+.quest-status .pulse-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:statusPulse 1.5s ease-in-out infinite}
 
-/* ===== COMMANDER PROFILE ===== */
-.profile-content { text-align: center; }
-.profile-rank-icon { font-size: 64px; margin: 12px 0; }
-.profile-name { font-size: 22px; font-weight: 800; color: var(--text-bright); }
-.profile-title { font-family: var(--mono); font-size: 14px; color: var(--gold); margin: 4px 0 16px; }
-.profile-xp-section { margin-bottom: 24px; }
-.profile-xp-text { font-family: var(--mono); font-size: 12px; color: var(--text-dim); margin-bottom: 6px; }
-.profile-xp-bar { width: 80%; height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; margin: 0 auto; overflow: hidden; }
-.profile-xp-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--purple)); border-radius: 4px; }
-.achievements-title { font-family: var(--mono); font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
-.achievements-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-.achievement-card {
-  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 12px; text-align: center;
-  transition: var(--transition);
-}
-.achievement-card.unlocked { border-color: rgba(255,215,0,0.3); }
-.achievement-card.locked { opacity: 0.4; }
-.achievement-icon { font-size: 28px; margin-bottom: 4px; }
-.achievement-name { font-size: 11px; font-weight: 700; color: var(--text-bright); margin-bottom: 2px; }
-.achievement-desc { font-size: 9px; color: var(--text-dim); }
+/* ===== BATTLE LOG ===== */
+.battle-log-panel{}
+.battle-log{padding:8px 12px;max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;font-family:'Courier New',monospace}
+.log-entry{font-size:0.7rem;padding:4px 8px;border-radius:4px;background:rgba(255,255,255,0.02);border-left:2px solid var(--log-color);animation:logFadeIn 0.3s ease}
+@keyframes logFadeIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.log-time{color:#6b7280;margin-right:6px}
+.log-agent{font-weight:700;color:var(--log-color);margin-right:4px}
+.log-action{color:#9ca3af}
 
-/* ===== PORTFOLIO PANEL ===== */
-.portfolio-panel {
-  display: none; padding: 16px;
-  background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--border);
-}
-.portfolio-panel.open { display: block; }
-.portfolio-header {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 12px;
-}
-.portfolio-total { font-family: var(--mono); }
-.portfolio-total .nav { font-size: 20px; font-weight: 800; color: var(--text-bright); }
-.portfolio-total .pnl { font-size: 14px; font-weight: 600; color: var(--green); margin-left: 12px; }
-.portfolio-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-.port-card {
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 14px;
-}
-.port-card-name { font-weight: 700; font-size: 14px; color: var(--cyan); margin-bottom: 2px; }
-.port-card-strat { font-size: 10px; color: var(--text-dim); margin-bottom: 10px; }
-.port-row { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; margin-bottom: 4px; }
-.port-label { color: var(--text-dim); }
-.port-value { color: var(--text); font-weight: 600; }
-.port-value.green { color: var(--green); }
-.port-value.red { color: var(--red); }
+/* ===== LEADERBOARD ===== */
+.lb-list{padding:8px 12px;display:flex;flex-direction:column;gap:4px}
+.lb-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;transition:var(--transition)}
+.lb-item:hover{background:rgba(255,255,255,0.03)}
+.lb-rank{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;flex-shrink:0}
+.lb-rank.gold{background:linear-gradient(135deg,#ffd700,#f59e0b);color:#0a0a1a}
+.lb-rank.silver{background:linear-gradient(135deg,#c0c0c0,#94a3b8);color:#0a0a1a}
+.lb-rank.bronze{background:linear-gradient(135deg,#cd7f32,#b45309);color:#0a0a1a}
+.lb-rank.normal{background:rgba(255,255,255,0.06);color:#9ca3af}
+.lb-avatar{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem;color:var(--bg);flex-shrink:0}
+.lb-name{flex:1;font-size:0.78rem;font-weight:600;color:var(--white);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-div-badge{font-size:0.55rem;font-weight:700;padding:1px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:0.3px;flex-shrink:0}
+.lb-level{font-size:0.7rem;font-weight:700;color:var(--gold);flex-shrink:0}
+.lb-xp-bar{width:60px;height:4px;background:#1a1a2e;border-radius:2px;overflow:hidden;flex-shrink:0}
+.lb-xp-fill{height:100%;border-radius:2px}
 
-/* ===== COMMAND PALETTE ===== */
-.cmd-overlay {
-  position: fixed; top:0; left:0; right:0; bottom:0;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(6px);
-  z-index: 300; display: none;
-  justify-content: center; padding-top: 120px;
-}
-.cmd-overlay.open { display: flex; }
-.cmd-box {
-  width: 520px; max-height: 400px;
-  background: var(--bg-card);
-  border: 1px solid var(--cyan);
-  border-radius: var(--radius);
-  overflow: hidden;
-  animation: slideUp 0.2s ease;
-  box-shadow: 0 0 40px rgba(0,240,255,0.1);
-}
-.cmd-input {
-  width: 100%; padding: 14px 18px;
-  background: transparent; border: none; border-bottom: 1px solid var(--border);
-  font-family: var(--mono); font-size: 14px;
-  color: var(--text-bright); outline: none;
-}
-.cmd-input::placeholder { color: #555; }
-.cmd-list { padding: 6px; max-height: 300px; overflow-y: auto; }
-.cmd-item {
-  padding: 8px 12px; border-radius: var(--radius-sm);
-  font-family: var(--mono); font-size: 12px;
-  color: var(--text-dim); cursor: pointer;
-  transition: var(--transition);
-}
-.cmd-item:hover, .cmd-item.selected { background: rgba(0,240,255,0.1); color: var(--cyan); }
-.cmd-prefix { color: var(--cyan); margin-right: 6px; }
+/* ===== ACHIEVEMENTS ===== */
+.achievements-section{max-width:1600px;margin:24px auto;padding:0 24px}
+.achievements-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;padding:16px}
+.achievement{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;text-align:center;transition:var(--transition);position:relative;overflow:hidden}
+.achievement:hover{transform:translateY(-2px)}
+.achievement.unlocked{border-color:rgba(255,215,0,0.3);background:rgba(255,215,0,0.03)}
+.achievement.unlocked:hover{box-shadow:0 0 20px rgba(255,215,0,0.15)}
+.achievement.locked{opacity:0.4;filter:grayscale(0.5)}
+.achievement.legendary{border-color:rgba(255,107,107,0.3);animation:legendaryGlow 3s ease-in-out infinite}
+@keyframes legendaryGlow{0%,100%{box-shadow:0 0 10px rgba(255,107,107,0.1)}50%{box-shadow:0 0 25px rgba(255,107,107,0.3)}}
+.ach-icon{font-size:1.8rem;margin-bottom:6px;display:block}
+.ach-name{font-size:0.72rem;font-weight:700;color:var(--white);margin-bottom:2px}
+.ach-desc{font-size:0.6rem;color:#6b7280}
+.ach-lock{position:absolute;top:8px;right:8px;font-size:0.7rem;color:#6b7280}
 
-/* ===== TOAST ===== */
-.toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 400; display: flex; flex-direction: column; gap: 8px; }
-.toast {
-  background: var(--bg-card); border: 1px solid var(--cyan);
-  border-radius: var(--radius-sm); padding: 10px 16px;
-  font-family: var(--mono); font-size: 12px; color: var(--cyan);
-  animation: slideUp 0.3s ease;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+/* ===== FOOTER ===== */
+.footer{max-width:1600px;margin:0 auto;padding:20px 24px 30px;text-align:center;border-top:1px solid rgba(255,255,255,0.06)}
+.footer-text{font-size:0.7rem;color:#6b7280;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:8px}
+.footer-pulse{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:statusPulse 2s ease-in-out infinite;display:inline-block}
+
+/* ===== SECTION HEADERS ===== */
+.section-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;margin-top:24px}
+.section-header h2{font-size:0.9rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--white)}
+.section-header .section-icon{font-size:1.1rem}
+.section-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.1),transparent)}
+
+/* ===== MOBILE ===== */
+@media(max-width:640px){
+.hud{padding:10px 14px}
+.hud-inner{gap:12px}
+.hud-title{font-size:0.95rem}
+.hud-stats{gap:8px}
+.stat-card{min-width:130px;padding:8px 12px}
+.stat-card .stat-value{font-size:0.95rem}
+.content-grid{grid-template-columns:1fr}
+.thermo-card{padding:16px}
+.achievements-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
 }
 </style>
 </head>
 <body>
+<canvas id="particle-canvas"></canvas>
+<div class="app-container">
 
-<!-- Particles -->
-<div class="particles" id="particles"></div>
+<!-- ===== HEADER HUD ===== -->
+<header class="hud">
+<div class="hud-inner">
+<div class="hud-title-group">
+<h1 class="hud-title">DAVEDEPLOYS COMMAND CENTER</h1>
+<span class="rank-badge">&#9733; COMMANDER LVL 12</span>
+</div>
+<div class="hud-stats">
+<div class="stat-card" style="--accent-color:#00ff88">
+<div class="stat-icon">&#128176;</div>
+<div class="stat-info"><span class="stat-label">Total Revenue</span><span class="stat-value">$2,847</span></div>
+</div>
+<div class="stat-card" style="--accent-color:#a855f7">
+<div class="stat-icon">&#129302;</div>
+<div class="stat-info"><span class="stat-label">Active Agents</span><span class="stat-value">32</span></div>
+</div>
+<div class="stat-card" style="--accent-color:#f97316">
+<div class="stat-icon">&#127919;</div>
+<div class="stat-info"><span class="stat-label">Missions Running</span><span class="stat-value">10</span></div>
+</div>
+<div class="stat-card" style="--accent-color:#eab308">
+<div class="stat-icon">&#9889;</div>
+<div class="stat-info"><span class="stat-label">Army XP</span><span class="stat-value">48,750</span></div>
+</div>
+</div>
+</div>
+</header>
 
-<!-- HUD -->
-<div class="hud">
-  <div class="hud-logo">COMMAND CENTER <span>v1.0</span></div>
-  <div class="hud-stats">
-    <div class="hud-stat" onclick="togglePortfolio()">
-      <div class="hud-stat-label">Revenue</div>
-      <div class="hud-stat-value green" data-count="2847">$2,847</div>
-    </div>
-    <div class="hud-stat">
-      <div class="hud-stat-label">Agents</div>
-      <div class="hud-stat-value"><span class="hud-ring"></span>28/32</div>
-    </div>
-    <div class="hud-stat">
-      <div class="hud-stat-label">Missions</div>
-      <div class="hud-stat-value">7/12</div>
-      <div class="hud-xp-bar"><div class="hud-xp-fill" style="width:58%"></div></div>
-    </div>
-    <div class="hud-stat" onclick="openProfile()">
-      <div class="hud-stat-label">Commander</div>
-      <div class="hud-stat-value cyan">Lv.14 Captain</div>
-      <div class="hud-xp-bar"><div class="hud-xp-fill" style="width:89%"></div></div>
-    </div>
-    <div class="hud-stat" onclick="togglePortfolio()">
-      <div class="hud-stat-label">Portfolio 24h</div>
-      <div class="hud-stat-value green">+$142.50</div>
-    </div>
-    <div class="hud-stat">
-      <div class="hud-stat-label">$1B Progress</div>
-      <div class="hud-stat-value" style="font-size:11px">0.00028%</div>
-    </div>
-    <div class="hud-stat">
-      <div class="hud-stat-label">Uptime</div>
-      <div class="hud-stat-value green">99.2%</div>
-    </div>
-  </div>
-  <div class="hud-actions">
-    <button class="hud-btn" onclick="openQuests()">Quests</button>
-    <button class="hud-btn" onclick="openCmd()">Cmd+K</button>
-  </div>
+<!-- ===== $1B PROGRESS THERMOMETER ===== -->
+<section class="thermometer-section">
+<div class="thermo-card">
+<div class="thermo-header">
+<span class="thermo-title">&#127942; Mission: $1,000,000,000</span>
+<span class="thermo-pct" id="thermo-pct">0.00028%</span>
+</div>
+<div class="thermo-bar-wrap">
+<div class="thermo-bar-fill" id="thermo-fill" style="width:0%"></div>
+</div>
+<div class="thermo-milestones">
+<div class="milestone"><div class="milestone-dot reached"></div><span class="milestone-label reached">$0</span></div>
+<div class="milestone"><div class="milestone-dot reached"></div><span class="milestone-label reached">$1K</span></div>
+<div class="milestone"><div class="milestone-dot current"></div><span class="milestone-label current">$10K</span></div>
+<div class="milestone"><div class="milestone-dot"></div><span class="milestone-label">$100K</span></div>
+<div class="milestone"><div class="milestone-dot"></div><span class="milestone-label">$1M</span></div>
+<div class="milestone"><div class="milestone-dot"></div><span class="milestone-label">$10M</span></div>
+<div class="milestone"><div class="milestone-dot"></div><span class="milestone-label">$100M</span></div>
+<div class="milestone"><div class="milestone-dot"></div><span class="milestone-label">$1B</span></div>
+</div>
+</div>
+</section>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="main-content">
+<div class="content-grid">
+<div class="left-content">
+
+<!-- SEARCH -->
+<div class="search-wrap">
+<span class="search-icon">&#128269;</span>
+<input type="text" class="search-input" id="agent-search" placeholder="Search agents by name, class, or slug...">
 </div>
 
-<!-- App Layout -->
-<div class="app-layout">
-
-  <!-- Portfolio Panel (toggleable) -->
-  <div class="portfolio-panel" id="portfolioPanel">
-    <div class="portfolio-header">
-      <div class="portfolio-total">
-        <span class="nav">$2,847.32</span>
-        <span class="pnl">+$142.50 (+5.3%)</span>
-      </div>
-      <button class="hud-btn" onclick="togglePortfolio()" style="font-size:10px">Close</button>
-    </div>
-    <div class="portfolio-cards">
-      <div class="port-card">
-        <div class="port-card-name">Degen</div>
-        <div class="port-card-strat">Multi-TF EMA + RSI Scalper</div>
-        <div class="port-row"><span class="port-label">Capital</span><span class="port-value">$1,000</span></div>
-        <div class="port-row"><span class="port-label">NAV</span><span class="port-value">$1,142</span></div>
-        <div class="port-row"><span class="port-label">24h PnL</span><span class="port-value green">+$52.30 (+4.8%)</span></div>
-        <div class="port-row"><span class="port-label">Win Rate</span><span class="port-value">62%</span></div>
-        <div class="port-row"><span class="port-label">Open</span><span class="port-value">2 positions</span></div>
-        <div class="port-row"><span class="port-label">Max DD</span><span class="port-value red">-8.2%</span></div>
-      </div>
-      <div class="port-card">
-        <div class="port-card-name">Poly</div>
-        <div class="port-card-strat">Catalyst Momentum Trading</div>
-        <div class="port-row"><span class="port-label">Capital</span><span class="port-value">$1,000</span></div>
-        <div class="port-row"><span class="port-label">NAV</span><span class="port-value">$1,089</span></div>
-        <div class="port-row"><span class="port-label">24h PnL</span><span class="port-value green">+$34.20 (+3.2%)</span></div>
-        <div class="port-row"><span class="port-label">Win Rate</span><span class="port-value">71%</span></div>
-        <div class="port-row"><span class="port-label">Open</span><span class="port-value">5 markets</span></div>
-        <div class="port-row"><span class="port-label">Max DD</span><span class="port-value red">-4.1%</span></div>
-      </div>
-      <div class="port-card">
-        <div class="port-card-name">Pumpy</div>
-        <div class="port-card-strat">Twitter Sentiment Deployer</div>
-        <div class="port-row"><span class="port-label">Capital</span><span class="port-value">$500</span></div>
-        <div class="port-row"><span class="port-label">NAV</span><span class="port-value">$616</span></div>
-        <div class="port-row"><span class="port-label">24h PnL</span><span class="port-value green">+$56.00 (+10.0%)</span></div>
-        <div class="port-row"><span class="port-label">Win Rate</span><span class="port-value">45%</span></div>
-        <div class="port-row"><span class="port-label">Open</span><span class="port-value">3 tokens</span></div>
-        <div class="port-row"><span class="port-label">Max DD</span><span class="port-value red">-22.5%</span></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="main-area">
-    <!-- Content Area -->
-    <div class="content-area">
-      <!-- Division Tabs -->
-      <div class="div-tabs">
-        <div class="div-tab active" data-div="all" onclick="filterDiv('all')">All <span class="div-count">32</span></div>
-        <div class="div-tab" data-div="alpha" onclick="filterDiv('alpha')">&#9678; Alpha Strike <span class="div-count">6</span></div>
-        <div class="div-tab" data-div="council" onclick="filterDiv('council')">&#9813; War Council <span class="div-count">6</span></div>
-        <div class="div-tab" data-div="engineering" onclick="filterDiv('engineering')">&#9881; Engineering <span class="div-count">7</span></div>
-        <div class="div-tab" data-div="comms" onclick="filterDiv('comms')">&#9993; Comms <span class="div-count">6</span></div>
-        <div class="div-tab" data-div="intel" onclick="filterDiv('intel')">&#9737; Intel <span class="div-count">7</span></div>
-      </div>
-
-      <!-- Agent Grid -->
-      <div class="agent-grid" id="agentGrid"></div>
-    </div>
-
-    <!-- Thermometer Sidebar -->
-    <div class="sidebar">
-      <div class="thermo-title">$1B Mission</div>
-      <div class="thermo-container">
-        <div class="thermo-track">
-          <div class="thermo-fill" id="thermoFill" style="height:0%"></div>
-          <div class="thermo-marker" id="thermoMarker" style="bottom:0%"></div>
-        </div>
-        <div id="milestones"></div>
-      </div>
-      <div class="thermo-info">
-        <div>Current: <strong>$2,847</strong></div>
-        <div style="margin-top:4px">Daily rate: <strong>$47/day</strong></div>
-        <div style="margin-top:4px">Next milestone: <strong>~152 days</strong></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Battle Log -->
-  <div class="battle-log-container" id="battleLog">
-    <div class="blog-header">
-      <div class="blog-title">Battle Log</div>
-      <div class="blog-filters">
-        <button class="blog-filter active" data-filter="all" onclick="filterLog('all')">All</button>
-        <button class="blog-filter" data-filter="trade" onclick="filterLog('trade')">Trades</button>
-        <button class="blog-filter" data-filter="quest" onclick="filterLog('quest')">Quests</button>
-        <button class="blog-filter" data-filter="alert" onclick="filterLog('alert')">Alerts</button>
-        <button class="blog-filter" data-filter="intel" onclick="filterLog('intel')">Intel</button>
-        <button class="blog-filter" data-filter="comms" onclick="filterLog('comms')">Comms</button>
-      </div>
-      <button class="blog-toggle" id="blogToggle" onclick="toggleBlog()">&#9660;</button>
-    </div>
-    <div class="blog-entries" id="blogEntries"></div>
-  </div>
+<!-- DIVISION TABS -->
+<div class="div-tabs" id="div-tabs">
+<button class="div-tab active" style="--tab-color:#e5e7eb" data-div="all">&#9733; All Agents</button>
+<button class="div-tab" style="--tab-color:#00ff88" data-div="trading">&#128200; Trading Floor</button>
+<button class="div-tab" style="--tab-color:#a855f7" data-div="intel">&#128065; Intelligence</button>
+<button class="div-tab" style="--tab-color:#f97316" data-div="ops">&#9881; Operations</button>
+<button class="div-tab" style="--tab-color:#06b6d4" data-div="eng">&#128187; Engineering</button>
+<button class="div-tab" style="--tab-color:#eab308" data-div="comms">&#128225; Communications</button>
 </div>
 
-<!-- Quest Board Modal -->
-<div class="modal-overlay" id="questModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Quest Board</div>
-      <button class="modal-close" onclick="closeQuests()">&times;</button>
-    </div>
-    <div class="quest-grid" id="questGrid"></div>
-  </div>
+<!-- AGENT GRID -->
+<div class="agent-grid" id="agent-grid"></div>
+
+<!-- LEADERBOARD -->
+<div class="section-header" style="margin-top:36px">
+<span class="section-icon">&#127942;</span>
+<h2>Leaderboard - Top 10</h2>
+<div class="section-line"></div>
+</div>
+<div class="leaderboard-panel" id="leaderboard"></div>
+
+<!-- ACHIEVEMENTS -->
+<div class="section-header">
+<span class="section-icon">&#127941;</span>
+<h2>Achievements</h2>
+<div class="section-line"></div>
+</div>
+<div class="achievements-panel">
+<div class="achievements-grid" id="achievements-grid"></div>
 </div>
 
-<!-- Commander Profile Modal -->
-<div class="modal-overlay" id="profileModal">
-  <div class="modal" style="max-width:560px">
-    <div class="modal-header">
-      <div class="modal-title">Commander Profile</div>
-      <button class="modal-close" onclick="closeProfile()">&times;</button>
-    </div>
-    <div class="profile-content">
-      <div class="profile-rank-icon rank-gold">&#9733;</div>
-      <div class="profile-name">dave deploys</div>
-      <div class="profile-title">Captain &mdash; Level 14</div>
-      <div class="profile-xp-section">
-        <div class="profile-xp-text">5,200 / 5,809 XP (609 to next level)</div>
-        <div class="profile-xp-bar"><div class="profile-xp-fill" style="width:89%"></div></div>
-      </div>
-      <div class="achievements-title">Achievements (5/6 Unlocked)</div>
-      <div class="achievements-grid" id="achieveGrid"></div>
-    </div>
-  </div>
+</div><!-- end left-content -->
+
+<!-- ===== RIGHT SIDEBAR ===== -->
+<div class="sidebar-section">
+
+<!-- QUEST BOARD -->
+<div class="quest-board">
+<div class="panel-header">
+<span class="panel-icon">&#128220;</span>
+<h3>Quest Board</h3>
+</div>
+<div class="quest-list" id="quest-list"></div>
 </div>
 
-<!-- Command Palette -->
-<div class="cmd-overlay" id="cmdPalette">
-  <div class="cmd-box">
-    <input class="cmd-input" id="cmdInput" placeholder="Type a command..." autocomplete="off" />
-    <div class="cmd-list" id="cmdList"></div>
-  </div>
+<!-- BATTLE LOG -->
+<div class="battle-log-panel">
+<div class="panel-header">
+<span class="panel-icon">&#9876;</span>
+<h3>Battle Log</h3>
+</div>
+<div class="battle-log" id="battle-log"></div>
 </div>
 
-<!-- Toast Container -->
-<div class="toast-container" id="toasts"></div>
+</div><!-- end sidebar -->
+</div><!-- end content-grid -->
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+<div class="footer-text">
+<span class="footer-pulse"></span>
+DAVEDEPLOYS COMMAND CENTER v1.0 &nbsp;|&nbsp; Mission: $1,000,000,000 &nbsp;|&nbsp; Status: OPERATIONAL
+</div>
+</footer>
+
+</div><!-- end app-container -->
 
 <script>
-// ===== AGENT DATA (ALL 32) =====
-const agents = [
-  // Alpha Strike (Cyan)
-  { name:'Degen', role:'Crypto Perps Trader', division:'alpha', level:12, xp:2450, maxXp:3000, rank:'gold', status:'active', tasks:48, success:94, lastRun:'3m ago' },
-  { name:'Poly', role:'Prediction Markets', division:'alpha', level:10, xp:1800, maxXp:2200, rank:'silver', status:'active', tasks:32, success:91, lastRun:'5m ago' },
-  { name:'Pumpy', role:'Meme Coin Deployer', division:'alpha', level:6, xp:800, maxXp:1200, rank:'bronze', status:'warning', tasks:12, success:78, lastRun:'2h ago' },
-  { name:'Quant PM', role:'Portfolio Manager', division:'alpha', level:14, xp:3200, maxXp:3800, rank:'gold', status:'active', tasks:24, success:96, lastRun:'15m ago' },
-  { name:'Revenue Monitor', role:'Revenue Tracking', division:'alpha', level:8, xp:1400, maxXp:1800, rank:'silver', status:'active', tasks:18, success:99, lastRun:'10m ago' },
-  { name:'Investor Brief', role:'Investor Updates', division:'alpha', level:5, xp:600, maxXp:1000, rank:'bronze', status:'idle', tasks:4, success:100, lastRun:'3d ago' },
-  // War Council (Purple)
-  { name:'Strategy', role:'Strategic Advisor', division:'council', level:11, xp:2100, maxXp:2600, rank:'silver', status:'active', tasks:28, success:93, lastRun:'20m ago' },
-  { name:'Finance', role:'Financial Advisor', division:'council', level:9, xp:1600, maxXp:2000, rank:'silver', status:'active', tasks:22, success:95, lastRun:'30m ago' },
-  { name:'Legal', role:'Legal Compliance', division:'council', level:7, xp:1100, maxXp:1500, rank:'silver', status:'active', tasks:16, success:97, lastRun:'1h ago' },
-  { name:'Marketing', role:'Marketing Advisor', division:'council', level:8, xp:1350, maxXp:1800, rank:'silver', status:'active', tasks:20, success:90, lastRun:'45m ago' },
-  { name:'Sales', role:'Sales Coach', division:'council', level:6, xp:900, maxXp:1200, rank:'bronze', status:'idle', tasks:8, success:88, lastRun:'2d ago' },
-  { name:'Operations', role:'Ops Advisor', division:'council', level:10, xp:1900, maxXp:2200, rank:'silver', status:'active', tasks:26, success:94, lastRun:'25m ago' },
-  // Engineering Corps (Green)
-  { name:'SWE Intern', role:'Full-Stack Engineer', division:'engineering', level:15, xp:4200, maxXp:4800, rank:'gold', status:'active', tasks:56, success:92, lastRun:'1m ago' },
-  { name:'GitHub RM', role:'Repo Management', division:'engineering', level:9, xp:1550, maxXp:2000, rank:'silver', status:'active', tasks:34, success:96, lastRun:'8m ago' },
-  { name:'Product Tracker', role:'Dev Progress', division:'engineering', level:7, xp:1050, maxXp:1500, rank:'silver', status:'active', tasks:22, success:94, lastRun:'12m ago' },
-  { name:'UX Intern', role:'UX/Product Design', division:'engineering', level:8, xp:1300, maxXp:1800, rank:'silver', status:'active', tasks:18, success:91, lastRun:'35m ago' },
-  { name:'Code Agent', role:'Code Execution', division:'engineering', level:11, xp:2200, maxXp:2600, rank:'silver', status:'active', tasks:42, success:97, lastRun:'2m ago' },
-  { name:'Web Agent', role:'Web Scraping', division:'engineering', level:7, xp:1000, maxXp:1500, rank:'silver', status:'active', tasks:28, success:93, lastRun:'7m ago' },
-  { name:'Media Agent', role:'Media Processing', division:'engineering', level:5, xp:700, maxXp:1000, rank:'bronze', status:'idle', tasks:10, success:95, lastRun:'1d ago' },
-  // Comms Battalion (Orange)
-  { name:'Slack CM', role:'Slack Management', division:'comms', level:10, xp:1950, maxXp:2200, rank:'silver', status:'active', tasks:38, success:96, lastRun:'4m ago' },
-  { name:'Discord CM', role:'Discord Management', division:'comms', level:10, xp:1900, maxXp:2200, rank:'silver', status:'active', tasks:36, success:95, lastRun:'6m ago' },
-  { name:'Gmail IM', role:'Email Management', division:'comms', level:8, xp:1400, maxXp:1800, rank:'silver', status:'active', tasks:24, success:94, lastRun:'15m ago' },
-  { name:'X', role:'Twitter Engagement', division:'comms', level:9, xp:1700, maxXp:2000, rank:'silver', status:'active', tasks:30, success:89, lastRun:'20m ago' },
-  { name:'Inbox Agent', role:'Email Ops', division:'comms', level:6, xp:850, maxXp:1200, rank:'bronze', status:'active', tasks:14, success:92, lastRun:'40m ago' },
-  { name:'Outbound QA', role:'Email Quality Gate', division:'comms', level:7, xp:1100, maxXp:1500, rank:'silver', status:'active', tasks:20, success:98, lastRun:'1h ago' },
-  // Intel Division (Blue)
-  { name:'CEO', role:'Operating CEO', division:'intel', level:16, xp:4800, maxXp:5400, rank:'diamond', status:'active', tasks:62, success:97, lastRun:'5m ago' },
-  { name:'Admin Boy', role:'Systems Admin', division:'intel', level:13, xp:3000, maxXp:3500, rank:'gold', status:'active', tasks:44, success:95, lastRun:'3m ago' },
-  { name:'Pain Scout', role:'Customer Research', division:'intel', level:7, xp:1050, maxXp:1500, rank:'silver', status:'active', tasks:16, success:90, lastRun:'2h ago' },
-  { name:'Metrics Dash', role:'Metrics Compilation', division:'intel', level:8, xp:1350, maxXp:1800, rank:'silver', status:'active', tasks:20, success:93, lastRun:'30m ago' },
-  { name:'Notion WM', role:'Notion Management', division:'intel', level:6, xp:900, maxXp:1200, rank:'bronze', status:'active', tasks:14, success:91, lastRun:'45m ago' },
-  { name:'Agent Creator', role:'Agent Creation', division:'intel', level:4, xp:450, maxXp:800, rank:'bronze', status:'idle', tasks:6, success:100, lastRun:'5d ago' },
-  { name:'Quant Fund PM', role:'Cross-Book Risk', division:'intel', level:9, xp:1600, maxXp:2000, rank:'silver', status:'active', tasks:18, success:94, lastRun:'1h ago' },
+// ===== PARTICLE CANVAS =====
+(function(){
+const canvas=document.getElementById('particle-canvas');
+const ctx=canvas.getContext('2d');
+let particles=[];
+function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
+window.addEventListener('resize',resize);resize();
+class Particle{
+constructor(){this.reset()}
+reset(){this.x=Math.random()*canvas.width;this.y=Math.random()*canvas.height;this.vx=(Math.random()-0.5)*0.3;this.vy=(Math.random()-0.5)*0.3;this.size=Math.random()*2+0.5;this.alpha=Math.random()*0.4+0.1;this.color=['#00ff88','#a855f7','#06b6d4','#f97316','#eab308'][Math.floor(Math.random()*5)]}
+update(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>canvas.width)this.vx*=-1;if(this.y<0||this.y>canvas.height)this.vy*=-1}
+draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fillStyle=this.color;ctx.globalAlpha=this.alpha;ctx.fill();ctx.globalAlpha=1}
+}
+for(let i=0;i<80;i++)particles.push(new Particle());
+function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);particles.forEach(p=>{p.update();p.draw()});requestAnimationFrame(animate)}
+animate();
+})();
+
+// ===== AGENT DATA =====
+const agents=[
+// TRADING FLOOR
+{name:'Degen',slug:'degen',title:'Crypto Perps Bot',cls:'Trader',level:8,xp:2400,xpMax:3000,hp:92,div:'trading',color:'#00ff88',status:'active',abilities:['Multi-timeframe scanning','RSI/Volume triggers','Paper trading'],desc:'Crypto perpetuals paper trading bot for Hyperliquid testnet. Scans BTC, ETH, SOL, XRP.'},
+{name:'Poly',slug:'poly',title:'Prediction Markets Bot',cls:'Trader',level:6,xp:1800,xpMax:2500,hp:78,div:'trading',color:'#00ff88',status:'active',abilities:['Catalyst Momentum','High-Prob Favorites','Kelly sizing'],desc:'Polymarket prediction market trading bot. Two strategies: Catalyst Momentum & High-Probability Favorite Compounding.'},
+{name:'Pumpy',slug:'pumpy',title:'Meme Coin Deployer',cls:'Deployer',level:5,xp:1200,xpMax:2000,hp:65,div:'trading',color:'#00ff88',status:'active',abilities:['Twitter signal scan','Viral sentiment scoring','Token deployment'],desc:'Monitors Twitter and news for viral sentiment, scores signals, generates meme coin identities, deploys tokens.'},
+{name:'Quant PM',slug:'quant-pm',title:'Fund Manager',cls:'Strategist',level:10,xp:4500,xpMax:5000,hp:95,div:'trading',color:'#00ff88',status:'active',abilities:['Portfolio risk mgmt','Cross-book correlation','Drawdown monitoring'],desc:'Elite quantitative hedge fund PM overseeing Degen and Poly as a multi-strategy fund.'},
+{name:'Revenue Monitor',slug:'revenue-monitor',title:'Revenue Tracker',cls:'Analyst',level:7,xp:2100,xpMax:2800,hp:88,div:'trading',color:'#00ff88',status:'active',abilities:['Stripe monitoring','Churn alerts','Growth trends'],desc:'Monitors Stripe for daily revenue snapshots, churn alerts, and growth trends.'},
+{name:'Investor Brief',slug:'investor-brief',title:'IR Manager',cls:'Diplomat',level:4,xp:800,xpMax:1500,hp:100,div:'trading',color:'#00ff88',status:'active',abilities:['Metric compilation','Update drafting','Fundraise prep'],desc:'Compiles metrics, customer wins, product progress into investor briefs.'},
+// INTELLIGENCE
+{name:'Strategy',slug:'strategy',title:'Strategic Advisor',cls:'Commander',level:9,xp:3800,xpMax:4200,hp:90,div:'intel',color:'#a855f7',status:'active',abilities:['Competitive intel','GTM strategy','Market sizing'],desc:'Sharp strategic advisor. Competitive intelligence, BD research, GTM strategy, fundraising prep.'},
+{name:'Marketing',slug:'marketing',title:'Growth Hacker',cls:'Scout',level:7,xp:2200,xpMax:2800,hp:85,div:'intel',color:'#a855f7',status:'active',abilities:['Content strategy','Attention arbitrage','DVL framework'],desc:'Marketing advisor built on GaryVee\'s content strategy and attention arbitrage philosophy.'},
+{name:'Sales',slug:'sales',title:'Closer',cls:'Warrior',level:8,xp:2600,xpMax:3200,hp:82,div:'intel',color:'#a855f7',status:'active',abilities:['Subconscious closing','Objection handling','Pipeline building'],desc:'Elite sales coach built on Andy Elliott\'s closing system and Tony Robbins\' methodology.'},
+{name:'Finance',slug:'finance',title:'Numbers Wizard',cls:'Mage',level:8,xp:2800,xpMax:3200,hp:94,div:'intel',color:'#a855f7',status:'active',abilities:['Unit economics','Margin optimization','Cash flow mgmt'],desc:'Blunt, numbers-first finance advisor. Unit economics, offer pricing, margin optimization.'},
+{name:'User Pain Point Scout',slug:'user-pain-point-scout',title:'Field Recon',cls:'Scout',level:6,xp:1600,xpMax:2500,hp:80,div:'intel',color:'#a855f7',status:'active',abilities:['Reddit monitoring','App Store scraping','Forum scanning'],desc:'Ground-level customer research agent. Monitors Reddit, X, App Store, Product Hunt across verticals.'},
+// OPERATIONS
+{name:'DaveDeploys CEO',slug:'davedeploys-ceo',title:'Supreme Commander',cls:'Legend',level:15,xp:9500,xpMax:10000,hp:98,div:'ops',color:'#f97316',status:'active',abilities:['Mission tracking','Agent delegation','Morning briefings'],desc:'The operating CEO tracking the $1B mission across all trading bots and business lines.'},
+{name:'Admin Boy',slug:'admin-boy',title:'Sys Admin',cls:'Engineer',level:11,xp:5200,xpMax:6000,hp:96,div:'ops',color:'#f97316',status:'active',abilities:['Config management','Template maintenance','Infrastructure oversight'],desc:'Internal systems administrator and operational backbone for the agent network.'},
+{name:'Legal',slug:'legal',title:'Compliance Officer',cls:'Guardian',level:7,xp:2000,xpMax:2800,hp:100,div:'ops',color:'#f97316',status:'active',abilities:['Jurisdiction analysis','Regulatory compliance','Risk assessment'],desc:'Elite jurisdiction-aware legal compliance agent. Identifies country/region before applying legal frameworks.'},
+{name:'Operations',slug:'operations',title:'Ops Chief',cls:'Commander',level:8,xp:2900,xpMax:3500,hp:91,div:'ops',color:'#f97316',status:'active',abilities:['Bottleneck diagnosis','SOP building','Process optimization'],desc:'Expert operations advisor. Diagnoses bottlenecks, builds SOPs, designs delivery systems.'},
+{name:'Metrics Dashboard',slug:'metrics-dashboard',title:'Data Viz',cls:'Analyst',level:6,xp:1700,xpMax:2500,hp:87,div:'ops',color:'#f97316',status:'active',abilities:['Investor snapshots','Growth tracking','Health metrics'],desc:'Pulls key metrics from Sheets, Stripe, HubSpot, GitHub for investor-ready snapshots.'},
+// ENGINEERING
+{name:'SWE Intern',slug:'swe-intern',title:'Full-Stack Dev',cls:'Engineer',level:9,xp:3600,xpMax:4200,hp:93,div:'eng',color:'#06b6d4',status:'active',abilities:['React/Vue/Next.js','API design','CI/CD automation'],desc:'Full-stack engineering agent. Builds web apps, designs APIs, implements AI/ML features.'},
+{name:'UX Intern',slug:'ux-intern',title:'Designer',cls:'Artisan',level:7,xp:2100,xpMax:2800,hp:88,div:'eng',color:'#06b6d4',status:'active',abilities:['User flows','Accessibility audits','Design systems'],desc:'UX and product design agent. User flows, wireframes, UI feedback, WCAG compliance.'},
+{name:'GitHub Repo Manager',slug:'github-repo-manager',title:'Repo Guardian',cls:'Guardian',level:10,xp:4200,xpMax:5000,hp:95,div:'eng',color:'#06b6d4',status:'active',abilities:['PR management','Issue triage','Branch management'],desc:'Manages GitHub repos, issues, PRs, and code for davedeploys-spec account.'},
+{name:'Product Tracker',slug:'product-tracker',title:'Sprint Master',cls:'Analyst',level:6,xp:1500,xpMax:2500,hp:84,div:'eng',color:'#06b6d4',status:'active',abilities:['Velocity tracking','Blocker detection','Roadmap status'],desc:'Tracks GitHub activity, Linear issues, development progress. Shipping velocity and blockers.'},
+{name:'Outbound Email QA',slug:'outbound-email-qa-reviewer',title:'Quality Gate',cls:'Guardian',level:5,xp:1100,xpMax:2000,hp:100,div:'eng',color:'#06b6d4',status:'active',abilities:['Subject line review','Tone analysis','Brand compliance'],desc:'Reviews outbound email drafts. PASS/FAIL across subject, grammar, formatting, brand, CTA.'},
+// COMMUNICATIONS
+{name:'Discord Manager',slug:'discord-communications-manager',title:'Comms Officer',cls:'Diplomat',level:8,xp:2500,xpMax:3200,hp:90,div:'comms',color:'#eab308',status:'active',abilities:['Channel management','Embed posting','Server organization'],desc:'Manages all Discord communications for Dave Deploys server.'},
+{name:'Slack Manager',slug:'slack-communications-manager',title:'Comms Officer',cls:'Diplomat',level:8,xp:2400,xpMax:3200,hp:89,div:'comms',color:'#eab308',status:'active',abilities:['Channel monitoring','Message posting','Activity reports'],desc:'Manages Slack communications for Dave Deploys workspace.'},
+{name:'Gmail Manager',slug:'gmail-inbox-manager',title:'Mail Handler',cls:'Logistics',level:7,xp:2000,xpMax:2800,hp:92,div:'comms',color:'#eab308',status:'active',abilities:['Inbox search','Email sending','Label management'],desc:'Manages davedeploys@gmail.com - reads, sends, organizes with labels and filters.'},
+{name:'X / Twitter',slug:'x',title:'Social Warrior',cls:'Scout',level:9,xp:3500,xpMax:4200,hp:86,div:'comms',color:'#eab308',status:'active',abilities:['Trend monitoring','Thread posting','Engagement optimization'],desc:'Elite Twitter/X engagement specialist. Monitors trends, posts threads, manages replies.'},
+{name:'Inbox Agent',slug:'inbox-agent',title:'Courier',cls:'Logistics',level:5,xp:1000,xpMax:2000,hp:95,div:'comms',color:'#eab308',status:'active',abilities:['Email sending','Inbox reading','Sender management'],desc:'Sends emails, reads inbox, waits for replies, manages trusted senders.'},
+{name:'Notion Manager',slug:'notion-workspace-manager',title:'Knowledge Keeper',cls:'Mage',level:7,xp:2300,xpMax:2800,hp:91,div:'comms',color:'#eab308',status:'active',abilities:['Page management','Database CRUD','Content organization'],desc:'Manages Notion pages, databases, and content for davedeploys workspace.'},
+// UTILITY (no specific division)
+{name:'Code Agent',slug:'code-agent',title:'Code Runner',cls:'Engineer',level:10,xp:4000,xpMax:5000,hp:95,div:'utility',color:'#64748b',status:'active',abilities:['Python execution','Bash scripting','TypeScript'],desc:'Executes Python, Bash, and TypeScript code in a secure cloud sandbox.'},
+{name:'Web Agent',slug:'web-agent',title:'Web Crawler',cls:'Scout',level:8,xp:2800,xpMax:3500,hp:90,div:'utility',color:'#64748b',status:'active',abilities:['Web scraping','URL extraction','Content parsing'],desc:'Browses and extracts data from websites using intelligent scraping.'},
+{name:'Media Agent',slug:'media-agent',title:'Content Creator',cls:'Artisan',level:6,xp:1600,xpMax:2500,hp:88,div:'utility',color:'#64748b',status:'active',abilities:['Image generation','Speech synthesis','Audio transcription'],desc:'Generates images, synthesizes speech, and transcribes audio content.'},
+{name:'Agent Creator',slug:'agent-creator',title:'Architect',cls:'Mage',level:7,xp:2200,xpMax:2800,hp:92,div:'utility',color:'#64748b',status:'active',abilities:['Agent design','Prompt engineering','Tool configuration'],desc:'Designs and creates new AI agents with custom capabilities and configurations.'},
 ];
 
-// ===== BATTLE LOG DATA =====
-const logEntries = [
-  { time:'04:15:32', tag:'trade', msg:'Degen opened LONG BTC @ $67,450 | Size: $50 | Confidence: HIGH', xp:'+15 XP' },
-  { time:'04:12:01', tag:'quest', msg:'Daily Slack Digest completed successfully', xp:'+25 XP' },
-  { time:'04:10:45', tag:'alert', msg:'Pumpy NEWSAPI_API_KEY credential missing -- action required', xp:'' },
-  { time:'04:08:22', tag:'intel', msg:'User Pain Scout found 3 new Reddit complaints', xp:'+10 XP' },
-  { time:'04:05:00', tag:'comms', msg:'Discord embed posted to #ops-general', xp:'+5 XP' },
-  { time:'04:02:33', tag:'trade', msg:'Poly closed YES on "Iran Ceasefire" @ $0.82 | +$48', xp:'+25 XP' },
-  { time:'04:00:00', tag:'quest', msg:'Systems Health Scan completed -- all green', xp:'+20 XP' },
-  { time:'03:55:12', tag:'rank', msg:'SWE Intern promoted to GOLD rank!', xp:'+100 XP' },
-  { time:'03:50:44', tag:'trade', msg:'Degen closed SHORT ETH @ $3,420 | +$23.40', xp:'+25 XP' },
-  { time:'03:45:00', tag:'quest', msg:'Revenue Pulse check completed', xp:'+25 XP' },
-  { time:'03:42:18', tag:'system', msg:'Scheduled maintenance window completed', xp:'' },
-  { time:'03:38:55', tag:'intel', msg:'Strategy agent completed competitive analysis', xp:'+15 XP' },
-  { time:'03:35:00', tag:'comms', msg:'Slack daily digest posted to #ops-general', xp:'+5 XP' },
-  { time:'03:30:22', tag:'achievement', msg:'Unlocked: "Automation Addict" -- 10 recipes on cron', xp:'+200 XP' },
-  { time:'03:25:11', tag:'trade', msg:'Pumpy deployed $MOONCAT token on Solana', xp:'+15 XP' },
-  { time:'03:20:00', tag:'quest', msg:'Ops Audit completed -- 2 issues flagged', xp:'+20 XP' },
-  { time:'03:15:33', tag:'intel', msg:'Metrics Dashboard compiled weekly snapshot', xp:'+10 XP' },
-  { time:'03:10:00', tag:'comms', msg:'Gmail sent investor update to 3 recipients', xp:'+5 XP' },
-  { time:'03:05:45', tag:'trade', msg:'Degen opened SHORT SOL @ $84.20 | Size: $30', xp:'+15 XP' },
-  { time:'03:00:00', tag:'system', msg:'System health check passed | Uptime 99.2%', xp:'' },
+// ===== QUESTS =====
+const quests=[
+{name:'Degen Hourly Scan V2',type:'Recurring',xp:50,icon:'&#128200;'},
+{name:'X Twitter Engagement Check',type:'Daily',xp:75,icon:'&#128038;'},
+{name:'GitHub Repo Manager Check',type:'Daily',xp:60,icon:'&#128025;'},
+{name:'CEO Daily Briefing',type:'Daily',xp:100,icon:'&#128081;'},
+{name:'Quant Fund PM Check',type:'Daily',xp:80,icon:'&#128202;'},
+{name:'Poly Paper Trading Scan',type:'Recurring',xp:50,icon:'&#127922;'},
+{name:'Pumpy Meme Coin Check',type:'Daily',xp:65,icon:'&#128640;'},
+{name:'SWE Intern Check',type:'Daily',xp:55,icon:'&#128187;'},
+{name:'Slack Daily Digest',type:'Daily',xp:40,icon:'&#128172;'},
+{name:'Admin Systems Check',type:'Daily',xp:70,icon:'&#9881;'},
 ];
 
-// ===== QUEST DATA =====
-const quests = [
-  { name:'Slack Recon', freq:'daily', xp:25, streak:'5 days', mode:'Auto', status:'completed' },
-  { name:'Systems Health Scan', freq:'daily', xp:20, streak:'3 days', mode:'Auto', status:'completed' },
-  { name:'Ops Audit', freq:'daily', xp:20, streak:'7 days', mode:'Auto', status:'completed' },
-  { name:'Revenue Pulse', freq:'daily', xp:25, streak:'4 days', mode:'Auto', status:'completed' },
-  { name:'UX Inspection', freq:'daily', xp:15, streak:'2 days', mode:'Manual', status:'available' },
-  { name:'Intel Briefing', freq:'daily', xp:25, streak:'6 days', mode:'Auto', status:'running' },
-  { name:'Weekly War Room', freq:'weekly', xp:100, streak:'8 weeks', mode:'Manual', status:'available' },
-  { name:'Metrics Raid', freq:'weekly', xp:75, streak:'6 weeks', mode:'Auto', status:'completed' },
-  { name:'Degen Hunt', freq:'hourly', xp:15, streak:'48 runs', mode:'Auto', status:'completed' },
-  { name:'Legal Sweep', freq:'monthly', xp:200, streak:'3 months', mode:'Manual', status:'available' },
+// ===== ACHIEVEMENTS =====
+const achievements=[
+{name:'First Blood',desc:'First agent deployed',icon:'&#9876;',unlocked:true},
+{name:'Squad Up',desc:'10 agents active',icon:'&#128101;',unlocked:true},
+{name:'Army Builder',desc:'25 agents active',icon:'&#127968;',unlocked:true},
+{name:'Full Battalion',desc:'32 agents active',icon:'&#128737;',unlocked:true},
+{name:'First Trade',desc:'First trading bot live',icon:'&#128200;',unlocked:true},
+{name:'Triple Threat',desc:'3 trading bots running',icon:'&#9888;',unlocked:true},
+{name:'Quest Master',desc:'10 active recipes',icon:'&#128220;',unlocked:true},
+{name:'Revenue Unlocked',desc:'First dollar earned',icon:'&#128176;',unlocked:true},
+{name:'$1K Club',desc:'Reach $1,000 revenue',icon:'&#127881;',unlocked:true},
+{name:'$10K Milestone',desc:'Reach $10,000',icon:'&#128142;',unlocked:false},
+{name:'$100K Velocity',desc:'Reach $100,000',icon:'&#128640;',unlocked:false},
+{name:'$1M Mark',desc:'Reach $1,000,000',icon:'&#127775;',unlocked:false},
+{name:'$10M Empire',desc:'Reach $10,000,000',icon:'&#127760;',unlocked:false},
+{name:'$100M Dynasty',desc:'Reach $100,000,000',icon:'&#128081;',unlocked:false},
+{name:'$1B Legendary',desc:'Reach $1,000,000,000',icon:'&#9889;',unlocked:false,legendary:true},
 ];
 
-// ===== ACHIEVEMENT DATA =====
-const achievements = [
-  { name:'First Blood', desc:'First agent delegation', icon:'\u2694', unlocked:true },
-  { name:'The Network', desc:'All 32 agents active', icon:'\u26A1', unlocked:true },
-  { name:'Day Trader', desc:'First profitable trade', icon:'\u2197', unlocked:true },
-  { name:'Automation Addict', desc:'10 recipes on cron', icon:'\u2699', unlocked:true },
-  { name:'Consistent', desc:'7-day quest streak', icon:'\u2B50', unlocked:true },
-  { name:'Millionaire', desc:'$1M cumulative revenue', icon:'\uD83D\uDD12', unlocked:false },
+// ===== BATTLE LOG TEMPLATES =====
+const logTemplates=[
+{agent:'DEGEN',color:'#00ff88',msgs:['scanned BTC/USD -- No entry signal detected','analyzed ETH funding rates -- neutral','checked SOL momentum -- watching for breakout','paper trade closed on XRP -- +2.3% PnL']},
+{agent:'POLY',color:'#00ff88',msgs:['evaluated 3 new markets on Polymarket','placed paper bet on election outcome -- 72% confidence','rebalanced portfolio -- Kelly sizing applied','catalyst detected: Fed meeting tomorrow']},
+{agent:'PUMPY',color:'#00ff88',msgs:['scanned Twitter for viral sentiment -- 2 signals found','scored meme potential: "MOONCAT" -- 7.2/10','monitoring token deployment pipeline','analyzed trending hashtags -- no actionable signals']},
+{agent:'QUANT PM',color:'#00ff88',msgs:['checked portfolio risk -- All positions within tolerance','ran cross-book correlation analysis','drawdown monitor: max -1.2% today','rebalanced strategy weights']},
+{agent:'REVENUE MONITOR',color:'#00ff88',msgs:['pulled Stripe snapshot -- $2,847 total','no new churn events detected','growth trend: +12% week-over-week','subscription health check -- all active']},
+{agent:'STRATEGY',color:'#a855f7',msgs:['analyzed competitor landscape -- 3 new entrants','updated TAM estimate for crypto vertical','reviewed GTM funnel metrics','generated competitive intel report']},
+{agent:'MARKETING',color:'#a855f7',msgs:['drafted content calendar for next week','identified 5 attention arbitrage opportunities','analyzed engagement metrics -- CTR up 8%','reviewed DVL framework alignment']},
+{agent:'SALES',color:'#a855f7',msgs:['reviewed pipeline -- 4 deals in negotiation','crafted objection handler for pricing concerns','analyzed close rate -- 34% this month','updated lead scoring model']},
+{agent:'FINANCE',color:'#a855f7',msgs:['calculated unit economics -- CAC:LTV healthy','optimized pricing tiers -- margin +3%','cash flow projection updated through Q2','expense audit complete -- no anomalies']},
+{agent:'CEO',color:'#f97316',msgs:['completed morning briefing -- All systems nominal','reviewed mission progress -- $2,847 / $1B','delegated 3 tasks to agent army','strategic priorities updated for the week']},
+{agent:'ADMIN BOY',color:'#f97316',msgs:['verified agent configs -- 32/32 operational','template maintenance complete','infrastructure health: all green','rotated API keys -- security check passed']},
+{agent:'LEGAL',color:'#f97316',msgs:['reviewed compliance status -- no flags','jurisdiction analysis for new market entry','risk assessment updated for trading bots','regulatory monitoring -- no new requirements']},
+{agent:'SWE INTERN',color:'#06b6d4',msgs:['deployed feature update to staging','code review completed -- 2 PRs approved','API endpoint optimized -- 40% faster','CI/CD pipeline green -- all tests passing']},
+{agent:'GITHUB REPO MANAGER',color:'#06b6d4',msgs:['triaged 2 new issues','merged PR #47 -- feature/dashboard','branch cleanup -- removed 5 stale branches','code scan complete -- no vulnerabilities']},
+{agent:'DISCORD MANAGER',color:'#eab308',msgs:['posted embed to #degen-signals','server activity report generated','organized channel permissions','posted daily update to #announcements']},
+{agent:'SLACK MANAGER',color:'#eab308',msgs:['posted daily digest to #ops-general','monitored 12 channels for activity','activity report: 47 messages today','synced channel topics']},
+{agent:'X / TWITTER',color:'#eab308',msgs:['posted engagement thread -- 3 replies sent','monitored trending topics -- 2 relevant','optimized posting schedule','engagement rate: 4.2% this week']},
+{agent:'NOTION MANAGER',color:'#eab308',msgs:['updated project database -- 3 new entries','organized workspace pages','synced meeting notes','content audit -- all pages current']},
 ];
 
-// ===== COMMAND PALETTE DATA =====
-const commands = [
-  { cmd:'run slack-digest', desc:'Execute Slack Recon quest' },
-  { cmd:'run systems-check', desc:'Execute Systems Health Scan' },
-  { cmd:'status degen', desc:'Show Degen bot status' },
-  { cmd:'status poly', desc:'Show Poly bot status' },
-  { cmd:'deploy pumpy', desc:'Trigger Pumpy scan cycle' },
-  { cmd:'pnl', desc:'Show combined portfolio PnL' },
-  { cmd:'quest daily', desc:'Filter daily quests' },
-  { cmd:'quest weekly', desc:'Filter weekly quests' },
-  { cmd:'alert check', desc:'Show unresolved alerts' },
-  { cmd:'theme neon', desc:'Switch to Neon Warfare theme' },
-  { cmd:'run ops-audit', desc:'Execute Ops Audit quest' },
-  { cmd:'run revenue-pulse', desc:'Execute Revenue Pulse quest' },
-];
+// ===== RENDER AGENT CARDS =====
+const agentGrid=document.getElementById('agent-grid');
+let currentDiv='all';
+let searchQuery='';
 
-// ===== THERMOMETER MILESTONES =====
-const milestones = [
-  { amount:1, label:'Genesis', reached:true, pct:0 },
-  { amount:1000, label:'Ramen Profitable', reached:true, pct:12 },
-  { amount:10000, label:'First Grand', reached:false, pct:25 },
-  { amount:100000, label:'Seed Round', reached:false, pct:38 },
-  { amount:1000000, label:'Series A', reached:false, pct:50 },
-  { amount:10000000, label:'Decamillionaire', reached:false, pct:63 },
-  { amount:100000000, label:'Centimillionaire', reached:false, pct:76 },
-  { amount:1000000000, label:'The Architect', reached:false, pct:92 },
-];
-
-// ===== RANK HELPERS =====
-const rankBadge = { bronze:'\u25CB', silver:'\u25CE', gold:'\u2736', diamond:'\u25C6', legendary:'\u2B50' };
-const rankClass = { bronze:'rank-bronze', silver:'rank-silver', gold:'rank-gold', diamond:'rank-diamond', legendary:'rank-legendary' };
-const divNames = { alpha:'Alpha Strike', council:'War Council', engineering:'Engineering Corps', comms:'Comms Battalion', intel:'Intel Division' };
-
-// ===== RENDER AGENTS =====
-function renderAgents(filter) {
-  const grid = document.getElementById('agentGrid');
-  grid.innerHTML = '';
-  const filtered = filter === 'all' ? agents : agents.filter(a => a.division === filter);
-  filtered.forEach((a, i) => {
-    const pct = Math.round((a.xp / a.maxXp) * 100);
-    const card = document.createElement('div');
-    card.className = 'agent-card';
-    card.dataset.division = a.division;
-    card.style.animationDelay = (i * 0.04) + 's';
-    card.innerHTML = `
-      <div class="agent-header">
-        <div class="agent-name">
-          <span class="rank-badge ${rankClass[a.rank]}">${rankBadge[a.rank]}</span>
-          ${a.name}
-        </div>
-        <span class="status-dot ${a.status}"></span>
-      </div>
-      <div class="agent-role">${a.role} &mdash; ${divNames[a.division]}</div>
-      <div class="agent-level">Lv.${a.level} &mdash; ${a.xp.toLocaleString()}/${a.maxXp.toLocaleString()} XP</div>
-      <div class="xp-bar"><div class="xp-fill" style="width:${pct}%"></div></div>
-      <div class="agent-stats">
-        <span>Tasks: ${a.tasks}</span>
-        <span>Success: ${a.success}%</span>
-        <span>Last: ${a.lastRun}</span>
-      </div>
-      <div class="agent-actions">
-        <button class="agent-btn" onclick="showToast('Deploying ${a.name}...')">Deploy</button>
-        <button class="agent-btn" onclick="showToast('Opening ${a.name} logs...')">Logs</button>
-      </div>
-    `;
-    grid.appendChild(card);
-  });
+function renderAgents(){
+agentGrid.innerHTML='';
+const filtered=agents.filter(a=>{
+const divMatch=currentDiv==='all'?true:a.div===currentDiv;
+const q=searchQuery.toLowerCase();
+const searchMatch=!q||a.name.toLowerCase().includes(q)||a.slug.toLowerCase().includes(q)||a.cls.toLowerCase().includes(q)||a.title.toLowerCase().includes(q);
+return divMatch&&searchMatch&&(currentDiv==='all'||a.div!=='utility');
+});
+if(currentDiv==='all'){
+// show utility agents too
+const utilFiltered=agents.filter(a=>a.div==='utility'&&(!searchQuery||a.name.toLowerCase().includes(searchQuery.toLowerCase())||a.slug.toLowerCase().includes(searchQuery.toLowerCase())));
+const allFiltered=[...filtered.filter(a=>a.div!=='utility'),...utilFiltered];
+allFiltered.forEach(a=>agentGrid.appendChild(createAgentCard(a)));
+}else{
+filtered.forEach(a=>agentGrid.appendChild(createAgentCard(a)));
+}
+// Animate bars
+requestAnimationFrame(()=>{
+document.querySelectorAll('.bar-fill').forEach(bar=>{
+bar.style.width=bar.dataset.width;
+});
+});
 }
 
-// ===== RENDER BATTLE LOG =====
-function renderLog(filter) {
-  const el = document.getElementById('blogEntries');
-  el.innerHTML = '';
-  const filtered = filter === 'all' ? logEntries : logEntries.filter(e => e.tag === filter);
-  filtered.forEach(e => {
-    const div = document.createElement('div');
-    div.className = 'blog-entry';
-    div.dataset.tag = e.tag;
-    div.innerHTML = `<span class="blog-time">[${e.time}]</span> <span class="blog-tag ${e.tag}">[${e.tag.toUpperCase()}]</span> <span class="blog-msg">${e.msg}</span>${e.xp ? '<span class="blog-xp">' + e.xp + '</span>' : ''}`;
-    el.appendChild(div);
-  });
-  el.scrollTop = 0;
+function createAgentCard(a){
+const card=document.createElement('div');
+card.className='agent-card';
+card.style.setProperty('--division-color',a.color);
+const xpPct=Math.round((a.xp/a.xpMax)*100);
+card.innerHTML=`
+<div class="agent-card-header">
+<div class="agent-avatar" style="background:${a.color}">${a.name.charAt(0)}</div>
+<div class="agent-meta">
+<div class="agent-name-row">
+<span class="agent-name">${a.name}</span>
+<span class="agent-status ${a.status}"></span>
+</div>
+<div class="agent-subtitle">
+<span>${a.title}</span>
+<span class="agent-class">${a.cls}</span>
+</div>
+</div>
+<div class="agent-level"><span class="star">&#9733;</span> ${a.level}</div>
+</div>
+<div class="agent-bars">
+<div class="bar-row">
+<span class="bar-label">XP</span>
+<div class="bar-track"><div class="bar-fill xp" data-width="${xpPct}%" style="width:0%;--division-color:${a.color}"></div></div>
+<span class="bar-value">${a.xp.toLocaleString()}/${a.xpMax.toLocaleString()}</span>
+</div>
+<div class="bar-row">
+<span class="bar-label">HP</span>
+<div class="bar-track"><div class="bar-fill hp" data-width="${a.hp}%" style="width:0%"></div></div>
+<span class="bar-value">${a.hp}%</span>
+</div>
+</div>
+<div class="agent-details">
+<p class="agent-desc">${a.desc}</p>
+<div class="agent-abilities">${a.abilities.map(ab=>`<span class="ability-tag" style="color:${a.color}">${ab}</span>`).join('')}</div>
+</div>
+`;
+card.addEventListener('click',()=>card.classList.toggle('expanded'));
+return card;
 }
 
 // ===== RENDER QUESTS =====
-function renderQuests() {
-  const grid = document.getElementById('questGrid');
-  grid.innerHTML = '';
-  quests.forEach(q => {
-    const statusLabel = q.status === 'completed' ? '\u2713 Completed' : q.status === 'running' ? '\u21BB Running' : '\u25B6 Available';
-    const card = document.createElement('div');
-    card.className = 'quest-card';
-    card.innerHTML = `
-      <div class="quest-header">
-        <span class="quest-name">${q.name}</span>
-        <span class="quest-freq ${q.freq}">${q.freq}</span>
-      </div>
-      <div class="quest-meta">${q.xp} XP &bull; Streak: ${q.streak} &bull; ${q.mode}</div>
-      <div class="quest-footer">
-        <span class="quest-status ${q.status}">${statusLabel}</span>
-        <button class="quest-run-btn" onclick="showToast('Running ${q.name}...');">${q.status === 'completed' ? 'Re-run' : 'Run Now'}</button>
-      </div>
-    `;
-    grid.appendChild(card);
-  });
+function renderQuests(){
+const list=document.getElementById('quest-list');
+list.innerHTML=quests.map(q=>`
+<div class="quest-item">
+<span class="quest-icon">${q.icon}</span>
+<div class="quest-info">
+<div class="quest-name">${q.name}</div>
+<div class="quest-meta">
+<span class="quest-type ${q.type==='Recurring'?'recurring':''}">${q.type}</span>
+<span class="quest-xp">+${q.xp} XP</span>
+</div>
+</div>
+<div class="quest-status"><span class="pulse-dot"></span> ACTIVE</div>
+</div>
+`).join('');
+}
+
+// ===== RENDER LEADERBOARD =====
+function renderLeaderboard(){
+const panel=document.getElementById('leaderboard');
+const sorted=[...agents].sort((a,b)=>b.xp-a.xp).slice(0,10);
+const divNames={trading:'TRD',intel:'INT',ops:'OPS',eng:'ENG',comms:'COM',utility:'UTL'};
+panel.innerHTML='<div class="lb-list">'+sorted.map((a,i)=>{
+const rankClass=i===0?'gold':i===1?'silver':i===2?'bronze':'normal';
+const pct=Math.round((a.xp/a.xpMax)*100);
+return `
+<div class="lb-item">
+<div class="lb-rank ${rankClass}">${i+1}</div>
+<div class="lb-avatar" style="background:${a.color}">${a.name.charAt(0)}</div>
+<span class="lb-name">${a.name}</span>
+<span class="lb-div-badge" style="background:${a.color}20;color:${a.color}">${divNames[a.div]||'---'}</span>
+<span class="lb-level">&#9733; ${a.level}</span>
+<div class="lb-xp-bar"><div class="lb-xp-fill" style="width:${pct}%;background:${a.color}"></div></div>
+</div>`;
+}).join('')+'</div>';
 }
 
 // ===== RENDER ACHIEVEMENTS =====
-function renderAchievements() {
-  const grid = document.getElementById('achieveGrid');
-  grid.innerHTML = '';
-  achievements.forEach(a => {
-    const card = document.createElement('div');
-    card.className = 'achievement-card ' + (a.unlocked ? 'unlocked' : 'locked');
-    card.innerHTML = `
-      <div class="achievement-icon">${a.icon}</div>
-      <div class="achievement-name">${a.name}</div>
-      <div class="achievement-desc">${a.desc}</div>
-    `;
-    grid.appendChild(card);
-  });
+function renderAchievements(){
+const grid=document.getElementById('achievements-grid');
+grid.innerHTML=achievements.map(a=>{
+const cls=a.unlocked?'achievement unlocked':a.legendary?'achievement locked legendary':'achievement locked';
+return `
+<div class="${cls}" title="${a.desc}">
+<span class="ach-icon">${a.icon}</span>
+<div class="ach-name">${a.name}</div>
+<div class="ach-desc">${a.desc}</div>
+${!a.unlocked?'<span class="ach-lock">&#128274;</span>':''}
+</div>`;
+}).join('');
 }
 
-// ===== RENDER THERMOMETER =====
-function renderThermometer() {
-  const container = document.getElementById('milestones');
-  container.innerHTML = '';
-  // Calculate current position (log scale between $1K and $10K)
-  const currentPct = 17; // ~$2847 on our log scale
-  document.getElementById('thermoFill').style.height = currentPct + '%';
-  document.getElementById('thermoMarker').style.bottom = currentPct + '%';
+// ===== BATTLE LOG =====
+const battleLog=document.getElementById('battle-log');
+let logMinute=14;
 
-  milestones.forEach(m => {
-    const ms = document.createElement('div');
-    ms.className = 'milestone ' + (m.reached ? 'reached' : 'locked');
-    ms.style.bottom = m.pct + '%';
-    ms.style.position = 'absolute';
-    ms.style.left = '36px';
-    const amtStr = m.amount >= 1e9 ? '$1B' : m.amount >= 1e6 ? '$' + (m.amount/1e6) + 'M' : m.amount >= 1e3 ? '$' + (m.amount/1e3) + 'K' : '$' + m.amount;
-    ms.innerHTML = `<span class="ms-dot"></span> ${amtStr} &mdash; ${m.label} ${m.reached ? '\u2713' : ''}`;
-    container.appendChild(ms);
-  });
+function addLogEntry(){
+const template=logTemplates[Math.floor(Math.random()*logTemplates.length)];
+const msg=template.msgs[Math.floor(Math.random()*template.msgs.length)];
+const now=new Date();
+const timeStr=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+const entry=document.createElement('div');
+entry.className='log-entry';
+entry.style.setProperty('--log-color',template.color);
+entry.innerHTML=`<span class="log-time">[${timeStr}]</span><span class="log-agent">${template.agent}</span><span class="log-action">${msg}</span>`;
+battleLog.prepend(entry);
+if(battleLog.children.length>50)battleLog.removeChild(battleLog.lastChild);
 }
 
-// ===== RENDER COMMAND PALETTE =====
-function renderCommands(query) {
-  const list = document.getElementById('cmdList');
-  list.innerHTML = '';
-  const q = (query || '').toLowerCase();
-  const filtered = q ? commands.filter(c => c.cmd.includes(q) || c.desc.toLowerCase().includes(q)) : commands;
-  filtered.forEach(c => {
-    const item = document.createElement('div');
-    item.className = 'cmd-item';
-    item.innerHTML = `<span class="cmd-prefix">&gt;</span> ${c.cmd} <span style="color:#555;margin-left:8px">${c.desc}</span>`;
-    item.onclick = () => { showToast('Executing: ' + c.cmd); closeCmd(); };
-    list.appendChild(item);
-  });
-}
+// Seed initial entries
+for(let i=0;i<8;i++)addLogEntry();
+// Add new entries every 3-5 seconds
+setInterval(addLogEntry,3000+Math.random()*2000);
+// Slight randomization on interval
+setInterval(()=>{
+setTimeout(addLogEntry,Math.random()*2000);
+},7000);
 
-// ===== PARTICLES =====
-function createParticles() {
-  const container = document.getElementById('particles');
-  for (let i = 0; i < 40; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    p.style.left = Math.random() * 100 + '%';
-    p.style.animationDuration = (8 + Math.random() * 16) + 's';
-    p.style.animationDelay = (Math.random() * 10) + 's';
-    p.style.width = p.style.height = (1 + Math.random() * 2) + 'px';
-    container.appendChild(p);
-  }
-}
-
-// ===== INTERACTIONS =====
-function filterDiv(div) {
-  document.querySelectorAll('.div-tab').forEach(t => t.classList.remove('active'));
-  document.querySelector(`.div-tab[data-div="${div}"]`).classList.add('active');
-  renderAgents(div);
-}
-
-function filterLog(tag) {
-  document.querySelectorAll('.blog-filter').forEach(f => f.classList.remove('active'));
-  document.querySelector(`.blog-filter[data-filter="${tag}"]`).classList.add('active');
-  renderLog(tag);
-}
-
-function toggleBlog() {
-  const el = document.getElementById('battleLog');
-  el.classList.toggle('collapsed');
-  document.getElementById('blogToggle').innerHTML = el.classList.contains('collapsed') ? '&#9650;' : '&#9660;';
-}
-
-function togglePortfolio() {
-  document.getElementById('portfolioPanel').classList.toggle('open');
-}
-
-function openQuests() {
-  renderQuests();
-  document.getElementById('questModal').classList.add('open');
-}
-function closeQuests() {
-  document.getElementById('questModal').classList.remove('open');
-}
-
-function openProfile() {
-  renderAchievements();
-  document.getElementById('profileModal').classList.add('open');
-}
-function closeProfile() {
-  document.getElementById('profileModal').classList.remove('open');
-}
-
-function openCmd() {
-  document.getElementById('cmdPalette').classList.add('open');
-  document.getElementById('cmdInput').value = '';
-  document.getElementById('cmdInput').focus();
-  renderCommands('');
-}
-function closeCmd() {
-  document.getElementById('cmdPalette').classList.remove('open');
-}
-
-// ===== TOAST SYSTEM =====
-function showToast(msg) {
-  const container = document.getElementById('toasts');
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.textContent = msg;
-  container.appendChild(toast);
-  setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = '0.3s'; }, 2500);
-  setTimeout(() => toast.remove(), 3000);
-}
-
-// ===== KEYBOARD SHORTCUTS =====
-document.addEventListener('keydown', e => {
-  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-    e.preventDefault();
-    openCmd();
-  }
-  if (e.key === 'Escape') {
-    closeCmd();
-    closeQuests();
-    closeProfile();
-  }
+// ===== TAB SWITCHING =====
+document.getElementById('div-tabs').addEventListener('click',e=>{
+const tab=e.target.closest('.div-tab');
+if(!tab)return;
+document.querySelectorAll('.div-tab').forEach(t=>t.classList.remove('active'));
+tab.classList.add('active');
+currentDiv=tab.dataset.div;
+renderAgents();
 });
 
-// Command palette input
-document.getElementById('cmdInput').addEventListener('input', e => {
-  renderCommands(e.target.value);
+// ===== SEARCH =====
+document.getElementById('agent-search').addEventListener('input',e=>{
+searchQuery=e.target.value;
+renderAgents();
 });
 
-// Close modals on overlay click
-document.getElementById('questModal').addEventListener('click', e => {
-  if (e.target === document.getElementById('questModal')) closeQuests();
-});
-document.getElementById('profileModal').addEventListener('click', e => {
-  if (e.target === document.getElementById('profileModal')) closeProfile();
-});
-document.getElementById('cmdPalette').addEventListener('click', e => {
-  if (e.target === document.getElementById('cmdPalette')) closeCmd();
-});
+// ===== THERMOMETER ANIMATION =====
+function animateThermometer(){
+// $2,847 out of $1B => 0.0002847%
+// For visual: use log scale so it's visible
+// log10(2847)/log10(1000000000) = 3.454/9 = 38.4% on log scale
+const current=2847;
+const target=1000000000;
+const logPct=(Math.log10(Math.max(current,1))/Math.log10(target))*100;
+const fill=document.getElementById('thermo-fill');
+setTimeout(()=>{fill.style.width=logPct+'%'},300);
+}
 
 // ===== INIT =====
-function init() {
-  createParticles();
-  renderAgents('all');
-  renderLog('all');
-  renderThermometer();
-}
-
-init();
+renderAgents();
+renderQuests();
+renderLeaderboard();
+renderAchievements();
+animateThermometer();
 </script>
 </body>
 </html>
