@@ -1,0 +1,138 @@
+{
+  "bot": "Poly",
+  "mode": "Paper Trading",
+  "updated_at": "2026-03-07T23:16:00Z",
+  "bankroll": {
+    "starting": 1000.0,
+    "current": 1000.0,
+    "deployed": 1000.0,
+    "deployed_pct": 100.0,
+    "cash": 0.0,
+    "realized_pnl": 0.0,
+    "unrealized_pnl": 69.52
+  },
+  "positions": [
+    {
+      "id": "T001",
+      "market": "BTC $68K-$70K range on March 9",
+      "side": "NO",
+      "entry": 0.71,
+      "current_price": 0.75,
+      "ev": 14.0,
+      "size": 89.74,
+      "unrealized_pnl": 5.06,
+      "resolves": "2026-03-09",
+      "status": "HOLD"
+    },
+    {
+      "id": "T002",
+      "market": "BTC $68K-$70K range on March 9",
+      "side": "NO",
+      "entry": 0.71,
+      "current_price": 0.75,
+      "ev": 3.1,
+      "size": 83.33,
+      "unrealized_pnl": 4.69,
+      "resolves": "2026-03-09",
+      "status": "HOLD"
+    },
+    {
+      "id": "T003",
+      "market": "BTC above $72K on March 10",
+      "side": "NO",
+      "entry": 0.895,
+      "current_price": 0.987,
+      "ev": 4.5,
+      "size": 45.0,
+      "unrealized_pnl": 4.63,
+      "resolves": "2026-03-10",
+      "status": "HOLD"
+    },
+    {
+      "id": "T004",
+      "market": "Hormuz closure by Mar 31",
+      "side": "NO",
+      "entry": 0.66,
+      "current_price": 0.001,
+      "ev": 16.0,
+      "size": 45.0,
+      "unrealized_pnl": -44.93,
+      "resolves": "2026-03-31",
+      "status": "EXIT"
+    },
+    {
+      "id": "T005",
+      "market": "US strikes Iraq by Mar 31",
+      "side": "YES",
+      "entry": 0.88,
+      "current_price": 0.99,
+      "ev": 5.0,
+      "size": 45.0,
+      "unrealized_pnl": 5.62,
+      "resolves": "2026-03-31",
+      "status": "HOLD"
+    },
+    {
+      "id": "T006",
+      "market": "Iran ceasefire by Mar 31",
+      "side": "NO",
+      "entry": 0.74,
+      "current_price": 0.945,
+      "ev": 7.1,
+      "size": 45.0,
+      "unrealized_pnl": 12.47,
+      "resolves": "2026-03-31",
+      "status": "HOLD"
+    },
+    {
+      "id": "T007",
+      "market": "Fordow nuclear strike by Mar 31",
+      "side": "YES",
+      "entry": 0.44,
+      "current_price": 0.6,
+      "ev": 14.0,
+      "size": 45.0,
+      "unrealized_pnl": 16.36,
+      "resolves": "2026-03-31",
+      "status": "HOLD"
+    },
+    {
+      "id": "T009",
+      "market": "BTC above $72K on March 10",
+      "side": "NO",
+      "entry": 0.895,
+      "current_price": 0.987,
+      "ev": 14.0,
+      "size": 89.74,
+      "unrealized_pnl": 9.22,
+      "resolves": "2026-03-10",
+      "status": "HOLD"
+    },
+    {
+      "id": "T010",
+      "market": "BTC above $64K on March 10",
+      "side": "YES",
+      "entry": 0.94,
+      "current_price": 0.95,
+      "ev": 3.1,
+      "size": 83.33,
+      "unrealized_pnl": 0.89,
+      "resolves": "2026-03-10",
+      "status": "HOLD"
+    },
+    {
+      "id": "T011",
+      "market": "BTC above $72K on March 10",
+      "side": "NO",
+      "entry": 0.61,
+      "current_price": 0.987,
+      "ev": 14.0,
+      "size": 89.74,
+      "unrealized_pnl": 34.65,
+      "resolves": "2026-03-10",
+      "status": "HOLD"
+    }
+  ],
+  "history": [],
+  "strategy_notes": "Fully deployed; awaiting resolutions. T004 formally broken. T005/T006/T007 multiple unrealized gains."
+}
