@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DaveDeploys Trading Terminal</title>
+<style>
+:root {
+  --bg: #070709;
+  --surface: #0c0c10;
+  --surface-hover: #111118;
+  --surface-alt: #101015;
+  --surface-raised: #161620;
+  --border: #1e1e2a;
+  --border-light: #2a2a3c;
+  --text: #e8eaf0;
+  --text-secondary: #b8bcc8;
+  --text-muted: #6b7280;
+  --accent: #60a5fa;
+  --accent-dim: rgba(96,165,250,0.08);
+  --accent-glow: rgba(96,165,250,0.15);
+  --green: #22c55e;
+  --green-dim: rgba(34,197,94,0.1);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.1);
+  --yellow: #f0c040;
+  --yellow-dim: rgba(240,192,64,0.1);
+  --purple: #a78bfa;
+  --font-mono: 'Courier New', Courier, monospace;
+  --radius: 6px;
+  --radius-sm: 4px;
+  --transition: all 0.2s ease;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg); color: var(--text-secondary); font-family: var(--font-mono);
+  font-size: 11px; line-height: 1.5; min-height: 100vh; padding: 10px;
+  -webkit-font-smoothing: antialiased;
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Site Nav */
+.site-nav { display:flex; gap:0; margin-bottom:8px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.site-nav-link { padding:8px 20px; font-size:10px; font-weight:700; letter-spacing:2px; color:var(--text-muted); text-decoration:none; font-family:var(--font-mono); transition:var(--transition); border-right:1px solid var(--border); }
+.site-nav-link:last-child { border-right:none; }
+.site-nav-link:hover { color:var(--text); background:var(--surface-hover); }
+.site-nav-link.active { color:var(--accent); background:var(--accent-dim); }
+
+/* Top Bar */
+.topbar { display:flex; justify-content:space-between; align-items:center; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:8px 16px; margin-bottom:8px; }
+.fund-name { font-size:16px; font-weight:700; letter-spacing:3px; color:var(--accent); }
+.topbar-right { display:flex; align-items:center; gap:14px; }
+.clock { color:var(--accent); font-size:11px; font-weight:600; letter-spacing:1px; }
+.badge { font-size:9px; color:var(--yellow); letter-spacing:1px; padding:2px 6px; border:1px solid rgba(240,192,64,0.3); border-radius:3px; background:var(--yellow-dim); }
+.refresh-btn { background:var(--surface-hover); border:1px solid var(--border-light); color:var(--accent); font-family:var(--font-mono); font-size:10px; padding:6px 14px; min-height:28px; min-width:28px; cursor:pointer; border-radius:var(--radius-sm); letter-spacing:1px; transition:var(--transition); }
+.refresh-btn:hover { border-color:var(--accent); background:var(--surface-raised); }
+.last-update { font-size:9px; color:var(--text-muted); letter-spacing:1px; }
+.countdown { font-size:10px; color:var(--text-muted); letter-spacing:1px; font-variant-numeric:tabular-nums; }
+.countdown.urgent { color:var(--red); }
+
+/* Error Banner */
+.error-banner { background:var(--red-dim); border:1px solid rgba(239,68,68,0.3); color:var(--red); font-size:11px; padding:10px 16px; border-radius:var(--radius); margin-bottom:8px; letter-spacing:0.5px; display:none; }
+
+/* KPI Cards */
+.nav-row { display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+.nav-card { flex:1; min-width:140px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; transition:var(--transition); border-top:2px solid transparent; }
+.nav-card:hover { border-top-color:var(--accent); background:var(--surface-hover); }
+.nav-card .label { font-size:9px; color:var(--text-muted); letter-spacing:1.5px; margin-bottom:4px; }
+.nav-card .val { font-size:16px; font-weight:700; color:var(--text); }
+.nav-card .sub { font-size:10px; margin-top:2px; color:var(--text-muted); }
+.positive { color:var(--green) !important; }
+.negative { color:var(--red) !important; }
+
+/* Panels */
+.panel-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:8px; }
+@media(max-width:900px) { .panel-grid { grid-template-columns:1fr; } }
+.panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.panel-header { display:flex; justify-content:space-between; align-items:center; padding:10px 16px; border-bottom:1px solid var(--border); }
+.panel-title { font-size:11px; font-weight:700; letter-spacing:2px; color:var(--text); }
+.panel-body { padding:12px 16px; }
+
+/* Pills */
+.pill { font-size:9px; padding:2px 8px; border-radius:3px; letter-spacing:1px; font-weight:700; }
+.pill-live { color:var(--green); background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.3); }
+.pill-stale { color:var(--yellow); background:rgba(240,192,64,0.12); border:1px solid rgba(240,192,64,0.3); }
+.pill-error { color:var(--red); background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); }
+.pill-dry { color:var(--purple); background:rgba(167,139,250,0.12); border:1px solid rgba(167,139,250,0.3); }
+
+/* KPI Bar */
+.kpi-bar { display:flex; gap:16px; margin-bottom:14px; flex-wrap:wrap; }
+.kpi .k { font-size:9px; color:var(--text-muted); letter-spacing:1px; margin-bottom:2px; }
+.kpi .v { font-size:14px; font-weight:700; color:var(--text); }
+.kpi .v.blue { color:var(--accent); }
+.kpi .v.v-pos { color:var(--green); }
+.kpi .v.v-neg { color:var(--red); }
+
+/* Data Tables */
+.data-table { width:100%; border-collapse:collapse; font-size:10px; }
+.data-table th { text-align:left; color:var(--text-muted); font-size:9px; letter-spacing:1px; padding:6px 8px; border-bottom:1px solid var(--border); font-weight:600; }
+.data-table td { padding:5px 8px; border-bottom:1px solid rgba(30,30,42,0.5); color:var(--text-secondary); }
+.data-table tr:hover td { background:var(--surface-hover); }
+
+/* Section Labels */
+.section-label { font-size:9px; color:var(--text-muted); letter-spacing:1.5px; margin:14px 0 8px 0; padding-bottom:4px; border-bottom:1px solid var(--border); }
+
+/* Tags */
+.tag { font-size:9px; padding:2px 8px; border-radius:3px; letter-spacing:0.5px; display:inline-block; }
+.tag-degen { color:var(--green); background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); }
+.tag-poly { color:var(--accent); background:rgba(96,165,250,0.08); border:1px solid rgba(96,165,250,0.2); }
+.tag-pump { color:var(--purple); background:rgba(167,139,250,0.08); border:1px solid rgba(167,139,250,0.2); }
+
+/* Empty State */
+.empty-state { text-align:center; padding:24px; color:var(--text-muted); }
+.empty-icon { font-size:18px; margin-bottom:6px; opacity:0.4; }
+
+/* Loading Bar */
+.loading-bar { height:2px; background:linear-gradient(90deg, transparent, var(--accent), transparent); animation:shimmer 1.5s infinite; border-radius:1px; }
+@keyframes shimmer { 0%{opacity:0.3} 50%{opacity:1} 100%{opacity:0.3} }
+
+/* Truncate */
+.truncate { max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* Filter Buttons */
+.filter-bar { display:flex; gap:4px; }
+.filter-btn { background:var(--surface-hover); border:1px solid var(--border); color:var(--text-muted); font-family:var(--font-mono); font-size:9px; padding:3px 10px; cursor:pointer; border-radius:3px; letter-spacing:0.5px; transition:var(--transition); }
+.filter-btn:hover { color:var(--text); border-color:var(--border-light); }
+.filter-btn.active { color:var(--accent); border-color:var(--accent); background:var(--accent-dim); }
+
+/* Sparkline */
+.sparkline-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; margin-bottom:8px; }
+.sparkline-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.sparkline-title { font-size:11px; font-weight:700; letter-spacing:2px; color:var(--text); }
+.sparkline-meta { font-size:9px; color:var(--text-muted); letter-spacing:1px; }
+
+/* Shortcut Overlay */
+.shortcut-overlay { position:fixed; inset:0; background:rgba(0,0,0,.8); display:flex; align-items:center; justify-content:center; z-index:998; backdrop-filter:blur(4px); }
+.shortcut-box { background:var(--surface); border:1px solid var(--border-light); border-radius:8px; padding:24px 32px; min-width:300px; }
+.shortcut-box h2 { font-size:12px; letter-spacing:2px; color:var(--accent); margin-bottom:16px; }
+.shortcut-row { padding:6px 0; color:var(--text-secondary); font-size:11px; }
+.shortcut-row kbd { display:inline-block; background:var(--surface-raised); border:1px solid var(--border-light); border-radius:3px; padding:2px 8px; font-family:var(--font-mono); font-size:10px; color:var(--accent); margin-right:10px; min-width:28px; text-align:center; }
+
+/* Gate indicators */
+.gate { font-size:8px; font-weight:700; letter-spacing:0.5px; margin-right:4px; }
+.gate-pass { color:var(--green); }
+.gate-fail { color:var(--red); opacity:0.5; }
+</style>
+</head>
+<body>
+
+<!-- SITE NAV -->
+<nav class="site-nav" aria-label="Site navigation">
+  <a class="site-nav-link" href="../">HQ HOME</a>
+  <a class="site-nav-link active" href="../trading/">TRADING TERMINAL</a>
+  <a class="site-nav-link" href="../org-chart/">ORG CHART</a>
+</nav>
+
+<!-- TOP BAR -->
+<header class="topbar" role="banner">
+  <div class="fund-name">DEGEN+POLY CAPITAL</div>
+  <div class="topbar-right">
+    <span class="clock" id="clock">--:--:-- EST</span>
+    <span class="badge">PAPER TRADING</span>
+    <span class="countdown" id="countdown">30s</span>
+    <span class="last-update" id="last-update">not loaded</span>
+    <button class="refresh-btn" onclick="loadAll()" aria-label="Refresh dashboard data">&#8635; REFRESH</button>
+  </div>
+</header>
+
+<!-- ERROR BANNER -->
+<div class="error-banner" id="error-banner" role="alert"></div>
+
+<!-- KPI CARDS -->
+<nav class="nav-row" aria-label="Key metrics">
+  <div class="nav-card">
+    <div class="label">FUND NAV</div>
+    <div class="val" id="nav-total">--</div>
+    <div class="sub" id="nav-change">--</div>
+  </div>
+  <div class="nav-card">
+    <div class="label">TOTAL P&amp;L</div>
+    <div class="val" id="total-pnl">--</div>
+    <div class="sub" id="total-pnl-sub">--</div>
+  </div>
+  <div class="nav-card">
+    <div class="label">DEGEN BANKROLL</div>
+    <div class="val" id="degen-bankroll">--</div>
+    <div class="sub" id="degen-pnl-sub">--</div>
+  </div>
+  <div class="nav-card">
+    <div class="label">POLY NAV</div>
+    <div class="val" id="poly-nav">--</div>
+    <div class="sub" id="poly-pnl-sub">--</div>
+  </div>
+  <div class="nav-card">
+    <div class="label">OPEN POSITIONS</div>
+    <div class="val" id="open-count">--</div>
+    <div class="sub" id="open-sub">--</div>
+  </div>
+</nav>
+
+
+<!-- BOT PANELS -->
+<section class="panel-grid" aria-label="Bot panels">
+
+  <!-- DEGEN -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">DEGEN <span style="color:var(--text-muted);font-weight:400;font-size:9px;">/ HYPERLIQUID PERPS</span></span>
+      <span class="pill pill-stale" id="degen-pill">--</span>
+    </div>
+    <div class="panel-body">
+      <div class="kpi-bar">
+        <div class="kpi"><div class="k">BANKROLL</div><div class="v blue" id="d-bankroll">--</div></div>
+        <div class="kpi"><div class="k">TOTAL P&amp;L</div><div class="v" id="d-pnl">--</div></div>
+        <div class="kpi"><div class="k">WIN RATE</div><div class="v" id="d-winrate">--</div></div>
+        <div class="kpi"><div class="k">RECORD</div><div class="v" id="d-record">--</div></div>
+      </div>
+      <h3 class="section-label">ASSET SCANNER</h3>
+      <div id="degen-scanner" style="overflow-x:auto;"><div class="loading-bar"></div></div>
+      <h3 class="section-label">OPEN POSITIONS</h3>
+      <div id="degen-positions" style="overflow-x:auto;"><div class="loading-bar"></div></div>
+      <h3 class="section-label">WATCHLIST</h3>
+      <div id="degen-watchlist"><div class="loading-bar"></div></div>
+    </div>
+  </div>
+
+  <!-- POLY -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">POLY <span style="color:var(--text-muted);font-weight:400;font-size:9px;">/ POLYMARKET</span></span>
+      <span class="pill pill-stale" id="poly-pill">--</span>
+    </div>
+    <div class="panel-body">
+      <div class="kpi-bar">
+        <div class="kpi"><div class="k">NAV</div><div class="v blue" id="p-nav">--</div></div>
+        <div class="kpi"><div class="k">TOTAL P&amp;L</div><div class="v" id="p-pnl">--</div></div>
+        <div class="kpi"><div class="k">DEPLOYED</div><div class="v" id="p-deployed">--</div></div>
+        <div class="kpi"><div class="k">POSITIONS</div><div class="v" id="p-trades">--</div></div>
+      </div>
+      <h3 class="section-label">ACTIVE POSITIONS</h3>
+      <div id="poly-positions" style="overflow-x:auto;"><div class="loading-bar"></div></div>
+    </div>
+  </div>
+
+  <!-- PUMP -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">PUMP <span style="color:var(--text-muted);font-weight:400;font-size:9px;">/ PUMP.FUN</span></span>
+      <span class="pill pill-stale" id="pump-pill">--</span>
+    </div>
+    <div class="panel-body">
+      <div class="kpi-bar">
+        <div class="kpi"><div class="k">MODE</div><div class="v" id="pm-mode">--</div></div>
+        <div class="kpi"><div class="k">DEPLOYS</div><div class="v" id="pm-deploys">--</div></div>
+        <div class="kpi"><div class="k">TOKENS</div><div class="v" id="pm-tokens">--</div></div>
+        <div class="kpi"><div class="k">LAST SCAN</div><div class="v" id="pm-scan">--</div></div>
+      </div>
+      <h3 class="section-label">DEPLOYED TOKENS</h3>
+      <div id="pump-tokens" style="overflow-x:auto;"><div class="loading-bar"></div></div>
+      <h3 class="section-label">ACTIVITY LOG</h3>
+      <div id="pump-log" style="overflow-x:auto;"><div class="loading-bar"></div></div>
+    </div>
+  </div>
+
+</section>
+
+<!-- TRADE HISTORY -->
+<div class="panel" style="margin-bottom:8px;">
+  <div class="panel-header">
+    <span class="panel-title">TRADE HISTORY</span>
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all',this)">ALL</button>
+      <button class="filter-btn" onclick="setFilter('degen',this)">DEGEN</button>
+      <button class="filter-btn" onclick="setFilter('poly',this)">POLY</button>
+      <button class="filter-btn" onclick="setFilter('pump',this)">PUMP</button>
+    </div>
+  </div>
+  <div class="panel-body" style="overflow-x:auto;">
+    <table class="data-table">
+      <thead><tr><th>BOT</th><th>ASSET</th><th>SIDE</th><th>P&amp;L</th><th>ENTRY</th><th>EXIT</th><th>TIME</th><th>STATUS</th></tr></thead>
+      <tbody id="history-body"><tr><td colspan="8" class="empty-state">Loading...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SPARKLINE -->
+<div class="sparkline-wrap">
+  <div class="sparkline-header">
+    <span class="sparkline-title">CUMULATIVE P&amp;L</span>
+    <span class="sparkline-meta" id="sparkline-meta">--</span>
+  </div>
+  <canvas id="pnl-sparkline" width="800" height="120" style="width:100%;height:120px;"></canvas>
+</div>
+
+<!-- SHORTCUT OVERLAY -->
+<div class="shortcut-overlay" id="shortcut-overlay" style="display:none;">
+  <div class="shortcut-box">
+    <h2>KEYBOARD SHORTCUTS</h2>
+    <div class="shortcut-row"><kbd>R</kbd> Refresh data</div>
+    <div class="shortcut-row"><kbd>C</kbd> Clear token &amp; logout</div>
+    <div class="shortcut-row"><kbd>?</kbd> Toggle this overlay</div>
+    <div class="shortcut-row"><kbd>ESC</kbd> Close overlay</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer style="text-align:center;padding:12px;color:var(--text-muted);font-size:9px;letter-spacing:1px;">
+  DAVEDEPLOYS TRADING TERMINAL V2 &mdash; PAPER TRADING ONLY &mdash; NOT FINANCIAL ADVICE
+</footer>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════════════════════════════
+var DEGEN_API = 'https://raw.githubusercontent.com/davedeploys-spec/terminal/main/data/bot-state-degen.json';
+var POLY_API  = 'https://raw.githubusercontent.com/davedeploys-spec/terminal/main/data/bot-state-poly.json';
+var PUMP_API  = 'https://raw.githubusercontent.com/davedeploys-spec/terminal/main/data/pump-bot-state.json';
+var REFRESH_INTERVAL = 30;
+var STALE_THRESHOLD_MS = 5 * 60 * 1000;
+var STARTING_CAPITAL = 2000;
+
+// ══════════════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════════════
+var lastDegenData = null;
+var lastPolyData = null;
+var lastPumpData = null;
+var tradeHistoryData = [];
+var historyFilter = 'all';
+var refreshTimer = null;
+var countdownTimer = null;
+var countdownSec = REFRESH_INTERVAL;
+
+// ══════════════════════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════════════════════
+function $(id) { return document.getElementById(id); }
+
+function safe(obj, path, fallback) {
+  if (obj == null) return fallback !== undefined ? fallback : null;
+  var keys = path.split('.');
+  var cur = obj;
+  for (var i = 0; i < keys.length; i++) {
+    if (cur == null || typeof cur !== 'object') return fallback !== undefined ? fallback : null;
+    cur = cur[keys[i]];
+  }
+  return cur !== undefined && cur !== null ? cur : (fallback !== undefined ? fallback : null);
+}
+
+function fmt(n) {
+  if (n == null || isNaN(n)) return '--';
+  return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtPnl(n) {
+  if (n == null || isNaN(n)) return '--';
+  var v = Number(n);
+  return (v >= 0 ? '+' : '') + '$' + Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtPct(n) {
+  if (n == null || isNaN(n)) return '--';
+  var v = Number(n);
+  return (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
+}
+
+function pnlClass(n) {
+  if (n == null || isNaN(n) || Number(n) === 0) return '';
+  return Number(n) > 0 ? 'positive' : 'negative';
+}
+
+function pnlVClass(n) {
+  if (n == null || isNaN(n) || Number(n) === 0) return '';
+  return Number(n) > 0 ? 'v-pos' : 'v-neg';
+}
+
+function setPill(id, text, cls) {
+  var el = $(id);
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'pill ' + cls;
+}
+
+function staleCheck(ts) {
+  if (!ts) return true;
+  var d = new Date(ts);
+  if (isNaN(d.getTime())) return true;
+  return (Date.now() - d.getTime()) > STALE_THRESHOLD_MS;
+}
+
+function timeAgo(ts) {
+  if (!ts) return 'never';
+  var d = new Date(ts);
+  if (isNaN(d.getTime())) return 'never';
+  var mins = Math.floor((Date.now() - d.getTime()) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  if (mins < 1440) return Math.floor(mins / 60) + 'h ago';
+  return Math.floor(mins / 1440) + 'd ago';
+}
+
+function shortTime(ts) {
+  if (!ts) return '--';
+  var d = new Date(ts);
+  if (isNaN(d.getTime())) return '--';
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[d.getMonth()] + ' ' + d.getDate() + ', ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+
+function truncate(str, n) {
+  if (!str) return '--';
+  return str.length > n ? str.substring(0, n) + '...' : str;
+}
+
+function regimeClass(regime) {
+  if (!regime) return '';
+  var r = regime.toUpperCase();
+  if (r.indexOf('BULL') >= 0) return 'positive';
+  if (r === 'BEAR_BOUNCE') return 'tag tag-pump';
+  if (r.indexOf('BEAR') >= 0) return 'negative';
+  if (r.indexOf('RANGE') >= 0) return 'tag tag-poly';
+  return '';
+}
+
+function regimeColor(regime) {
+  if (!regime) return 'var(--text-muted)';
+  var r = regime.toUpperCase();
+  if (r.indexOf('BULL') >= 0) return 'var(--green)';
+  if (r === 'BEAR_BOUNCE') return 'var(--yellow)';
+  if (r.indexOf('BEAR') >= 0) return 'var(--red)';
+  if (r.indexOf('RANGE') >= 0) return 'var(--purple)';
+  return 'var(--text-muted)';
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FETCH JSON (public raw.githubusercontent.com -- no auth needed)
+// ══════════════════════════════════════════════════════════════════════════════
+async function fetchJSON(apiUrl) {
+  var cacheBust = apiUrl + (apiUrl.indexOf('?') >= 0 ? '&' : '?') + '_t=' + Date.now();
+  var resp = await fetch(cacheBust);
+  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' for ' + apiUrl.split('/main/')[1]);
+  return await resp.json();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CLOCK & COUNTDOWN
+// ══════════════════════════════════════════════════════════════════════════════
+function updateClock() {
+  var now = new Date();
+  $('clock').textContent = now.toLocaleTimeString('en-US', {
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    timeZone: 'America/New_York', hour12: false
+  }) + ' EST';
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+function startCountdown() {
+  countdownSec = REFRESH_INTERVAL;
+  if (countdownTimer) clearInterval(countdownTimer);
+  countdownTimer = setInterval(function() {
+    countdownSec--;
+    var el = $('countdown');
+    if (el) {
+      el.textContent = countdownSec + 's';
+      el.className = countdownSec <= 5 ? 'countdown urgent' : 'countdown';
+    }
+    if (countdownSec <= 0) countdownSec = REFRESH_INTERVAL;
+  }, 1000);
+}
+
+function startAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(loadAll, REFRESH_INTERVAL * 1000);
+  startCountdown();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RENDER: DEGEN
+// ══════════════════════════════════════════════════════════════════════════════
+function renderDegen(d) {
+  lastDegenData = d;
+  var stale = staleCheck(safe(d, 'last_scan_time'));
+
+  // Status pill
+  if (stale) setPill('degen-pill', 'STALE', 'pill-stale');
+  else setPill('degen-pill', 'LIVE', 'pill-live');
+
+  // KPIs -- actual schema: bankroll.current, performance.*
+  var bankroll = safe(d, 'bankroll.current', 0);
+  var pnl = safe(d, 'performance.total_pnl', 0);
+  var wins = safe(d, 'performance.wins', 0);
+  var losses = safe(d, 'performance.losses', 0);
+  var winRate = safe(d, 'performance.win_rate', '--');
+
+  $('d-bankroll').textContent = fmt(bankroll);
+  var pnlEl = $('d-pnl');
+  pnlEl.textContent = fmtPnl(pnl);
+  pnlEl.className = 'v ' + pnlVClass(pnl);
+  $('d-winrate').textContent = winRate;
+  $('d-record').textContent = wins + 'W / ' + losses + 'L';
+
+  // Top-level KPI cards
+  $('degen-bankroll').textContent = fmt(bankroll);
+  var dPnlSub = $('degen-pnl-sub');
+  dPnlSub.textContent = fmtPnl(pnl);
+  dPnlSub.className = 'sub ' + pnlClass(pnl);
+
+  // ── Asset Scanner: scan_results ──
+  var scanResults = safe(d, 'scan_results', {});
+  var scanKeys = Object.keys(scanResults);
+  var scannerEl = $('degen-scanner');
+  if (scanKeys.length === 0) {
+    scannerEl.innerHTML = '<div class="empty-state"><div class="empty-icon">~</div>No assets being scanned</div>';
+  } else {
+    var html = '<table class="data-table"><thead><tr>';
+    html += '<th>SYMBOL</th><th>REGIME</th><th>SCORE</th><th>RSI</th><th>VOL</th><th>PRICE</th><th>SIGNAL</th><th>GATES</th>';
+    html += '</tr></thead><tbody>';
+    scanKeys.forEach(function(sym) {
+      var a = scanResults[sym] || {};
+      var regime = safe(a, 'regime', '--');
+      var score = safe(a, 'regime_score');
+      var rsi = safe(a, 'daily.rsi14');
+      var vol = safe(a, 'h4.atr_ratio');
+      var price = safe(a, 'price');
+      var signal = safe(a, 'entry_signal', 'NONE');
+      var l1 = safe(a, 'l1_pass', false);
+      var l2 = safe(a, 'l2_pass', false);
+      var l3 = safe(a, 'l3_pass', false);
+      html += '<tr>';
+      html += '<td style="color:var(--text);font-weight:700;">' + sym + '</td>';
+      html += '<td style="color:' + regimeColor(regime) + ';font-weight:600;">' + regime + '</td>';
+      html += '<td>' + (score != null ? score : '--') + '</td>';
+      html += '<td>' + (rsi != null ? Number(rsi).toFixed(1) : '--') + '</td>';
+      html += '<td>' + (vol != null ? Number(vol).toFixed(4) : '--') + '</td>';
+      html += '<td>' + (price != null ? '$' + Number(price).toLocaleString('en-US') : '--') + '</td>';
+      html += '<td>' + (signal || 'NONE') + '</td>';
+      html += '<td>';
+      html += '<span class="gate ' + (l1 ? 'gate-pass' : 'gate-fail') + '">L1</span>';
+      html += '<span class="gate ' + (l2 ? 'gate-pass' : 'gate-fail') + '">L2</span>';
+      html += '<span class="gate ' + (l3 ? 'gate-pass' : 'gate-fail') + '">L3</span>';
+      html += '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    scannerEl.innerHTML = html;
+  }
+
+  // ── Open Positions ──
+  var positions = safe(d, 'positions', []);
+  var posEl = $('degen-positions');
+  if (!positions || positions.length === 0) {
+    posEl.innerHTML = '<div class="empty-state"><div class="empty-icon">_</div>No open positions</div>';
+  } else {
+    var ph = '<table class="data-table"><thead><tr>';
+    ph += '<th>SYMBOL</th><th>SIDE</th><th>SIZE</th><th>ENTRY</th><th>MARK</th><th>UNREAL P&amp;L</th>';
+    ph += '</tr></thead><tbody>';
+    positions.forEach(function(pos) {
+      var uPnl = safe(pos, 'unrealized_pnl', 0);
+      ph += '<tr>';
+      ph += '<td style="color:var(--text);font-weight:700;">' + safe(pos, 'symbol', safe(pos, 'asset', '--')) + '</td>';
+      ph += '<td>' + safe(pos, 'side', safe(pos, 'direction', '--')) + '</td>';
+      ph += '<td>' + safe(pos, 'size', safe(pos, 'position_size', '--')) + '</td>';
+      ph += '<td>' + fmt(safe(pos, 'entry_price')) + '</td>';
+      ph += '<td>' + fmt(safe(pos, 'mark_price')) + '</td>';
+      ph += '<td class="' + pnlClass(uPnl) + '">' + fmtPnl(uPnl) + '</td>';
+      ph += '</tr>';
+    });
+    ph += '</tbody></table>';
+    posEl.innerHTML = ph;
+  }
+
+  // ── Watchlist ──
+  var watchlist = safe(d, 'watch_list', []);
+  var wlEl = $('degen-watchlist');
+  if (!watchlist || watchlist.length === 0) {
+    wlEl.innerHTML = '<div class="empty-state"><div class="empty-icon">~</div>No assets on watch list</div>';
+  } else {
+    var wh = '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+    watchlist.forEach(function(w) {
+      var sym = typeof w === 'string' ? w : safe(w, 'symbol', '--');
+      wh += '<span class="tag tag-degen">' + sym + '</span>';
+    });
+    wh += '</div>';
+    wlEl.innerHTML = wh;
+  }
+
+  // ── Return closed trades for history ──
+  var tradeLog = safe(d, 'trade_log', []);
+  var closedTrades = [];
+  if (Array.isArray(tradeLog)) {
+    tradeLog.forEach(function(t) {
+      closedTrades.push({
+        bot: 'degen',
+        symbol: safe(t, 'asset', '--'),
+        side: safe(t, 'direction', '--'),
+        pnl: safe(t, 'pnl', null),
+        time: safe(t, 'exit_time', ''),
+        entry: safe(t, 'entry_price', null),
+        exit: safe(t, 'exit_price', null),
+        status: safe(t, 'exit_reason', '--')
+      });
+    });
+  }
+  return closedTrades;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RENDER: POLY
+// ══════════════════════════════════════════════════════════════════════════════
+function renderPoly(p) {
+  lastPolyData = p;
+  var stale = staleCheck(safe(p, 'updated_at'));
+
+  if (stale) setPill('poly-pill', 'STALE', 'pill-stale');
+  else setPill('poly-pill', 'LIVE', 'pill-live');
+
+  // KPIs -- actual schema: bankroll.current, bankroll.realized_pnl, bankroll.unrealized_pnl
+  var nav = safe(p, 'bankroll.current', 0);
+  var realizedPnl = safe(p, 'bankroll.realized_pnl', 0);
+  var unrealizedPnl = safe(p, 'bankroll.unrealized_pnl', 0);
+  var totalPnl = (Number(realizedPnl) || 0) + (Number(unrealizedPnl) || 0);
+  var deployed = safe(p, 'bankroll.deployed', 0);
+  var deployedPct = safe(p, 'bankroll.deployed_pct', '--');
+  var positions = safe(p, 'positions', []);
+
+  $('p-nav').textContent = fmt(nav);
+  var pPnl = $('p-pnl');
+  pPnl.textContent = fmtPnl(totalPnl);
+  pPnl.className = 'v ' + pnlVClass(totalPnl);
+  $('p-deployed').textContent = fmt(deployed) + ' (' + deployedPct + ')';
+  $('p-trades').textContent = positions.length;
+
+  // Top-level KPI card
+  $('poly-nav').textContent = fmt(nav);
+  var pPnlSub = $('poly-pnl-sub');
+  pPnlSub.textContent = fmtPnl(totalPnl);
+  pPnlSub.className = 'sub ' + pnlClass(totalPnl);
+
+  // ── Active Positions ──
+  var posEl = $('poly-positions');
+  if (!positions || positions.length === 0) {
+    posEl.innerHTML = '<div class="empty-state"><div class="empty-icon">_</div>No active positions</div>';
+  } else {
+    var ph = '<table class="data-table"><thead><tr>';
+    ph += '<th>MARKET</th><th>SIDE</th><th>SIZE</th><th>ENTRY</th><th>CURRENT</th><th>P&amp;L</th><th>EV</th><th>RESOLVES</th><th>STRATEGY</th>';
+    ph += '</tr></thead><tbody>';
+    positions.forEach(function(pos) {
+      var uPnl = safe(pos, 'unrealized_pnl', 0);
+      var question = safe(pos, 'market', '--');
+      var side = safe(pos, 'side', '--');
+      var strategy = safe(pos, 'strategy', '--');
+      var ev = safe(pos, 'ev');
+      var resolves = safe(pos, 'resolves', '--');
+      ph += '<tr>';
+      ph += '<td class="truncate" title="' + question + '">' + truncate(question, 40) + '</td>';
+      ph += '<td style="color:' + (side.toUpperCase() === 'YES' ? 'var(--green)' : 'var(--red)') + ';font-weight:700;">' + side.toUpperCase() + '</td>';
+      ph += '<td>' + safe(pos, 'size', '--') + '</td>';
+      ph += '<td>' + (safe(pos, 'entry') != null ? '$' + Number(safe(pos, 'entry')).toFixed(2) : '--') + '</td>';
+      ph += '<td>' + (safe(pos, 'current_price') != null ? '$' + Number(safe(pos, 'current_price')).toFixed(2) : '--') + '</td>';
+      ph += '<td class="' + pnlClass(uPnl) + '">' + fmtPnl(uPnl) + '</td>';
+      ph += '<td>' + (ev != null ? Number(ev).toFixed(2) : '--') + '</td>';
+      ph += '<td>' + resolves + '</td>';
+      ph += '<td><span class="tag tag-poly">' + truncate(strategy, 18) + '</span></td>';
+      ph += '</tr>';
+    });
+    ph += '</tbody></table>';
+    posEl.innerHTML = ph;
+  }
+
+  // ── Return positions as trade entries for history ──
+  var closedTrades = [];
+  if (Array.isArray(positions)) {
+    positions.forEach(function(pos) {
+      closedTrades.push({
+        bot: 'poly',
+        symbol: safe(pos, 'market', '--'),
+        side: safe(pos, 'side', '--'),
+        pnl: safe(pos, 'unrealized_pnl', null),
+        time: safe(pos, 'opened_at', ''),
+        entry: safe(pos, 'entry', null),
+        exit: safe(pos, 'current_price', null),
+        status: safe(pos, 'status', 'active')
+      });
+    });
+  }
+  return closedTrades;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RENDER: PUMP
+// ══════════════════════════════════════════════════════════════════════════════
+function renderPump(p) {
+  lastPumpData = p;
+  var stale = staleCheck(safe(p, 'last_scan'));
+  var dryRun = safe(p, 'dry_run', true);
+
+  if (dryRun) setPill('pump-pill', 'DRY RUN', 'pill-dry');
+  else if (stale) setPill('pump-pill', 'STALE', 'pill-stale');
+  else setPill('pump-pill', 'LIVE', 'pill-live');
+
+  // KPIs
+  var mode = safe(p, 'mode', dryRun ? 'DRY_RUN' : 'LIVE');
+  var deployedTokens = safe(p, 'deployed_tokens', []);
+  var deployCount = deployedTokens.length;
+
+  $('pm-mode').textContent = (mode || 'DRY_RUN').toUpperCase().replace('_', ' ');
+  $('pm-deploys').textContent = deployCount;
+  $('pm-tokens').textContent = deployCount;
+  $('pm-scan').textContent = timeAgo(safe(p, 'last_scan'));
+
+  // ── Deployed Tokens ──
+  var tokensEl = $('pump-tokens');
+  if (!deployedTokens || deployedTokens.length === 0) {
+    tokensEl.innerHTML = '<div class="empty-state"><div class="empty-icon">_</div>No tokens deployed yet</div>';
+  } else {
+    var th = '<table class="data-table"><thead><tr>';
+    th += '<th>NAME</th><th>TICKER</th><th>MINT</th><th>DEPLOYED</th><th>STATUS</th>';
+    th += '</tr></thead><tbody>';
+    deployedTokens.forEach(function(t) {
+      var mint = safe(t, 'mint', safe(t, 'address', '--'));
+      var mintShort = mint.length > 12 ? mint.substring(0, 6) + '...' + mint.substring(mint.length - 4) : mint;
+      th += '<tr>';
+      th += '<td style="color:var(--text);font-weight:700;">' + safe(t, 'name', '--') + '</td>';
+      th += '<td>' + safe(t, 'ticker', safe(t, 'symbol', '--')) + '</td>';
+      th += '<td title="' + mint + '" style="font-size:9px;">' + mintShort + '</td>';
+      th += '<td>' + shortTime(safe(t, 'deployed_at', safe(t, 'timestamp', ''))) + '</td>';
+      th += '<td>' + safe(t, 'status', '--') + '</td>';
+      th += '</tr>';
+    });
+    th += '</tbody></table>';
+    tokensEl.innerHTML = th;
+  }
+
+  // ── Activity Log ──
+  var log = safe(p, 'log', []);
+  var logEl = $('pump-log');
+  if (!log || log.length === 0) {
+    logEl.innerHTML = '<div class="empty-state"><div class="empty-icon">~</div>No activity logged</div>';
+  } else {
+    var lh = '<table class="data-table"><thead><tr>';
+    lh += '<th>TIMESTAMP</th><th>ACTION</th><th>DETAILS</th>';
+    lh += '</tr></thead><tbody>';
+    log.slice(-20).reverse().forEach(function(entry) {
+      lh += '<tr>';
+      lh += '<td>' + shortTime(safe(entry, 'timestamp', safe(entry, 'time', ''))) + '</td>';
+      lh += '<td>' + safe(entry, 'action', safe(entry, 'type', '--')) + '</td>';
+      lh += '<td style="font-size:9px;">' + truncate(safe(entry, 'details', safe(entry, 'message', '--')), 50) + '</td>';
+      lh += '</tr>';
+    });
+    lh += '</tbody></table>';
+    logEl.innerHTML = lh;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TRADE HISTORY (UNIFIED)
+// ══════════════════════════════════════════════════════════════════════════════
+function renderHistory(trades) {
+  tradeHistoryData = trades;
+  var filtered = historyFilter === 'all' ? trades : trades.filter(function(t) { return t.bot === historyFilter; });
+  var tbody = $('history-body');
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No trades to display</td></tr>';
+    return;
+  }
+
+  // Sort by time descending
+  filtered.sort(function(a, b) { return (b.time || '') > (a.time || '') ? 1 : -1; });
+
+  var html = '';
+  filtered.forEach(function(t) {
+    var botTag = '<span class="tag tag-' + t.bot + '">' + t.bot.toUpperCase() + '</span>';
+    html += '<tr>';
+    html += '<td>' + botTag + '</td>';
+    html += '<td style="color:var(--text);font-weight:600;" class="truncate" title="' + (t.symbol || '') + '">' + truncate(t.symbol, 30) + '</td>';
+    html += '<td>' + (t.side || '--') + '</td>';
+    html += '<td class="' + pnlClass(t.pnl) + '">' + fmtPnl(t.pnl) + '</td>';
+    html += '<td>' + (t.entry != null ? fmt(t.entry) : '--') + '</td>';
+    html += '<td>' + (t.exit != null ? fmt(t.exit) : '--') + '</td>';
+    html += '<td>' + shortTime(t.time) + '</td>';
+    html += '<td>' + (t.status || '--') + '</td>';
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+function setFilter(f, btn) {
+  historyFilter = f;
+  // Update active button
+  var btns = document.querySelectorAll('.filter-btn');
+  btns.forEach(function(b) { b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderHistory(tradeHistoryData);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SPARKLINE
+// ══════════════════════════════════════════════════════════════════════════════
+function drawSparkline(canvasId, dataPoints) {
+  var canvas = $(canvasId);
+  if (!canvas || !dataPoints || dataPoints.length === 0) {
+    if (canvas) {
+      var ctx0 = canvas.getContext('2d');
+      ctx0.clearRect(0, 0, canvas.width, canvas.height);
+      ctx0.fillStyle = '#6b7280';
+      ctx0.font = '11px Courier New';
+      ctx0.textAlign = 'center';
+      ctx0.fillText('No P&L data available', canvas.width / 2, canvas.height / 2);
+    }
+    return;
+  }
+
+  // Handle high-DPI
+  var dpr = window.devicePixelRatio || 1;
+  var rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  var ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  var w = rect.width;
+  var h = rect.height;
+
+  ctx.clearRect(0, 0, w, h);
+
+  var minVal = Math.min.apply(null, dataPoints.concat([0]));
+  var maxVal = Math.max.apply(null, dataPoints.concat([0]));
+  var range = maxVal - minVal || 1;
+  var padding = 20;
+
+  function xPos(i) { return padding + (i / Math.max(dataPoints.length - 1, 1)) * (w - padding * 2); }
+  function yPos(v) { return padding + ((maxVal - v) / range) * (h - padding * 2); }
+
+  var last = dataPoints[dataPoints.length - 1];
+  var isPositive = last >= 0;
+  var zeroY = yPos(0);
+
+  // Zero line
+  ctx.beginPath();
+  ctx.moveTo(padding, zeroY);
+  ctx.lineTo(w - padding, zeroY);
+  ctx.strokeStyle = 'rgba(107,114,128,0.3)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Zero label
+  ctx.fillStyle = '#6b7280';
+  ctx.font = '9px Courier New';
+  ctx.textAlign = 'left';
+  ctx.fillText('$0', 2, zeroY - 3);
+
+  // Gradient fill
+  var grad = ctx.createLinearGradient(0, 0, 0, h);
+  if (isPositive) {
+    grad.addColorStop(0, 'rgba(34,197,94,0.15)');
+    grad.addColorStop(1, 'rgba(34,197,94,0)');
+  } else {
+    grad.addColorStop(0, 'rgba(239,68,68,0)');
+    grad.addColorStop(1, 'rgba(239,68,68,0.15)');
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(xPos(0), zeroY);
+  for (var i = 0; i < dataPoints.length; i++) ctx.lineTo(xPos(i), yPos(dataPoints[i]));
+  ctx.lineTo(xPos(dataPoints.length - 1), zeroY);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  ctx.moveTo(xPos(0), yPos(dataPoints[0]));
+  for (var j = 1; j < dataPoints.length; j++) ctx.lineTo(xPos(j), yPos(dataPoints[j]));
+  ctx.strokeStyle = isPositive ? '#22c55e' : '#ef4444';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // End dot
+  ctx.beginPath();
+  ctx.arc(xPos(dataPoints.length - 1), yPos(last), 3, 0, Math.PI * 2);
+  ctx.fillStyle = isPositive ? '#22c55e' : '#ef4444';
+  ctx.fill();
+
+  // End label
+  ctx.fillStyle = isPositive ? '#22c55e' : '#ef4444';
+  ctx.font = '10px Courier New';
+  ctx.textAlign = 'right';
+  ctx.fillText(fmtPnl(last), w - 4, yPos(last) - 6);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ══════════════════════════════════════════════════════════════════════════════
+document.addEventListener('keydown', function(e) {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'r' || e.key === 'R') { loadAll(); }
+  if (e.key === '?') {
+    var ov = $('shortcut-overlay');
+    ov.style.display = ov.style.display === 'none' ? 'flex' : 'none';
+  }
+  if (e.key === 'Escape') {
+    $('shortcut-overlay').style.display = 'none';
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// LOAD ALL DATA
+// ══════════════════════════════════════════════════════════════════════════════
+async function loadAll() {
+  var banner = $('error-banner');
+  banner.style.display = 'none';
+  banner.textContent = '';
+  var errors = [];
+
+  var results = await Promise.allSettled([
+    fetchJSON(DEGEN_API),
+    fetchJSON(POLY_API),
+    fetchJSON(PUMP_API)
+  ]);
+
+  var degenResult = results[0];
+  var polyResult = results[1];
+  var pumpResult = results[2];
+  var allTrades = [];
+
+  // ── Degen ──
+  if (degenResult.status === 'fulfilled') {
+    try {
+      var closedDegen = renderDegen(degenResult.value);
+      allTrades = allTrades.concat(closedDegen);
+    } catch (e) {
+      console.error('Degen render error:', e);
+      setPill('degen-pill', 'ERROR', 'pill-error');
+      errors.push('Degen: ' + e.message);
+    }
+  } else {
+    setPill('degen-pill', 'ERROR', 'pill-error');
+    errors.push('Degen: ' + (degenResult.reason ? degenResult.reason.message : 'fetch failed'));
+  }
+
+  // ── Poly ──
+  if (polyResult.status === 'fulfilled') {
+    try {
+      var closedPoly = renderPoly(polyResult.value);
+      allTrades = allTrades.concat(closedPoly);
+    } catch (e) {
+      console.error('Poly render error:', e);
+      setPill('poly-pill', 'ERROR', 'pill-error');
+      errors.push('Poly: ' + e.message);
+    }
+  } else {
+    setPill('poly-pill', 'ERROR', 'pill-error');
+    errors.push('Poly: ' + (polyResult.reason ? polyResult.reason.message : 'fetch failed'));
+  }
+
+  // ── Pump ──
+  if (pumpResult.status === 'fulfilled') {
+    try { renderPump(pumpResult.value); }
+    catch (e) {
+      console.error('Pump render error:', e);
+      setPill('pump-pill', 'ERROR', 'pill-error');
+      errors.push('Pump: ' + e.message);
+    }
+  } else {
+    setPill('pump-pill', 'ERROR', 'pill-error');
+    errors.push('Pump: ' + (pumpResult.reason ? pumpResult.reason.message : 'fetch failed'));
+  }
+
+  // ── Summary KPIs (FIXED: use actual field paths) ──
+  var degenBankroll = safe(lastDegenData, 'bankroll.current', 0) || 0;
+  var polyBankroll = safe(lastPolyData, 'bankroll.current', 0) || 0;
+  var totalNav = degenBankroll + polyBankroll;
+
+  var degenPnl = safe(lastDegenData, 'performance.total_pnl', 0) || 0;
+  var polyRealPnl = safe(lastPolyData, 'bankroll.realized_pnl', 0) || 0;
+  var polyUnrealPnl = safe(lastPolyData, 'bankroll.unrealized_pnl', 0) || 0;
+  var totalPnl = degenPnl + polyRealPnl + polyUnrealPnl;
+
+  var degenPos = safe(lastDegenData, 'positions', []) || [];
+  var polyPos = safe(lastPolyData, 'positions', []) || [];
+  var openCount = degenPos.length + polyPos.length;
+
+  $('nav-total').textContent = fmt(totalNav);
+  var navChange = $('nav-change');
+  var pnlPct = (totalPnl / STARTING_CAPITAL) * 100;
+  navChange.textContent = fmtPnl(totalPnl) + ' (' + fmtPct(pnlPct) + ')';
+  navChange.className = 'sub ' + pnlClass(totalPnl);
+
+  var tpEl = $('total-pnl');
+  tpEl.textContent = fmtPnl(totalPnl);
+  tpEl.className = 'val ' + pnlClass(totalPnl);
+  $('total-pnl-sub').textContent = 'realized + unrealized';
+
+  $('open-count').textContent = openCount;
+  $('open-sub').textContent = 'across all books';
+
+  // ── Trade history + sparkline ──
+  renderHistory(allTrades);
+
+  var pnlPoints = allTrades.filter(function(t) { return t.pnl != null && !isNaN(t.pnl); }).sort(function(a, b) {
+    return (a.time || '') < (b.time || '') ? -1 : 1;
+  });
+  var cumulative = [];
+  var running = 0;
+  pnlPoints.forEach(function(t) {
+    running += (Number(t.pnl) || 0);
+    cumulative.push(running);
+  });
+  drawSparkline('pnl-sparkline', cumulative);
+  $('sparkline-meta').textContent = cumulative.length + ' data points';
+
+  // ── Timestamp ──
+  var now = new Date();
+  $('last-update').textContent = 'updated ' + now.toLocaleTimeString('en-US', {
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    timeZone: 'America/New_York', hour12: false
+  });
+
+  // ── Errors ──
+  if (errors.length > 0) {
+    banner.textContent = 'ERRORS: ' + errors.join(' | ');
+    banner.style.display = 'block';
+  }
+
+  // Reset countdown
+  countdownSec = REFRESH_INTERVAL;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+  loadAll();
+  startAutoRefresh();
+});
+</script>
+</body>
+</html>
