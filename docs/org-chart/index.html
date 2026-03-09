@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DaveDeploys HQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & BASE ===== */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#F8F9FB;--surface:#FFFFFF;--border:#E5E7EB;--border-light:#F0F1F3;
+  --text:#111827;--text-secondary:#6B7280;--text-muted:#9CA3AF;
+  --accent:#4F46E5;--accent-light:#EEF2FF;--accent-hover:#4338CA;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.04);--shadow-md:0 4px 12px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 24px rgba(0,0,0,.08);--shadow-xl:0 12px 40px rgba(0,0,0,.12);
+  --radius:8px;--radius-lg:12px;--radius-xl:16px;
+  --sidebar-w:260px;--header-h:64px;--transition:all .2s ease;
+  /* Division colors */
+  --div1:#4F46E5;--div2:#0891B2;--div3:#059669;--div4:#D97706;--div5:#7C3AED;--div6:#475569;--div7:#DC2626;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',system-ui,-apple-system,sans-serif;color:var(--text);font-size:14px;line-height:1.5}
+a{color:var(--accent);text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+
+/* ===== LOADING ===== */
+#loading{position:fixed;inset:0;z-index:9999;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s}
+#loading.done{opacity:0;pointer-events:none}
+#loading .logo{font-size:24px;font-weight:800;color:var(--text);letter-spacing:-.5px;margin-bottom:8px}
+#loading .logo span{color:var(--accent)}
+#loading .sub{font-size:12px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:24px}
+.load-bar{width:200px;height:3px;background:var(--border);border-radius:4px;overflow:hidden}
+.load-fill{height:100%;width:0%;background:var(--accent);border-radius:4px;transition:width .3s}
+
+/* ===== HEADER ===== */
+#header{position:fixed;top:0;left:0;right:0;height:var(--header-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;z-index:200;gap:24px}
+.hdr-brand{display:flex;align-items:center;gap:12px;min-width:220px}
+.hdr-brand .logo-mark{width:36px;height:36px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px}
+.hdr-brand h1{font-size:17px;font-weight:700;letter-spacing:-.3px}
+.hdr-brand h1 span{color:var(--accent)}
+.hdr-brand .tagline{font-size:10px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-top:-2px}
+.hdr-metrics{display:flex;gap:6px;flex:1;justify-content:center}
+.metric-card{background:var(--bg);border:1px solid var(--border-light);border-radius:var(--radius);padding:8px 18px;text-align:center;min-width:110px}
+.metric-card .val{font-size:20px;font-weight:700;color:var(--text)}
+.metric-card .lbl{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.2px;font-weight:500}
+.hdr-actions{display:flex;align-items:center;gap:12px;min-width:220px;justify-content:flex-end}
+#search-box{position:relative}
+#search-input{width:200px;padding:8px 12px 8px 34px;font-size:12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);outline:none;transition:var(--transition);color:var(--text)}
+#search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+#search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted)}
+#search-results{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);max-height:280px;overflow-y:auto;z-index:300}
+#search-results.open{display:block}
+.sr-item{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .1s}
+.sr-item:hover{background:var(--accent-light)}
+.sr-item .sr-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sr-item .sr-name{font-size:13px;font-weight:500}
+.sr-item .sr-role{font-size:11px;color:var(--text-muted)}
+.view-toggle{display:flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.view-toggle button{padding:6px 12px;font-size:11px;font-weight:500;color:var(--text-secondary);background:var(--surface);border-right:1px solid var(--border);transition:var(--transition)}
+.view-toggle button:last-child{border-right:none}
+.view-toggle button.active{background:var(--accent);color:#fff}
+
+/* ===== SIDEBAR ===== */
+#sidebar{position:fixed;top:var(--header-h);left:0;bottom:0;width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);z-index:150;display:flex;flex-direction:column;transition:transform .3s ease}
+#sidebar.collapsed{transform:translateX(calc(-1 * var(--sidebar-w) + 40px))}
+.sb-toggle{position:absolute;right:-16px;top:16px;width:32px;height:32px;background:var(--surface);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);z-index:10;transition:var(--transition)}
+.sb-toggle:hover{background:var(--accent-light)}
+.sb-toggle svg{transition:transform .3s}
+#sidebar.collapsed .sb-toggle svg{transform:rotate(180deg)}
+.sb-header{padding:20px 20px 12px;border-bottom:1px solid var(--border-light)}
+.sb-header h2{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted)}
+.sb-divisions{flex:1;overflow-y:auto;padding:8px 12px}
+.div-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius);cursor:pointer;transition:var(--transition);margin-bottom:2px}
+.div-item:hover{background:var(--bg)}
+.div-item.active{background:var(--accent-light)}
+.div-item .div-color{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.div-item .div-info{flex:1;min-width:0}
+.div-item .div-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.div-item .div-count{font-size:11px;color:var(--text-muted)}
+.div-item .div-badge{background:var(--bg);border:1px solid var(--border-light);border-radius:10px;padding:1px 8px;font-size:11px;font-weight:600;color:var(--text-secondary);flex-shrink:0}
+.div-all{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius);cursor:pointer;transition:var(--transition);margin-bottom:8px;border-bottom:1px solid var(--border-light);padding-bottom:14px}
+.div-all:hover{background:var(--bg)}
+.div-all.active{background:var(--accent-light)}
+.div-all svg{color:var(--text-muted)}
+.div-all span{font-size:13px;font-weight:500}
+.sb-footer{padding:16px 20px;border-top:1px solid var(--border-light);font-size:11px;color:var(--text-muted)}
+
+/* ===== ORG CHART AREA ===== */
+#chart-area{position:fixed;top:var(--header-h);left:var(--sidebar-w);right:0;bottom:0;overflow:hidden;background:var(--bg)}
+#chart-area.sidebar-collapsed{left:40px}
+#org-svg{width:100%;height:100%}
+.link-line{fill:none;stroke:var(--border);stroke-width:1.5px}
+
+/* Node cards in SVG */
+.node-card{cursor:pointer}
+.node-card .card-bg{fill:var(--surface);stroke:var(--border);stroke-width:1px;rx:10;ry:10;transition:all .2s;filter:drop-shadow(0 1px 3px rgba(0,0,0,.04))}
+.node-card:hover .card-bg{stroke:var(--accent);filter:drop-shadow(0 4px 12px rgba(79,70,229,.1))}
+.node-card.selected .card-bg{stroke:var(--accent);stroke-width:2px;filter:drop-shadow(0 4px 16px rgba(79,70,229,.15))}
+.node-card .div-bar{rx:0;ry:0}
+.node-card .agent-name{font-size:12px;font-weight:600;fill:var(--text)}
+.node-card .agent-role{font-size:10px;fill:var(--text-secondary)}
+.node-card .status-dot{r:4}
+.node-card .tool-badge{font-size:8px;font-weight:600;fill:var(--text-muted)}
+
+/* CEO special card */
+.node-card.ceo-card .card-bg{fill:var(--accent);stroke:var(--accent)}
+.node-card.ceo-card .agent-name{fill:#fff}
+.node-card.ceo-card .agent-role{fill:rgba(255,255,255,.75)}
+.node-card.ceo-card .tool-badge{fill:rgba(255,255,255,.6)}
+
+/* Division head cards */
+.node-card.div-head .card-bg{fill:var(--surface);stroke-width:2px}
+
+/* ===== DETAIL PANEL ===== */
+#detail-panel{position:fixed;top:var(--header-h);right:0;bottom:0;width:380px;background:var(--surface);border-left:1px solid var(--border);z-index:180;transform:translateX(100%);transition:transform .3s ease;display:flex;flex-direction:column;box-shadow:var(--shadow-xl)}
+#detail-panel.open{transform:translateX(0)}
+.dp-header{padding:20px 24px 16px;border-bottom:1px solid var(--border-light);display:flex;align-items:flex-start;gap:16px}
+.dp-avatar{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px;flex-shrink:0}
+.dp-info{flex:1;min-width:0}
+.dp-name{font-size:17px;font-weight:700;margin-bottom:2px}
+.dp-role{font-size:12px;color:var(--text-secondary)}
+.dp-slug{font-size:11px;color:var(--text-muted);font-family:monospace}
+.dp-close{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:var(--transition)}
+.dp-close:hover{background:var(--bg);color:var(--text)}
+.dp-body{flex:1;overflow-y:auto;padding:20px 24px}
+.dp-section{margin-bottom:20px}
+.dp-section h3{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:8px}
+.dp-section p{font-size:13px;color:var(--text-secondary);line-height:1.6}
+.dp-list{list-style:none}
+.dp-list li{font-size:13px;color:var(--text-secondary);padding:4px 0;padding-left:16px;position:relative}
+.dp-list li::before{content:'';position:absolute;left:0;top:11px;width:6px;height:6px;border-radius:50%;background:var(--border)}
+.dp-tools{display:flex;flex-wrap:wrap;gap:6px}
+.dp-tool{padding:4px 10px;background:var(--bg);border:1px solid var(--border-light);border-radius:6px;font-size:11px;font-weight:500;color:var(--text-secondary)}
+.dp-peers{display:flex;flex-direction:column;gap:4px}
+.dp-peer{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:var(--radius);cursor:pointer;transition:var(--transition)}
+.dp-peer:hover{background:var(--bg)}
+.dp-peer .peer-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dp-peer .peer-name{font-size:12px;font-weight:500}
+.dp-peer .peer-role{font-size:11px;color:var(--text-muted)}
+.dp-division{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg);border-radius:var(--radius)}
+.dp-division .dd-color{width:12px;height:12px;border-radius:4px}
+.dp-division .dd-name{font-size:13px;font-weight:500}
+
+/* ===== ACTIVITY FEED (bottom drawer) ===== */
+#activity-drawer{position:fixed;left:var(--sidebar-w);right:0;bottom:0;background:var(--surface);border-top:1px solid var(--border);z-index:160;transition:height .3s ease,left .3s ease;height:44px;overflow:hidden}
+#activity-drawer.expanded{height:240px}
+#activity-drawer.sidebar-collapsed{left:40px}
+.ad-handle{height:44px;display:flex;align-items:center;padding:0 20px;cursor:pointer;gap:12px;border-bottom:1px solid var(--border-light)}
+.ad-handle h3{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);flex:1}
+.ad-handle .ad-live{width:7px;height:7px;border-radius:50%;background:#10B981;animation:pulse-green 2s infinite}
+.ad-handle .ad-arrow{color:var(--text-muted);transition:transform .3s}
+#activity-drawer.expanded .ad-arrow{transform:rotate(180deg)}
+@keyframes pulse-green{0%,100%{opacity:1}50%{opacity:.4}}
+.ad-list{overflow-y:auto;height:calc(100% - 44px);padding:8px 16px}
+.ad-item{display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid var(--border-light)}
+.ad-item:last-child{border-bottom:none}
+.ad-item .ad-avatar{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:10px;flex-shrink:0}
+.ad-item .ad-content{flex:1;min-width:0}
+.ad-item .ad-agent{font-size:12px;font-weight:600}
+.ad-item .ad-action{font-size:12px;color:var(--text-secondary)}
+.ad-item .ad-time{font-size:10px;color:var(--text-muted);white-space:nowrap;flex-shrink:0;margin-top:2px}
+.ad-badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.ad-badge.success{background:#ECFDF5;color:#059669}
+.ad-badge.warning{background:#FFFBEB;color:#D97706}
+.ad-badge.error{background:#FEF2F2;color:#DC2626}
+
+/* ===== CHATBOT ===== */
+#chat-fab{position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:16px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(79,70,229,.3);z-index:500;transition:var(--transition)}
+#chat-fab:hover{transform:scale(1.05);box-shadow:0 6px 20px rgba(79,70,229,.4)}
+#chat-panel{position:fixed;bottom:86px;right:24px;width:380px;height:500px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);z-index:500;display:flex;flex-direction:column;transform:translateY(10px) scale(.95);opacity:0;pointer-events:none;transition:all .25s ease}
+#chat-panel.open{transform:translateY(0) scale(1);opacity:1;pointer-events:auto}
+.cp-header{padding:16px 20px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:12px}
+.cp-header .cp-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff}
+.cp-header .cp-title{flex:1}
+.cp-header .cp-title h3{font-size:14px;font-weight:600}
+.cp-header .cp-title p{font-size:11px;color:var(--text-muted)}
+.cp-close{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:var(--transition)}
+.cp-close:hover{background:var(--bg);color:var(--text)}
+.cp-messages{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+.cp-msg{max-width:85%;animation:msg-in .3s ease}
+@keyframes msg-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.cp-msg.bot{align-self:flex-start}
+.cp-msg.user{align-self:flex-end}
+.cp-msg .bubble{padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5}
+.cp-msg.bot .bubble{background:var(--bg);border:1px solid var(--border-light);color:var(--text)}
+.cp-msg.user .bubble{background:var(--accent);color:#fff}
+.cp-msg .bubble .agent-link{color:var(--accent);cursor:pointer;font-weight:500;text-decoration:underline;text-decoration-color:rgba(79,70,229,.3)}
+.cp-msg.user .bubble .agent-link{color:#fff;text-decoration-color:rgba(255,255,255,.4)}
+.cp-typing{align-self:flex-start;display:flex;gap:4px;padding:12px 16px}
+.cp-typing span{width:6px;height:6px;border-radius:50%;background:var(--text-muted);animation:typing .8s infinite}
+.cp-typing span:nth-child(2){animation-delay:.15s}
+.cp-typing span:nth-child(3){animation-delay:.3s}
+@keyframes typing{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+.cp-suggestions{display:flex;flex-wrap:wrap;gap:6px;padding:0 20px 12px}
+.cp-suggest{padding:6px 12px;border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--text-secondary);cursor:pointer;transition:var(--transition);background:var(--surface)}
+.cp-suggest:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+.cp-input-area{padding:12px 16px;border-top:1px solid var(--border-light);display:flex;gap:8px}
+.cp-input-area input{flex:1;padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;outline:none;transition:var(--transition);background:var(--bg)}
+.cp-input-area input:focus{border-color:var(--accent)}
+.cp-input-area button{width:36px;height:36px;background:var(--accent);border-radius:var(--radius);color:#fff;display:flex;align-items:center;justify-content:center;transition:var(--transition);flex-shrink:0}
+.cp-input-area button:hover{background:var(--accent-hover)}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);padding:10px 20px;background:var(--text);color:#fff;font-size:13px;border-radius:var(--radius);box-shadow:var(--shadow-lg);opacity:0;transition:all .3s;z-index:600;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:1200px){
+  .hdr-metrics{gap:4px}
+  .metric-card{padding:6px 12px;min-width:90px}
+  .metric-card .val{font-size:16px}
+}
+@media(max-width:900px){
+  #sidebar{transform:translateX(calc(-1 * var(--sidebar-w) + 40px))}
+  #chart-area,#activity-drawer{left:40px}
+  .hdr-metrics{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="logo">Dave<span>Deploys</span></div>
+  <div class="sub">Loading HQ</div>
+  <div class="load-bar"><div class="load-fill" id="load-fill"></div></div>
+</div>
+
+<!-- HEADER -->
+<div id="header">
+  <div class="hdr-brand">
+    <div class="logo-mark">D</div>
+    <div>
+      <h1>Dave<span>Deploys</span> HQ</h1>
+      <div class="tagline">The $1B Mission</div>
+    </div>
+  </div>
+  <div class="hdr-metrics" id="hdr-metrics"></div>
+  <div class="hdr-actions">
+    <div id="search-box">
+      <svg id="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="search-input" type="text" placeholder="Search agents...">
+      <div id="search-results"></div>
+    </div>
+    <div class="view-toggle">
+      <button class="active" data-view="tree">Org Chart</button>
+      <button data-view="grid">Grid</button>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <button class="sb-toggle" onclick="toggleSidebar()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <div class="sb-header"><h2>Divisions</h2></div>
+  <div class="sb-divisions" id="sb-divisions"></div>
+  <div class="sb-footer">27 agents across 7 divisions</div>
+</div>
+
+<!-- ORG CHART -->
+<div id="chart-area">
+  <svg id="org-svg"></svg>
+</div>
+
+<!-- DETAIL PANEL -->
+<div id="detail-panel">
+  <div class="dp-header">
+    <div class="dp-avatar" id="dp-avatar"></div>
+    <div class="dp-info">
+      <div class="dp-name" id="dp-name"></div>
+      <div class="dp-role" id="dp-role"></div>
+      <div class="dp-slug" id="dp-slug"></div>
+    </div>
+    <button class="dp-close" onclick="closeDetail()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="dp-body" id="dp-body"></div>
+</div>
+
+<!-- ACTIVITY DRAWER -->
+<div id="activity-drawer">
+  <div class="ad-handle" onclick="toggleActivity()">
+    <div class="ad-live"></div>
+    <h3>Live Activity</h3>
+    <svg class="ad-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+  </div>
+  <div class="ad-list" id="ad-list"></div>
+</div>
+
+<!-- CHATBOT -->
+<button id="chat-fab" onclick="toggleChat()">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+</button>
+<div id="chat-panel">
+  <div class="cp-header">
+    <div class="cp-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+    <div class="cp-title"><h3>HQ Assistant</h3><p>Ask about any agent or division</p></div>
+    <button class="cp-close" onclick="toggleChat()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="cp-messages" id="cp-messages"></div>
+  <div class="cp-suggestions" id="cp-suggestions"></div>
+  <div class="cp-input-area">
+    <input id="cp-input" type="text" placeholder="Ask about an agent..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button onclick="sendChat()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script>
+// ============================================================
+// DAVEDEPLOYS HQ - COMPLETE JAVASCRIPT
+// ============================================================
+
+// ===== DIVISION DATA =====
+var DIVS = {
+  1:{name:'Executive Command',color:'#4F46E5',desc:'Strategic leadership, CEO operations, cross-division coordination, and the $1B mission roadmap.'},
+  2:{name:'Trading & Alpha',color:'#0891B2',desc:'Quantitative trading bots across crypto perps, prediction markets, and meme coins. The revenue engine.'},
+  3:{name:'Engineering',color:'#059669',desc:'Full-stack development, CI/CD, code reviews, infrastructure, and technical architecture.'},
+  4:{name:'Growth & Revenue',color:'#D97706',desc:'Marketing, sales, investor relations, Stripe revenue monitoring, and growth strategy.'},
+  5:{name:'Intelligence',color:'#7C3AED',desc:'Market research, user pain point discovery, competitive intelligence, and strategic advisory.'},
+  6:{name:'Operations',color:'#475569',desc:'SOPs, legal compliance, finance, admin systems, and operational infrastructure.'},
+  7:{name:'Communications',color:'#DC2626',desc:'Discord, Slack, Twitter/X, email outreach, and cross-platform messaging.'}
+};
+
+// ===== AGENT DATA =====
+var AGENTS = [
+  {id:'davedeploys-ceo',name:'CEO',role:'Chief Executive Officer',div:1,tools:['github','gmail','notion'],status:'active',
+    desc:'The operating CEO tracking the $1B mission across all divisions, trading bots, and business lines.',
+    responsibilities:['Sets company-wide strategy and $1B mission milestones','Coordinates all 7 divisions and resolves cross-team conflicts','Maintains persistent memory of business state and decisions','Oversees trading bot portfolio (Poly, Degen, Pumpy)','Reviews weekly progress and adjusts resource allocation'],
+    head:true,ceo:true},
+  {id:'admin-boy',name:'Admin',role:'Systems Administrator',div:1,tools:['github','gmail','notion','slack'],status:'active',
+    desc:'Internal systems administrator managing agent configurations, templates, and infrastructure oversight.',
+    responsibilities:['Manages agent network configurations and health checks','Maintains neon slate email/terminal templates','Oversees trading bot infrastructure and deployment configs','Runs daily admin systems checks across all platforms','Handles Notion workspace organization and maintenance'],
+    head:false},
+
+  // Trading & Alpha
+  {id:'quant-pm',name:'Quant PM',role:'Portfolio Manager',div:2,tools:['github','gmail'],status:'active',
+    desc:'Elite quantitative hedge fund PM overseeing Degen and Poly bots as a multi-strategy fund.',
+    responsibilities:['Monitors portfolio-level risk across all trading bots','Manages cross-book correlation and exposure limits','Reviews daily P&L and adjusts strategy parameters','Coordinates between Degen (crypto) and Poly (prediction markets)','Generates quantitative performance reports for CEO'],
+    head:true},
+  {id:'degen',name:'Degen',role:'Crypto Perps Trader',div:2,tools:['github'],status:'active',
+    desc:'Crypto perpetuals paper trading bot for Hyperliquid testnet using multi-timeframe EMA/RSI strategy.',
+    responsibilities:['Scans BTC, ETH, SOL, XRP every 5 minutes for trade signals','Executes multi-timeframe strategy (daily/4H EMA + 5m RSI/volume)','Manages position sizing and risk per trade','Logs all trades and performance metrics','Reports daily P&L to Quant PM'],
+    head:false},
+  {id:'poly',name:'Poly',role:'Prediction Markets Trader',div:2,tools:[],status:'config',
+    desc:'Polymarket prediction market trading bot executing Catalyst Momentum and High-Probability Favorite strategies.',
+    responsibilities:['Monitors Polymarket for catalyst-driven momentum opportunities','Executes high-probability favorite compounding strategy','Manages prediction market position sizing and exits','Tracks market resolution outcomes and win rates','Reports strategy performance to Quant PM'],
+    head:false},
+  {id:'pumpy',name:'Pumpy',role:'Meme Coin Deployer',div:2,tools:['github','twitter'],status:'config',
+    desc:'Monitors Twitter and news for viral sentiment, scores signals, generates meme coin identities, and deploys tokens.',
+    responsibilities:['Monitors Twitter and news APIs for viral sentiment signals','Scores signal strength and meme potential','Generates meme coin identities (name, ticker, narrative)','Deploys tokens via pump-bot.js on Solana','Tracks deployment success and initial trading volume'],
+    head:false},
+
+  // Engineering
+  {id:'swe-intern',name:'SWE Intern',role:'Full-Stack Engineer',div:3,tools:['github'],status:'active',
+    desc:'Full-stack engineering agent covering web apps, backend systems, AI/ML features, and CI/CD automation.',
+    responsibilities:['Builds React/Vue/Next.js web applications from specs','Designs scalable backend APIs and database schemas','Implements AI/ML features and model integrations','Automates CI/CD pipelines and deployment workflows','Reviews code quality and suggests architectural improvements'],
+    head:true},
+  {id:'github-repo-manager',name:'Repo Manager',role:'GitHub Operations',div:3,tools:['github'],status:'active',
+    desc:'Manages GitHub repositories, issues, PRs, branches, and day-to-day development workflows.',
+    responsibilities:['Creates and reviews pull requests across all repos','Triages issues and manages labels/milestones','Handles branch management and merge strategies','Monitors CI/CD pipeline status and failures','Manages repo settings, permissions, and webhooks'],
+    head:false},
+  {id:'product-tracker',name:'Product Tracker',role:'Dev Progress Monitor',div:3,tools:['github'],status:'active',
+    desc:'Tracks GitHub activity, development progress, shipping velocity, and roadmap status.',
+    responsibilities:['Monitors commit frequency and PR merge velocity','Tracks blockers and stalled work items','Generates weekly shipping velocity reports','Maintains roadmap status across all repositories','Alerts on unusual activity patterns or slowdowns'],
+    head:false},
+  {id:'ux-intern',name:'UX Intern',role:'Product Designer',div:3,tools:['figma','github','notion'],status:'active',
+    desc:'UX and product design agent handling user flows, wireframes, accessibility audits, and design system guidance.',
+    responsibilities:['Creates user flow diagrams and wireframe direction','Conducts WCAG 2.1/2.2 accessibility audits','Maintains design system documentation and Figma specs','Provides UI feedback on implementations','Synthesizes user research into design recommendations'],
+    head:false},
+
+  // Growth & Revenue
+  {id:'marketing',name:'Marketing',role:'Growth Strategist',div:4,tools:[],status:'active',
+    desc:'Expert marketing advisor using Gary Vee content strategy, attention arbitrage, and DVL framework.',
+    responsibilities:['Identifies underpriced attention channels and arbitrage opportunities','Creates content strategy across platforms','Optimizes conversion funnels and landing pages','Analyzes marketing spend ROI and attribution','Develops brand positioning and messaging frameworks'],
+    head:true},
+  {id:'sales',name:'Sales',role:'Sales Coach',div:4,tools:[],status:'active',
+    desc:'Elite sales coaching agent built on Andy Elliott closing system and Tony Robbins methodology.',
+    responsibilities:['Coaches on subconscious closing techniques','Reviews and improves sales scripts and objection handling','Develops prospect qualification frameworks','Analyzes sales pipeline health and conversion rates','Creates training materials for sales workflows'],
+    head:false},
+  {id:'investor-brief',name:'Investor Brief',role:'IR Specialist',div:4,tools:['stripe'],status:'active',
+    desc:'Compiles best metrics, customer wins, and product progress into investor-ready briefs.',
+    responsibilities:['Pulls key metrics from Stripe and product analytics','Compiles customer success stories and testimonials','Generates formatted investor update emails','Tracks fundraising pipeline and investor engagement','Prepares data room materials and financial snapshots'],
+    head:false},
+  {id:'revenue-monitor',name:'Revenue Monitor',role:'Financial Analyst',div:4,tools:['stripe'],status:'active',
+    desc:'Monitors Stripe and financial data for daily revenue snapshots, churn alerts, and growth trends.',
+    responsibilities:['Generates daily revenue and MRR snapshots','Monitors churn rate and sends alerts on anomalies','Tracks growth trends and cohort retention','Compares revenue against forecasts and targets','Produces weekly financial health summaries'],
+    head:false},
+  {id:'metrics-dashboard',name:'Metrics Dashboard',role:'KPI Tracker',div:4,tools:['github','stripe'],status:'active',
+    desc:'Pulls key metrics from Sheets, Stripe, HubSpot, GitHub to create investor-ready snapshots.',
+    responsibilities:['Aggregates data from multiple platforms into unified views','Creates investor-ready metric snapshots','Tracks growth, retention, product progress, and team health','Generates visual dashboards and charts','Maintains historical metric trends for comparison'],
+    head:false},
+
+  // Intelligence
+  {id:'strategy',name:'Strategy',role:'Strategic Advisor',div:5,tools:['gmail','linkedin','twitter'],status:'active',
+    desc:'Sharp strategic advisor conducting competitive intelligence, BD research, GTM strategy, and fundraising prep.',
+    responsibilities:['Conducts competitive landscape analysis and threat assessment','Researches BD and partnership opportunities','Develops go-to-market strategy and positioning','Prepares fundraising materials and pitch refinement','Performs market sizing and TAM/SAM/SOM analysis'],
+    head:true},
+  {id:'user-pain-point-scout',name:'Pain Point Scout',role:'Customer Researcher',div:5,tools:['product_hunt','reddit','twitter'],status:'active',
+    desc:'Ground-level customer research agent monitoring Reddit, X, Product Hunt, and niche forums.',
+    responsibilities:['Monitors Reddit and X for user complaints and feature requests','Tracks Product Hunt launches and competitor reviews','Identifies recurring pain points across market segments','Synthesizes research into actionable product insights','Maintains competitive feature comparison database'],
+    head:false},
+
+  // Operations
+  {id:'operations',name:'Operations',role:'COO Advisor',div:6,tools:[],status:'active',
+    desc:'Expert operations advisor built on Iman Gadzhi lean systems and Tony Robbins CANI philosophy.',
+    responsibilities:['Diagnoses operational bottlenecks and inefficiencies','Builds SOPs for recurring workflows','Designs client delivery systems and quality frameworks','Implements continuous improvement cycles (CANI)','Optimizes resource allocation across divisions'],
+    head:true},
+  {id:'finance',name:'Finance',role:'CFO Advisor',div:6,tools:[],status:'active',
+    desc:'Blunt numbers-first finance advisor mastering unit economics, pricing, margin optimization, and cash flow.',
+    responsibilities:['Analyzes unit economics and contribution margins','Optimizes offer pricing using value equation framework','Manages cash flow forecasting and runway planning','Reviews financial models and burn rate scenarios','Provides PE-style operational finance guidance'],
+    head:false},
+  {id:'legal',name:'Legal',role:'Compliance Officer',div:6,tools:['notion'],status:'active',
+    desc:'Jurisdiction-aware legal compliance agent identifying precise legal frameworks and filing requirements.',
+    responsibilities:['Identifies applicable jurisdictions and regulatory bodies','Reviews compliance against relevant legal frameworks','Manages filing deadlines and regulatory requirements','Conducts privacy and data protection assessments','Maintains legal risk register and mitigation plans'],
+    head:false},
+  {id:'notion-workspace-manager',name:'Notion Manager',role:'Knowledge Base Admin',div:6,tools:['notion'],status:'active',
+    desc:'Manages Notion pages, databases, and content organization for the davedeploys workspace.',
+    responsibilities:['Creates and maintains Notion page hierarchies','Manages database schemas and views','Organizes company knowledge base and documentation','Handles content migration and restructuring','Maintains templates and recurring page structures'],
+    head:false},
+
+  // Communications
+  {id:'discord-communications-manager',name:'Discord Manager',role:'Discord Ops',div:7,tools:[],status:'active',
+    desc:'Manages all Discord communications for the Dave Deploys server including messages, channels, and interactions.',
+    responsibilities:['Posts formatted messages and embeds to Discord channels','Monitors channel activity and escalates important items','Creates and organizes new channels and categories','Manages server roles and permissions','Handles day-to-day community interactions'],
+    head:true},
+  {id:'slack-communications-manager',name:'Slack Manager',role:'Slack Ops',div:7,tools:['slack'],status:'active',
+    desc:'Manages Slack communications for the Dave Deploys workspace including messages, channels, and monitoring.',
+    responsibilities:['Posts messages and monitors Slack channels','Generates daily Slack activity digests','Manages channel creation and organization','Handles automated notifications and alerts','Coordinates cross-platform message routing'],
+    head:false},
+  {id:'x',name:'X / Twitter',role:'Social Media Specialist',div:7,tools:['twitter'],status:'active',
+    desc:'Elite Twitter/X engagement specialist building thought leadership through strategic content and engagement.',
+    responsibilities:['Monitors trending conversations for engagement opportunities','Creates educational threads and thought leadership content','Manages replies and DMs within SLA targets','Builds audience through strategic follows and interactions','Tracks engagement metrics and content performance'],
+    head:false},
+  {id:'gmail-inbox-manager',name:'Gmail Manager',role:'Email Operations',div:7,tools:['gmail'],status:'active',
+    desc:'Manages davedeploys@gmail.com with full inbox control: reading, searching, sending, labels, and filters.',
+    responsibilities:['Processes incoming emails and prioritizes responses','Sends and drafts emails with proper formatting','Manages labels, filters, and inbox organization','Handles email-based workflow automations','Monitors for urgent messages requiring escalation'],
+    head:false},
+  {id:'outbound-email-qa-reviewer',name:'Email QA',role:'Outbound Quality',div:7,tools:[],status:'active',
+    desc:'Reviews outbound email drafts with PASS/FAIL verdict across subject, grammar, formatting, brand, and CTA.',
+    responsibilities:['Reviews all outbound email drafts before sending','Scores subject line quality and open-rate potential','Checks grammar, tone, and brand voice compliance','Validates HTML/formatting integrity','Evaluates CTA clarity and conversion optimization'],
+    head:false}
+];
+
+// ===== ACTIVITY FEED DATA =====
+var ACTIVITIES = [
+  {agent:'degen',action:'Executed BTC/USDT long signal analysis on Hyperliquid testnet',badge:'success',mins:2},
+  {agent:'gmail-inbox-manager',action:'Processed 8 new emails, flagged 2 as high priority',badge:'success',mins:5},
+  {agent:'discord-communications-manager',action:'Posted daily ops report embed to #ops-general',badge:'success',mins:8},
+  {agent:'slack-communications-manager',action:'Generated Slack activity digest for Dave Deploys workspace',badge:'success',mins:12},
+  {agent:'github-repo-manager',action:'Reviewed PR #47 in pumpfun-deploy-v1 repository',badge:'success',mins:15},
+  {agent:'revenue-monitor',action:'Stripe daily snapshot: MRR tracking, no churn alerts',badge:'success',mins:20},
+  {agent:'product-tracker',action:'Shipping velocity report: 12 commits, 3 PRs merged this week',badge:'success',mins:25},
+  {agent:'poly',action:'Polymarket API connection pending -- credentials required',badge:'warning',mins:30},
+  {agent:'legal',action:'Weekly compliance audit completed, 0 critical findings',badge:'success',mins:35},
+  {agent:'x',action:'Engaged with 4 trending crypto threads, 2 replies posted',badge:'success',mins:40},
+  {agent:'pumpy',action:'NewsAPI key missing -- signal monitoring paused',badge:'error',mins:45},
+  {agent:'swe-intern',action:'Built React component for dashboard metrics widget',badge:'success',mins:50},
+  {agent:'strategy',action:'Competitive intel scan completed, 3 new entrants identified',badge:'success',mins:55},
+  {agent:'notion-workspace-manager',action:'Updated Q1 roadmap page with latest milestones',badge:'success',mins:60},
+  {agent:'marketing',action:'Content calendar updated, 5 posts scheduled for next week',badge:'success',mins:75},
+  {agent:'davedeploys-ceo',action:'Weekly division review completed, priorities updated',badge:'success',mins:90},
+  {agent:'admin-boy',action:'Agent health check: 25/27 agents operational',badge:'warning',mins:100},
+  {agent:'quant-pm',action:'Portfolio risk report: all exposure within limits',badge:'success',mins:120},
+  {agent:'ux-intern',action:'WCAG accessibility audit on command center dashboard',badge:'success',mins:140},
+  {agent:'finance',action:'Cash flow forecast updated through Q3 2026',badge:'success',mins:180}
+];
+
+// ===== CHATBOT SUGGESTIONS =====
+var SUGGESTIONS = [
+  'What does the CEO do?',
+  'Show me Trading division',
+  'How many agents are active?',
+  'Who uses GitHub?'
+];
+
+// ===== GLOBALS =====
+var svg, g, tree, root, selectedNode = null;
+var CARD_W = 200, CARD_H = 72;
+var chatOpen = false, activityOpen = false;
+
+// ===== BUILD HIERARCHY =====
+function buildTree(){
+  var ceo = AGENTS.find(function(a){return a.ceo});
+  var divHeads = {};
+  AGENTS.forEach(function(a){
+    if(a.head && !a.ceo) divHeads[a.div] = a;
+  });
+  var root = {agent:ceo, children:[]};
+  Object.keys(DIVS).forEach(function(dk){
+    var d = parseInt(dk);
+    var head = divHeads[d];
+    if(!head) return;
+    var members = AGENTS.filter(function(a){return a.div===d && !a.head && !a.ceo});
+    var node = {agent:head, divId:d, children:members.map(function(m){return {agent:m, divId:d, children:[]}})};
+    root.children.push(node);
+  });
+  return root;
+}
+
+// ===== INIT ORG CHART =====
+function initChart(){
+  var area = document.getElementById('chart-area');
+  var W = area.clientWidth, H = area.clientHeight;
+  svg = d3.select('#org-svg').attr('width',W).attr('height',H);
+  
+  var zoom = d3.zoom().scaleExtent([.2,3]).on('zoom',function(e){g.attr('transform',e.transform)});
+  svg.call(zoom);
+  g = svg.append('g');
+  
+  var data = buildTree();
+  root = d3.hierarchy(data, function(d){return d.children});
+  
+  tree = d3.tree().nodeSize([CARD_W+30, CARD_H+60]);
+  tree(root);
+  
+  // Swap x/y for top-down layout
+  root.each(function(d){var tmp=d.x; d.x=d.y; d.y=tmp;});
+  
+  // Draw links
+  g.selectAll('.link-line')
+    .data(root.links())
+    .join('path')
+    .attr('class','link-line')
+    .attr('d',function(d){
+      return 'M'+d.source.y+','+(d.source.x+CARD_H/2)
+        +'C'+d.source.y+','+((d.source.x+d.target.x)/2+CARD_H/2)
+        +' '+d.target.y+','+((d.source.x+d.target.x)/2+CARD_H/2)
+        +' '+d.target.y+','+(d.target.x);
+    });
+  
+  // Draw nodes
+  var nodes = g.selectAll('.node-card')
+    .data(root.descendants())
+    .join('g')
+    .attr('class',function(d){
+      var c='node-card';
+      if(d.data.agent.ceo) c+=' ceo-card';
+      else if(d.data.agent.head) c+=' div-head';
+      return c;
+    })
+    .attr('transform',function(d){return 'translate('+(d.y-CARD_W/2)+','+(d.x-CARD_H/2)+')';})
+    .on('click',function(e,d){selectAgent(d.data.agent.id);});
+  
+  // Card background
+  nodes.append('rect')
+    .attr('class','card-bg')
+    .attr('width',CARD_W).attr('height',CARD_H);
+  
+  // Division color bar (left)
+  nodes.append('rect')
+    .attr('class','div-bar')
+    .attr('width',4).attr('height',CARD_H)
+    .attr('fill',function(d){return DIVS[d.data.agent.div]?DIVS[d.data.agent.div].color:'#999';});
+  
+  // For div-head cards, also color the border
+  nodes.filter(function(d){return d.data.agent.head && !d.data.agent.ceo;})
+    .select('.card-bg')
+    .attr('stroke',function(d){return DIVS[d.data.agent.div]?DIVS[d.data.agent.div].color:'#999';});
+  
+  // Status dot
+  nodes.append('circle')
+    .attr('class','status-dot')
+    .attr('cx',CARD_W-14).attr('cy',14)
+    .attr('fill',function(d){return d.data.agent.status==='active'?'#10B981':d.data.agent.status==='config'?'#F59E0B':'#EF4444';});
+  
+  // Agent name
+  nodes.append('text')
+    .attr('class','agent-name')
+    .attr('x',16).attr('y',26)
+    .text(function(d){return d.data.agent.name;});
+  
+  // Role
+  nodes.append('text')
+    .attr('class','agent-role')
+    .attr('x',16).attr('y',42)
+    .text(function(d){
+      var r=d.data.agent.role;
+      return r.length>24?r.substring(0,22)+'...':r;
+    });
+  
+  // Tool badges
+  nodes.each(function(d){
+    var el = d3.select(this);
+    var tools = d.data.agent.tools;
+    var abbrevs = {github:'GH',gmail:'GM',notion:'NO',slack:'SL',stripe:'ST',twitter:'TW',figma:'FG',linkedin:'LI',product_hunt:'PH',reddit:'RD'};
+    tools.slice(0,3).forEach(function(t,i){
+      el.append('text')
+        .attr('class','tool-badge')
+        .attr('x',16+i*28).attr('y',60)
+        .text(abbrevs[t]||t.substring(0,2).toUpperCase());
+    });
+  });
+  
+  // Center the chart
+  var bounds = g.node().getBBox();
+  var dx = W/2 - (bounds.x + bounds.width/2);
+  var dy = H/2 - (bounds.y + bounds.height/2);
+  var scale = Math.min(W/(bounds.width+100), (H-80)/(bounds.height+100), 1);
+  svg.transition().duration(600).call(zoom.transform, d3.zoomIdentity.translate(dx,dy).scale(scale));
+  
+  // Store zoom for later use
+  window._zoom = zoom;
+  window._chartW = W;
+  window._chartH = H;
+}
+
+// ===== SELECT AGENT =====
+function selectAgent(id){
+  var agent = AGENTS.find(function(a){return a.id===id});
+  if(!agent) return;
+  selectedNode = id;
+  
+  // Highlight in chart
+  d3.selectAll('.node-card').classed('selected',false);
+  d3.selectAll('.node-card').filter(function(d){return d.data.agent.id===id;}).classed('selected',true);
+  
+  // Fly to node
+  var node = root.descendants().find(function(d){return d.data.agent.id===id;});
+  if(node){
+    var W=window._chartW, H=window._chartH;
+    svg.transition().duration(600).call(window._zoom.transform,
+      d3.zoomIdentity.translate(W/2-node.y, H/2-node.x).scale(1));
+  }
+  
+  // Open detail panel
+  var div = DIVS[agent.div];
+  var panel = document.getElementById('detail-panel');
+  document.getElementById('dp-avatar').style.background = div?div.color:'#999';
+  document.getElementById('dp-avatar').textContent = agent.name.charAt(0);
+  document.getElementById('dp-name').textContent = agent.name;
+  document.getElementById('dp-role').textContent = agent.role;
+  document.getElementById('dp-slug').textContent = '@'+agent.id;
+  
+  var body = document.getElementById('dp-body');
+  var abbrevMap = {github:'GitHub',gmail:'Gmail',notion:'Notion',slack:'Slack',stripe:'Stripe',twitter:'Twitter/X',figma:'Figma',linkedin:'LinkedIn',product_hunt:'Product Hunt',reddit:'Reddit'};
+  var toolsHtml = agent.tools.map(function(t){return '<span class="dp-tool">'+(abbrevMap[t]||t)+'</span>';}).join('');
+  if(!toolsHtml) toolsHtml = '<span class="dp-tool" style="opacity:.5">No connected tools</span>';
+  
+  var respHtml = agent.responsibilities.map(function(r){return '<li>'+r+'</li>';}).join('');
+  
+  // Find peers (same division, not this agent)
+  var peers = AGENTS.filter(function(a){return a.div===agent.div && a.id!==agent.id;});
+  var peersHtml = peers.map(function(p){
+    return '<div class="dp-peer" onclick="selectAgent(\''+p.id+'\')">'
+      +'<div class="peer-dot" style="background:'+(div?div.color:'#999')+'"></div>'
+      +'<div><div class="peer-name">'+p.name+'</div><div class="peer-role">'+p.role+'</div></div></div>';
+  }).join('');
+  
+  // Find who they report to
+  var reportsTo = '';
+  if(agent.ceo){
+    reportsTo = 'Top of the org chart';
+  } else if(agent.head){
+    reportsTo = 'Reports to <span style="color:var(--accent);cursor:pointer" onclick="selectAgent(\'davedeploys-ceo\')">CEO</span>';
+  } else {
+    var head = AGENTS.find(function(a){return a.div===agent.div && a.head;});
+    if(head) reportsTo = 'Reports to <span style="color:var(--accent);cursor:pointer" onclick="selectAgent(\''+head.id+'\')">'+head.name+'</span>';
+  }
+  
+  body.innerHTML = ''
+    +'<div class="dp-section"><h3>Division</h3><div class="dp-division"><div class="dd-color" style="background:'+(div?div.color:'#999')+'"></div><div class="dd-name">'+(div?div.name:'Unknown')+'</div></div></div>'
+    +'<div class="dp-section"><h3>Reports To</h3><p>'+reportsTo+'</p></div>'
+    +'<div class="dp-section"><h3>About</h3><p>'+agent.desc+'</p></div>'
+    +'<div class="dp-section"><h3>Key Responsibilities</h3><ul class="dp-list">'+respHtml+'</ul></div>'
+    +'<div class="dp-section"><h3>Connected Tools</h3><div class="dp-tools">'+toolsHtml+'</div></div>'
+    +'<div class="dp-section"><h3>Division Peers</h3><div class="dp-peers">'+peersHtml+'</div></div>';
+  
+  panel.classList.add('open');
+}
+
+function closeDetail(){
+  document.getElementById('detail-panel').classList.remove('open');
+  d3.selectAll('.node-card').classed('selected',false);
+  selectedNode = null;
+}
+
+// ===== HEADER METRICS =====
+function initMetrics(){
+  var total = AGENTS.length;
+  var divCount = Object.keys(DIVS).length;
+  var toolSet = new Set();
+  AGENTS.forEach(function(a){a.tools.forEach(function(t){toolSet.add(t);});});
+  var active = AGENTS.filter(function(a){return a.status==='active';}).length;
+  
+  var metrics = [
+    {val:total,lbl:'Agents'},
+    {val:divCount,lbl:'Divisions'},
+    {val:toolSet.size,lbl:'Tools Connected'},
+    {val:active,lbl:'Active'}
+  ];
+  
+  var container = document.getElementById('hdr-metrics');
+  container.innerHTML = metrics.map(function(m){
+    return '<div class="metric-card"><div class="val">'+m.val+'</div><div class="lbl">'+m.lbl+'</div></div>';
+  }).join('');
+}
+
+// ===== SIDEBAR =====
+function initSidebar(){
+  var container = document.getElementById('sb-divisions');
+  var html = '<div class="div-all active" onclick="showAllDivisions(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>All Divisions</span></div>';
+  
+  Object.keys(DIVS).forEach(function(dk){
+    var d = parseInt(dk);
+    var div = DIVS[d];
+    var count = AGENTS.filter(function(a){return a.div===d;}).length;
+    html += '<div class="div-item" data-div="'+d+'" onclick="focusDivision('+d+',this)">' +
+      '<div class="div-color" style="background:'+div.color+'"></div>' +
+      '<div class="div-info"><div class="div-name">'+div.name+'</div></div>' +
+      '<div class="div-badge">'+count+'</div></div>';
+  });
+  container.innerHTML = html;
+}
+
+function focusDivision(divId, el){
+  // Update sidebar active state
+  document.querySelectorAll('.div-item,.div-all').forEach(function(e){e.classList.remove('active');});
+  if(el) el.classList.add('active');
+  
+  // Find nodes in this division
+  var divNodes = root.descendants().filter(function(d){return d.data.agent.div===divId;});
+  if(!divNodes.length) return;
+  
+  // Calculate bounding box of division nodes
+  var minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  divNodes.forEach(function(d){
+    if(d.y-CARD_W/2<minY) minY=d.y-CARD_W/2;
+    if(d.y+CARD_W/2>maxY) maxY=d.y+CARD_W/2;
+    if(d.x-CARD_H/2<minX) minX=d.x-CARD_H/2;
+    if(d.x+CARD_H/2>maxX) maxX=d.x+CARD_H/2;
+  });
+  
+  var W=window._chartW, H=window._chartH;
+  var bw=maxY-minY, bh=maxX-minX;
+  var scale = Math.min(W/(bw+200), H/(bh+200), 1.5);
+  var cx = (minY+maxY)/2, cy = (minX+maxX)/2;
+  
+  svg.transition().duration(600).call(window._zoom.transform,
+    d3.zoomIdentity.translate(W/2-cx*scale, H/2-cy*scale).scale(scale));
+  
+  // Dim non-division nodes
+  d3.selectAll('.node-card').style('opacity',function(d){
+    return d.data.agent.div===divId || d.data.agent.ceo ? 1 : 0.15;
+  });
+  d3.selectAll('.link-line').style('opacity',0.1);
+}
+
+function showAllDivisions(el){
+  document.querySelectorAll('.div-item,.div-all').forEach(function(e){e.classList.remove('active');});
+  if(el) el.classList.add('active');
+  
+  d3.selectAll('.node-card').style('opacity',1);
+  d3.selectAll('.link-line').style('opacity',1);
+  
+  // Reset zoom to fit all
+  var bounds = g.node().getBBox();
+  var W=window._chartW, H=window._chartH;
+  var scale = Math.min(W/(bounds.width+100), H/(bounds.height+100), 1);
+  var dx = W/2 - (bounds.x+bounds.width/2)*scale;
+  var dy = H/2 - (bounds.y+bounds.height/2)*scale;
+  svg.transition().duration(600).call(window._zoom.transform, d3.zoomIdentity.translate(dx,dy).scale(scale));
+}
+
+function toggleSidebar(){
+  var sb = document.getElementById('sidebar');
+  sb.classList.toggle('collapsed');
+  document.getElementById('chart-area').classList.toggle('sidebar-collapsed');
+  document.getElementById('activity-drawer').classList.toggle('sidebar-collapsed');
+  // Recalculate chart dimensions
+  setTimeout(function(){
+    var area = document.getElementById('chart-area');
+    window._chartW = area.clientWidth;
+    window._chartH = area.clientHeight;
+    svg.attr('width',area.clientWidth).attr('height',area.clientHeight);
+  },350);
+}
+
+// ===== SEARCH =====
+function initSearch(){
+  var input = document.getElementById('search-input');
+  var results = document.getElementById('search-results');
+  
+  input.addEventListener('input',function(){
+    var q = this.value.toLowerCase().trim();
+    if(!q){results.classList.remove('open');return;}
+    
+    var matches = AGENTS.filter(function(a){
+      return a.name.toLowerCase().indexOf(q)!==-1 ||
+        a.role.toLowerCase().indexOf(q)!==-1 ||
+        a.id.toLowerCase().indexOf(q)!==-1 ||
+        (DIVS[a.div] && DIVS[a.div].name.toLowerCase().indexOf(q)!==-1);
+    }).slice(0,8);
+    
+    if(!matches.length){results.classList.remove('open');return;}
+    
+    results.innerHTML = matches.map(function(a){
+      var div = DIVS[a.div];
+      return '<div class="sr-item" onclick="selectAgent(\''+a.id+'\');document.getElementById(\'search-results\').classList.remove(\'open\');document.getElementById(\'search-input\').value=\'\';">' +
+        '<div class="sr-dot" style="background:'+(div?div.color:'#999')+'"></div>' +
+        '<div><div class="sr-name">'+a.name+'</div><div class="sr-role">'+a.role+'</div></div></div>';
+    }).join('');
+    results.classList.add('open');
+  });
+  
+  input.addEventListener('blur',function(){setTimeout(function(){results.classList.remove('open');},200);});
+}
+
+// ===== ACTIVITY FEED =====
+function initActivity(){
+  var list = document.getElementById('ad-list');
+  list.innerHTML = ACTIVITIES.map(function(act){
+    var agent = AGENTS.find(function(a){return a.id===act.agent;});
+    var div = agent ? DIVS[agent.div] : null;
+    var color = div ? div.color : '#999';
+    var initial = agent ? agent.name.charAt(0) : '?';
+    var timeStr = act.mins < 60 ? act.mins+'m ago' : Math.floor(act.mins/60)+'h ago';
+    return '<div class="ad-item">' +
+      '<div class="ad-avatar" style="background:'+color+'">'+initial+'</div>' +
+      '<div class="ad-content"><span class="ad-agent">'+(agent?agent.name:'Unknown')+'</span> ' +
+      '<span class="ad-action">'+act.action+'</span> ' +
+      '<span class="ad-badge '+act.badge+'">'+act.badge+'</span></div>' +
+      '<div class="ad-time">'+timeStr+'</div></div>';
+  }).join('');
+}
+
+function toggleActivity(){
+  document.getElementById('activity-drawer').classList.toggle('expanded');
+  activityOpen = !activityOpen;
+}
+
+// ===== CHATBOT =====
+function toggleChat(){
+  chatOpen = !chatOpen;
+  document.getElementById('chat-panel').classList.toggle('open',chatOpen);
+  if(chatOpen && document.getElementById('cp-messages').children.length===0){
+    addBotMsg('Welcome to DaveDeploys HQ! I can tell you about any agent, division, or how the company is structured. What would you like to know?');
+    showSuggestions();
+  }
+}
+
+function showSuggestions(){
+  var el = document.getElementById('cp-suggestions');
+  el.innerHTML = SUGGESTIONS.map(function(s){
+    return '<button class="cp-suggest" onclick="handleSuggestion(this,\''+s.replace(/'/g,"\\'")+'\')">'+s+'</button>';
+  }).join('');
+}
+
+function handleSuggestion(btn,text){
+  document.getElementById('cp-suggestions').innerHTML = '';
+  addUserMsg(text);
+  setTimeout(function(){processChat(text);},400);
+}
+
+function sendChat(){
+  var input = document.getElementById('cp-input');
+  var text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+  document.getElementById('cp-suggestions').innerHTML = '';
+  addUserMsg(text);
+  setTimeout(function(){processChat(text);},400);
+}
+
+function addBotMsg(html){
+  var el = document.getElementById('cp-messages');
+  var div = document.createElement('div');
+  div.className = 'cp-msg bot';
+  div.innerHTML = '<div class="bubble">'+html+'</div>';
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+}
+
+function addUserMsg(text){
+  var el = document.getElementById('cp-messages');
+  var div = document.createElement('div');
+  div.className = 'cp-msg user';
+  div.innerHTML = '<div class="bubble">'+text+'</div>';
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+}
+
+function showTyping(){
+  var el = document.getElementById('cp-messages');
+  var div = document.createElement('div');
+  div.className = 'cp-typing';
+  div.id = 'typing-indicator';
+  div.innerHTML = '<span></span><span></span><span></span>';
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+}
+
+function hideTyping(){
+  var el = document.getElementById('typing-indicator');
+  if(el) el.remove();
+}
+
+function agentLink(agent){
+  return '<span class="agent-link" onclick="selectAgent(\''+agent.id+'\')">'+agent.name+'</span>';
+}
+
+function processChat(text){
+  showTyping();
+  var delay = 600 + Math.random()*400;
+  setTimeout(function(){
+    hideTyping();
+    var response = generateResponse(text);
+    addBotMsg(response);
+  },delay);
+}
+
+function generateResponse(text){
+  var q = text.toLowerCase();
+  
+  // Agent lookup
+  var foundAgent = null;
+  AGENTS.forEach(function(a){
+    if(q.indexOf(a.name.toLowerCase())!==-1 || q.indexOf(a.id.toLowerCase())!==-1){
+      foundAgent = a;
+    }
+  });
+  if(foundAgent && (q.indexOf('what')!==-1||q.indexOf('who')!==-1||q.indexOf('tell')!==-1||q.indexOf('about')!==-1||q.indexOf('show')!==-1||q.indexOf('does')!==-1||q.indexOf('info')!==-1)){
+    var div = DIVS[foundAgent.div];
+    return '<strong>'+agentLink(foundAgent)+'</strong> - '+foundAgent.role+'<br><br>'
+      +foundAgent.desc+'<br><br>'
+      +'<strong>Division:</strong> '+(div?div.name:'Unknown')+'<br>'
+      +'<strong>Tools:</strong> '+(foundAgent.tools.length?foundAgent.tools.join(', '):'None connected')+'<br>'
+      +'<strong>Status:</strong> '+(foundAgent.status==='active'?'Active':'Needs Config');
+  }
+  if(foundAgent){
+    var div = DIVS[foundAgent.div];
+    return agentLink(foundAgent)+' is the <strong>'+foundAgent.role+'</strong> in '+
+      (div?div.name:'Unknown')+'. '+foundAgent.desc;
+  }
+  
+  // Division lookup
+  var foundDiv = null;
+  Object.keys(DIVS).forEach(function(dk){
+    var d = DIVS[dk];
+    if(q.indexOf(d.name.toLowerCase())!==-1){
+      foundDiv = {id:parseInt(dk), data:d};
+    }
+  });
+  // Shorthand lookups
+  if(!foundDiv && q.indexOf('trading')!==-1) foundDiv = {id:2, data:DIVS[2]};
+  if(!foundDiv && q.indexOf('engineer')!==-1) foundDiv = {id:3, data:DIVS[3]};
+  if(!foundDiv && q.indexOf('growth')!==-1) foundDiv = {id:4, data:DIVS[4]};
+  if(!foundDiv && q.indexOf('intel')!==-1) foundDiv = {id:5, data:DIVS[5]};
+  if(!foundDiv && (q.indexOf('ops')!==-1||q.indexOf('operation')!==-1)) foundDiv = {id:6, data:DIVS[6]};
+  if(!foundDiv && q.indexOf('comm')!==-1) foundDiv = {id:7, data:DIVS[7]};
+  
+  if(foundDiv){
+    var members = AGENTS.filter(function(a){return a.div===foundDiv.id;});
+    var head = members.find(function(a){return a.head;});
+    var memberLinks = members.map(function(a){return agentLink(a)+' ('+a.role+')';}).join('<br>');
+    // Also focus the division in the sidebar
+    var sideEl = document.querySelector('.div-item[data-div="'+foundDiv.id+'"]');
+    focusDivision(foundDiv.id, sideEl);
+    return '<strong>'+foundDiv.data.name+'</strong><br><br>'
+      +foundDiv.data.desc+'<br><br>'
+      +'<strong>Team ('+members.length+'):</strong><br>'+memberLinks;
+  }
+  
+  // Stats queries
+  if(q.indexOf('how many')!==-1 && (q.indexOf('agent')!==-1||q.indexOf('employee')!==-1)){
+    var active = AGENTS.filter(function(a){return a.status==='active';}).length;
+    return 'DaveDeploys has <strong>'+AGENTS.length+' agents</strong> across '+Object.keys(DIVS).length+' divisions. '
+      +active+' are fully active, '+(AGENTS.length-active)+' need configuration.';
+  }
+  if(q.indexOf('division')!==-1 && (q.indexOf('how many')!==-1||q.indexOf('list')!==-1||q.indexOf('what are')!==-1)){
+    var divList = Object.keys(DIVS).map(function(dk){
+      var d = DIVS[dk];
+      var count = AGENTS.filter(function(a){return a.div===parseInt(dk);}).length;
+      return '<strong>'+d.name+'</strong> ('+count+' agents)';
+    }).join('<br>');
+    return 'There are <strong>'+Object.keys(DIVS).length+' divisions</strong>:<br><br>'+divList;
+  }
+  
+  // Tool queries
+  var toolMatch = null;
+  var toolNames = {github:'GitHub',gmail:'Gmail',notion:'Notion',slack:'Slack',stripe:'Stripe',twitter:'Twitter/X',figma:'Figma'};
+  Object.keys(toolNames).forEach(function(tk){
+    if(q.indexOf(tk)!==-1 || q.indexOf(toolNames[tk].toLowerCase())!==-1) toolMatch = tk;
+  });
+  if(toolMatch && (q.indexOf('who')!==-1||q.indexOf('which')!==-1||q.indexOf('uses')!==-1||q.indexOf('use ')!==-1||q.indexOf('have')!==-1)){
+    var users = AGENTS.filter(function(a){return a.tools.indexOf(toolMatch)!==-1;});
+    if(!users.length) return 'No agents currently have <strong>'+toolNames[toolMatch]+'</strong> connected.';
+    return '<strong>'+users.length+' agents</strong> use '+toolNames[toolMatch]+':<br><br>'
+      +users.map(function(a){return agentLink(a)+' ('+a.role+')';}).join('<br>');
+  }
+  
+  // Structure queries
+  if(q.indexOf('report')!==-1 || q.indexOf('structure')!==-1 || q.indexOf('hierarchy')!==-1 || q.indexOf('org')!==-1){
+    return 'DaveDeploys is organized as a <strong>hierarchical company</strong>:<br><br>'
+      +'At the top is the '+agentLink(AGENTS[0])+', who oversees 7 division heads.<br><br>'
+      +'Each division has a <strong>head</strong> who manages their team:<br>'
+      +Object.keys(DIVS).map(function(dk){
+        var head = AGENTS.find(function(a){return a.div===parseInt(dk) && a.head;});
+        return head ? '- '+DIVS[dk].name+': '+agentLink(head) : '';
+      }).filter(Boolean).join('<br>');
+  }
+  
+  // CEO/reports-to query
+  if(q.indexOf('ceo')!==-1 || q.indexOf('boss')!==-1 || q.indexOf('leader')!==-1){
+    var ceo = AGENTS.find(function(a){return a.ceo;});
+    return agentLink(ceo)+' is the <strong>CEO</strong> of DaveDeploys. '+ceo.desc+'<br><br>'
+      +'The CEO directly oversees all 7 division heads and coordinates the $1B mission across trading bots, engineering, and business operations.';
+  }
+  
+  // Fallback
+  return 'I can help you explore DaveDeploys HQ! Try asking:<br><br>'
+    +'- "What does [agent name] do?"<br>'
+    +'- "Show me the Trading division"<br>'
+    +'- "How many agents are active?"<br>'
+    +'- "Who uses GitHub?"<br>'
+    +'- "Explain the org structure"';
+}
+
+// ===== VIEW TOGGLE =====
+document.querySelectorAll('.view-toggle button').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.view-toggle button').forEach(function(b){b.classList.remove('active');});
+    this.classList.add('active');
+    showToast(this.dataset.view==='tree'?'Org Chart view':'Grid view coming soon');
+  });
+});
+
+// ===== TOAST =====
+function showToast(msg){
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(function(){el.classList.remove('show');},2500);
+}
+
+// ===== LOADING =====
+function runLoading(){
+  var fill = document.getElementById('load-fill');
+  var steps = [20,45,70,90,100];
+  var i = 0;
+  function next(){
+    if(i>=steps.length){
+      document.getElementById('loading').classList.add('done');
+      setTimeout(function(){document.getElementById('loading').style.display='none';},600);
+      return;
+    }
+    fill.style.width = steps[i]+'%';
+    i++;
+    setTimeout(next, 200+Math.random()*200);
+  }
+  next();
+}
+
+// ===== INIT =====
+function init(){
+  runLoading();
+  setTimeout(function(){
+    initChart();
+    initMetrics();
+    initSidebar();
+    initSearch();
+    initActivity();
+  },200);
+}
+
+// Handle resize
+window.addEventListener('resize',function(){
+  var area = document.getElementById('chart-area');
+  window._chartW = area.clientWidth;
+  window._chartH = area.clientHeight;
+  svg.attr('width',area.clientWidth).attr('height',area.clientHeight);
+});
+
+init();
+</script>
+</body>
+</html>
