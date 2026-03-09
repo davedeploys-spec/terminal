@@ -3,347 +3,182 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Degen+Poly Fund Terminal</title>
+<title>DaveDeploys HQ</title>
 <style>
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{background:#070709;color:#b8bcc8;font-family:'Courier New',monospace;font-size:12px;min-height:100vh;padding:10px;}
-  .topbar{display:flex;justify-content:space-between;align-items:center;background:#0c0c10;border:1px solid #1e1e2a;border-radius:6px;padding:8px 16px;margin-bottom:8px;flex-wrap:wrap;gap:8px;}
-  .fund-name{font-size:14px;font-weight:700;letter-spacing:3px;color:#60a5fa;}
-  .topbar-right{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
-  .clock{color:#60a5fa;font-size:11px;font-weight:600;letter-spacing:1px;}
-  .badge{font-size:9px;color:#f0c040;letter-spacing:1px;padding:2px 6px;border:1px solid #3a3010;border-radius:3px;}
-  .refresh-btn{background:#111118;border:1px solid #2a2a3c;color:#60a5fa;font-family:'Courier New',monospace;font-size:10px;padding:4px 12px;cursor:pointer;border-radius:4px;letter-spacing:1px;transition:all .15s;}
-  .refresh-btn:hover{border-color:#60a5fa;background:#161628;}
-  .refresh-btn:disabled{opacity:.4;cursor:not-allowed;}
-  .last-update{font-size:9px;color:#555;letter-spacing:1px;}
-  .settings-btn{background:none;border:1px solid #2a2a3c;color:#555;font-family:'Courier New',monospace;font-size:10px;padding:4px 8px;cursor:pointer;border-radius:4px;transition:all .15s;}
-  .settings-btn:hover{border-color:#444;color:#888;}
-  .pat-overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;z-index:999;}
-  .pat-overlay.hidden{display:none;}
-  .pat-box{background:#0c0c10;border:1px solid #2a2a3c;border-radius:8px;padding:28px 32px;width:420px;max-width:calc(100vw - 32px);}
-  .pat-title{font-size:13px;font-weight:700;letter-spacing:2px;color:#60a5fa;margin-bottom:8px;}
-  .pat-sub{font-size:10px;color:#555;line-height:1.7;margin-bottom:16px;}
-  .pat-sub a{color:#60a5fa;text-decoration:none;}
-  .pat-input{width:100%;background:#06060a;border:1px solid #2a2a3c;color:#e8eaf0;font-family:'Courier New',monospace;font-size:11px;padding:8px 10px;border-radius:4px;outline:none;margin-bottom:10px;}
-  .pat-input:focus{border-color:#60a5fa;}
-  .pat-btn{width:100%;background:#1a2a4a;border:1px solid #2a4a7a;color:#60a5fa;font-family:'Courier New',monospace;font-size:11px;padding:9px;border-radius:4px;cursor:pointer;letter-spacing:1px;transition:all .15s;}
-  .pat-btn:hover{background:#1e3460;}
-  .pat-btn:disabled{opacity:.4;cursor:not-allowed;}
-  .pat-err{font-size:10px;color:#f87171;margin-top:8px;min-height:14px;}
-  .pat-status{font-size:10px;color:#4ade80;margin-top:8px;min-height:14px;}
-  .toast{position:fixed;bottom:20px;right:20px;background:#0c0c10;border:1px solid #2a2a3c;color:#b8bcc8;font-size:10px;letter-spacing:1px;padding:10px 16px;border-radius:6px;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;z-index:1000;}
-  .toast.show{opacity:1;transform:translateY(0);}
-  .toast.ok{border-color:#166534;color:#4ade80;}
-  .toast.err{border-color:#7f1d1d;color:#f87171;}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-  @media(max-width:600px){.grid{grid-template-columns:1fr;}}
-  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;}
-  @media(max-width:700px){.grid-3{grid-template-columns:1fr 1fr;}}
-  @media(max-width:420px){.grid-3{grid-template-columns:1fr;}}
-  .panel{background:#0c0c10;border:1px solid #1e1e2a;border-radius:6px;padding:14px;}
-  .panel-title{font-size:9px;letter-spacing:2px;color:#444;margin-bottom:10px;text-transform:uppercase;}
-  .panel-title span{float:right;font-size:8px;letter-spacing:1px;}
-  .stat-card{background:#0c0c10;border:1px solid #1e1e2a;border-radius:6px;padding:12px 16px;}
-  .stat-label{font-size:9px;letter-spacing:2px;color:#444;margin-bottom:4px;text-transform:uppercase;}
-  .stat-value{font-size:20px;font-weight:700;color:#e8eaf0;letter-spacing:1px;}
-  .stat-sub{font-size:9px;color:#555;margin-top:3px;}
-  .skeleton{background:linear-gradient(90deg,#111118 25%,#16161f 50%,#111118 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:3px;display:inline-block;}
-  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-  .skel-val{height:24px;width:80px;}
-  .skel-sub{height:10px;width:60px;margin-top:4px;}
-  .skel-row{height:12px;width:100%;margin-bottom:6px;}
-  .skel-row.short{width:60%;}
-  table{width:100%;border-collapse:collapse;}
-  th{font-size:8px;letter-spacing:1.5px;color:#333;text-align:left;padding:0 0 6px 0;text-transform:uppercase;border-bottom:1px solid #161620;}
-  td{padding:5px 0;border-bottom:1px solid #0f0f14;vertical-align:top;}
-  tr:last-child td{border-bottom:none;}
-  .pill{display:inline-block;font-size:8px;padding:1px 6px;border-radius:3px;letter-spacing:1px;}
-  .pill-green{background:#052210;color:#4ade80;border:1px solid #0a3a18;}
-  .pill-red{background:#1f0808;color:#f87171;border:1px solid #3a1010;}
-  .pill-yellow{background:#1a1400;color:#f0c040;border:1px solid #3a3010;}
-  .pill-blue{background:#0a1628;color:#60a5fa;border:1px solid #1a3060;}
-  .pill-gray{background:#111118;color:#666;border:1px solid #222230;}
-  .error-state{text-align:center;padding:32px 16px;color:#333;}
-  .error-state p{font-size:10px;letter-spacing:1px;line-height:1.7;}
-  .error-state button{margin-top:12px;background:#1a2a4a;border:1px solid #2a4a7a;color:#60a5fa;font-family:'Courier New',monospace;font-size:10px;padding:6px 14px;cursor:pointer;border-radius:4px;}
-  .divider{height:1px;background:#0f0f14;margin:8px 0;}
-  .row-key{color:#555;min-width:90px;display:inline-block;}
-  .section-gap{margin-bottom:8px;}
-  .spinning{animation:spin .8s linear infinite;display:inline-block;}
-  @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+:root {
+  --bg: #070709;
+  --surface: #0c0c10;
+  --surface-hover: #111118;
+  --border: #1e1e2a;
+  --border-light: #2a2a3c;
+  --text: #e8eaf0;
+  --text-secondary: #b8bcc8;
+  --text-muted: #6b7280;
+  --accent: #60a5fa;
+  --accent-dim: rgba(96,165,250,0.08);
+  --accent-glow: rgba(96,165,250,0.15);
+  --green: #22c55e;
+  --green-dim: rgba(34,197,94,0.1);
+  --yellow: #f0c040;
+  --yellow-dim: rgba(240,192,64,0.1);
+  --red: #ef4444;
+  --font-mono: 'Courier New', Courier, monospace;
+  --radius: 6px;
+  --transition: all 0.2s ease;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg); color: var(--text-secondary); font-family: var(--font-mono);
+  font-size: 12px; line-height: 1.6; min-height: 100vh; display: flex;
+  flex-direction: column; align-items: center; justify-content: center;
+  padding: 20px; -webkit-font-smoothing: antialiased;
+}
+
+/* Header */
+.hq-header {
+  text-align: center; margin-bottom: 48px;
+}
+.hq-logo {
+  font-size: 11px; font-weight: 700; letter-spacing: 4px;
+  color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;
+}
+.hq-title {
+  font-size: 28px; font-weight: 700; letter-spacing: 6px;
+  color: var(--text); text-transform: uppercase; margin-bottom: 6px;
+}
+.hq-title span { color: var(--accent); }
+.hq-sub {
+  font-size: 10px; color: var(--text-muted); letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+/* Card Grid */
+.card-grid {
+  display: grid; grid-template-columns: repeat(3, 280px); gap: 20px;
+  max-width: 900px;
+}
+@media (max-width: 920px) {
+  .card-grid { grid-template-columns: 1fr; max-width: 340px; }
+}
+
+/* Card Base */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px 24px;
+  text-decoration: none; color: inherit; transition: var(--transition);
+  display: flex; flex-direction: column; position: relative; overflow: hidden;
+}
+.card:hover {
+  border-color: var(--border-light); background: var(--surface-hover);
+  transform: translateY(-2px);
+}
+.card.disabled {
+  opacity: 0.4; pointer-events: none; cursor: default;
+}
+.card.disabled:hover {
+  transform: none; border-color: var(--border); background: var(--surface);
+}
+
+/* Card Content */
+.card-icon {
+  font-size: 18px; margin-bottom: 16px; color: var(--accent);
+  font-weight: 700; letter-spacing: 2px;
+}
+.card-icon.green { color: var(--green); }
+.card-icon.yellow { color: var(--yellow); }
+.card-title {
+  font-size: 13px; font-weight: 700; letter-spacing: 2px;
+  color: var(--text); text-transform: uppercase; margin-bottom: 8px;
+}
+.card-desc {
+  font-size: 10px; color: var(--text-muted); line-height: 1.8;
+  letter-spacing: 0.5px; flex: 1;
+}
+
+/* Status Badge */
+.card-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 9px; font-weight: 600; letter-spacing: 1.5px;
+  text-transform: uppercase; margin-top: 16px; padding: 4px 10px;
+  border-radius: 3px; width: fit-content;
+}
+.card-status.live {
+  color: var(--green); background: var(--green-dim);
+  border: 1px solid rgba(34,197,94,0.2);
+}
+.card-status.paused {
+  color: var(--text-muted); background: rgba(107,114,128,0.1);
+  border: 1px solid rgba(107,114,128,0.2);
+}
+
+/* Pulse dot */
+.pulse-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+}
+
+/* Footer */
+.hq-footer {
+  margin-top: 48px; text-align: center;
+  font-size: 9px; color: var(--text-muted); letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.hq-footer a {
+  color: var(--text-muted); text-decoration: none; transition: var(--transition);
+}
+.hq-footer a:hover { color: var(--accent); }
 </style>
 </head>
 <body>
 
-<div class="pat-overlay" id="patOverlay">
-  <div class="pat-box">
-    <div class="pat-title">// GITHUB ACCESS TOKEN</div>
-    <div class="pat-sub">
-      A classic PAT with <strong style="color:#b8bcc8">repo</strong> scope is required to read private repo state.<br><br>
-      Generate at <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a>. Stored in your browser only.
+<div class="hq-header">
+  <div class="hq-logo">Internal Tools</div>
+  <div class="hq-title">Dave<span>Deploys</span> HQ</div>
+  <div class="hq-sub">Operations Dashboard Network</div>
+</div>
+
+<div class="card-grid">
+
+  <a class="card" href="trading/">
+    <div class="card-icon">[$]</div>
+    <div class="card-title">Trading Terminal</div>
+    <div class="card-desc">
+      Real-time fund dashboard tracking Degen (crypto perps),
+      Poly (prediction markets), and Pump (meme coins).
+      Live P&amp;L, positions, and NAV.
     </div>
-    <input class="pat-input" id="patInput" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false"/>
-    <button class="pat-btn" id="patBtn" onclick="savePat()">CONNECT</button>
-    <div class="pat-err" id="patErr"></div>
-    <div class="pat-status" id="patStatus"></div>
+    <div class="card-status live"><span class="pulse-dot"></span> LIVE</div>
+  </a>
+
+  <a class="card" href="org-chart/">
+    <div class="card-icon green">[#]</div>
+    <div class="card-title">Org Chart</div>
+    <div class="card-desc">
+      Interactive network map of the full agent roster.
+      27 agents across 7 divisions -- hierarchy,
+      roles, and capabilities at a glance.
+    </div>
+    <div class="card-status live"><span class="pulse-dot"></span> LIVE</div>
+  </a>
+
+  <div class="card disabled">
+    <div class="card-icon yellow">[&gt;_]</div>
+    <div class="card-title">Command Center</div>
+    <div class="card-desc">
+      Centralized ops terminal for agent task dispatch,
+      system health monitoring, and workflow orchestration.
+    </div>
+    <div class="card-status paused">COMING SOON</div>
   </div>
+
 </div>
 
-<div class="toast" id="toast"></div>
-
-<div class="topbar">
-  <div class="fund-name">DEGEN+POLY FUND</div>
-  <div class="topbar-right">
-    <span class="clock" id="clock">--:--:-- UTC</span>
-    <span class="badge">PAPER</span>
-    <span class="last-update" id="lastUpdate">never synced</span>
-    <button class="settings-btn" onclick="resetPat()">TOKEN</button>
-    <button class="refresh-btn" id="refreshBtn" onclick="loadAll()">&#8635; REFRESH</button>
-  </div>
+<div class="hq-footer">
+  <a href="https://github.com/davedeploys-spec/terminal">davedeploys-spec/terminal</a>
 </div>
 
-<div class="grid-3 section-gap">
-  <div class="stat-card">
-    <div class="stat-label">FUND NAV</div>
-    <div class="stat-value" id="nav" style="color:#60a5fa"><span class="skeleton skel-val"></span></div>
-    <div class="stat-sub" id="navSub"><span class="skeleton skel-sub"></span></div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">TOTAL P&amp;L</div>
-    <div class="stat-value" id="totalPnl"><span class="skeleton skel-val"></span></div>
-    <div class="stat-sub" id="totalPnlSub"><span class="skeleton skel-sub"></span></div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">WIN RATE</div>
-    <div class="stat-value" id="winRate"><span class="skeleton skel-val"></span></div>
-    <div class="stat-sub" id="winRateSub"><span class="skeleton skel-sub"></span></div>
-  </div>
-</div>
-
-<div class="grid">
-  <div class="panel">
-    <div class="panel-title">DEGEN // HYPERLIQUID PERPS <span id="degenStatus"></span></div>
-    <div id="degenContent"><div class="skel-row skeleton"></div><div class="skel-row skeleton short"></div><div class="skel-row skeleton"></div></div>
-  </div>
-  <div class="panel">
-    <div class="panel-title">POLY // PREDICTION MARKETS <span id="polyStatus"></span></div>
-    <div id="polyContent"><div class="skel-row skeleton"></div><div class="skel-row skeleton short"></div><div class="skel-row skeleton"></div></div>
-  </div>
-</div>
-
-<div class="panel" style="margin-top:8px;">
-  <div class="panel-title">TRADE LOG <span id="tradeLogMeta"></span></div>
-  <div id="tradeLogContent"><div class="skel-row skeleton"></div><div class="skel-row skeleton short"></div><div class="skel-row skeleton"></div></div>
-</div>
-
-<script>
-const OWNER = 'davedeploys-spec';
-const REPOS = {
-  degen: { repo: 'degen-bot',  file: 'bot-state.json' },
-  poly:  { repo: 'poly-bot',   file: 'bot-state-poly.json' }
-};
-const PAT_KEY = 'gh_pat_terminal';
-let pat = localStorage.getItem(PAT_KEY) || '';
-let degenState = null, polyState = null;
-
-function tickClock(){
-  const n = new Date();
-  document.getElementById('clock').textContent =
-    String(n.getUTCHours()).padStart(2,'0')+':'+String(n.getUTCMinutes()).padStart(2,'0')+':'+String(n.getUTCSeconds()).padStart(2,'0')+' UTC';
-}
-setInterval(tickClock,1000); tickClock();
-
-let toastTimer;
-function showToast(msg,type='ok'){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.className='toast show '+type;
-  clearTimeout(toastTimer); toastTimer=setTimeout(()=>{t.className='toast';},2800);
-}
-
-function showPatOverlay(){document.getElementById('patOverlay').classList.remove('hidden');}
-function hidePatOverlay(){document.getElementById('patOverlay').classList.add('hidden');}
-function resetPat(){
-  document.getElementById('patInput').value='';
-  document.getElementById('patErr').textContent='';
-  document.getElementById('patStatus').textContent='';
-  showPatOverlay();
-}
-
-async function savePat(){
-  const val=document.getElementById('patInput').value.trim();
-  if(!val){document.getElementById('patErr').textContent='Token cannot be empty.';return;}
-  const btn=document.getElementById('patBtn');
-  btn.disabled=true; btn.textContent='VERIFYING...';
-  document.getElementById('patErr').textContent='';
-  document.getElementById('patStatus').textContent='';
-  try{
-    const r=await fetch('https://api.github.com/user',{headers:{Authorization:'token '+val,Accept:'application/json'}});
-    if(r.status===401){document.getElementById('patErr').textContent='Invalid token.';btn.disabled=false;btn.textContent='CONNECT';return;}
-    if(!r.ok){document.getElementById('patErr').textContent='GitHub error: '+r.status;btn.disabled=false;btn.textContent='CONNECT';return;}
-    const u=await r.json();
-    document.getElementById('patStatus').textContent='Connected as @'+u.login;
-    localStorage.setItem(PAT_KEY,val); pat=val;
-    setTimeout(()=>{hidePatOverlay();loadAll();},800);
-  }catch(e){
-    document.getElementById('patErr').textContent='Network error.';
-    btn.disabled=false;btn.textContent='CONNECT';
-  }
-}
-
-async function fetchJSON(repo,file){
-  const url='https://api.github.com/repos/'+OWNER+'/'+repo+'/contents/'+file+'?ref=main&_t='+Date.now();
-  const r=await fetch(url,{headers:{Authorization:'token '+pat,Accept:'application/vnd.github.v3.raw'}});
-  if(r.status===401)throw new Error('auth');
-  if(r.status===404)throw new Error('notfound');
-  if(!r.ok)throw new Error('http_'+r.status);
-  const text=await r.text();
-  try{return JSON.parse(text);}catch(e){throw new Error('parse_error');}
-}
-
-async function loadAll(){
-  if(!pat){showPatOverlay();return;}
-  const btn=document.getElementById('refreshBtn');
-  btn.disabled=true;
-  btn.innerHTML='<span class="spinning">&#8635;</span> LOADING';
-  const [d,p]=await Promise.allSettled([
-    fetchJSON(REPOS.degen.repo,REPOS.degen.file),
-    fetchJSON(REPOS.poly.repo,REPOS.poly.file)
-  ]);
-  let authErr=false;
-  if(d.status==='fulfilled'){degenState=d.value;renderDegen(d.value);}
-  else{if(d.reason.message==='auth')authErr=true;else renderError('degenContent','degenStatus',d.reason.message);}
-  if(p.status==='fulfilled'){polyState=p.value;renderPoly(p.value);}
-  else{if(p.reason.message==='auth')authErr=true;else renderError('polyContent','polyStatus',p.reason.message);}
-  if(authErr){pat='';localStorage.removeItem(PAT_KEY);showPatOverlay();return;}
-  renderSummary(); renderTradeLog();
-  const n=new Date();
-  document.getElementById('lastUpdate').textContent='synced '+String(n.getUTCHours()).padStart(2,'0')+':'+String(n.getUTCMinutes()).padStart(2,'0')+' UTC';
-  showToast('DATA SYNCED','ok');
-  btn.disabled=false; btn.textContent='\u21BB REFRESH';
-}
-
-const fmt$=v=>v==null?'--':'$'+Number(v).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
-const fmtPct=v=>v==null?'--':(v>=0?'+':'')+Number(v).toFixed(1)+'%';
-const clr=v=>v>=0?'#4ade80':'#f87171';
-const pill=(txt,cls)=>'<span class="pill pill-'+cls+'">'+txt+'</span>';
-
-function renderError(cid,sid,msg){
-  const friendly=msg==='notfound'?'State file not found.':msg==='parse_error'?'JSON parse error.':'Fetch failed ('+msg+')';
-  document.getElementById(cid).innerHTML='<div class="error-state"><p>'+friendly+'</p><button onclick="loadAll()">RETRY</button></div>';
-  if(sid)document.getElementById(sid).innerHTML=pill('ERR','red');
-}
-
-function renderDegen(s){
-  const el=document.getElementById('degenContent');
-  const bankroll=s.bankroll??s.portfolio_value??0;
-  const start=s.start_bankroll??1000;
-  const pnl=bankroll-start;
-  const pnlPct=(pnl/start)*100;
-  const regime=s.regime??s.market_regime??'UNKNOWN';
-  const trades=Array.isArray(s.trades)?s.trades:[];
-  const open=trades.filter(t=>t.status==='open'||t.status==='OPEN');
-  const closed=trades.filter(t=>t.status!=='open'&&t.status!=='OPEN');
-  const wins=closed.filter(t=>(t.pnl??t.realized_pnl??0)>0);
-  const wr=closed.length?((wins.length/closed.length)*100).toFixed(0):'--';
-  document.getElementById('degenStatus').innerHTML=regime.includes('BEAR')?pill('BEAR','red'):regime.includes('BULL')?pill('BULL','green'):pill(regime,'gray');
-  let html='<table><tr><th>METRIC</th><th>VALUE</th></tr>'+
-    '<tr><td><span class="row-key">Bankroll</span></td><td style="color:#60a5fa;font-weight:700">'+fmt$(bankroll)+'</td></tr>'+
-    '<tr><td><span class="row-key">P&amp;L</span></td><td style="color:'+clr(pnl)+'">'+fmt$(pnl)+' <span style="color:#555">('+fmtPct(pnlPct)+')</span></td></tr>'+
-    '<tr><td><span class="row-key">Regime</span></td><td>'+regime+'</td></tr>'+
-    '<tr><td><span class="row-key">Open</span></td><td>'+open.length+'</td></tr>'+
-    '<tr><td><span class="row-key">Closed</span></td><td>'+closed.length+'</td></tr>'+
-    '<tr><td><span class="row-key">Win Rate</span></td><td style="color:'+(wr>=50?'#4ade80':'#f87171')+'">'+wr+'%</td></tr></table>';
-  if(open.length){
-    html+='<div class="divider"></div><div class="panel-title" style="margin-bottom:6px">OPEN POSITIONS</div><table><tr><th>PAIR</th><th>SIDE</th><th>ENTRY</th><th>SIZE</th><th>P&L</th></tr>';
-    open.slice(0,5).forEach(t=>{
-      const tp=t.pnl??t.unrealized_pnl??0;
-      html+='<tr><td style="color:#e8eaf0">'+(t.symbol??t.pair??'--')+'</td><td>'+((t.side??t.direction??'').toUpperCase()==='LONG'?pill('LONG','green'):pill('SHORT','red'))+'</td><td>'+fmt$(t.entry_price??t.entry??null)+'</td><td>'+fmt$(t.size??t.position_size??null)+'</td><td style="color:'+clr(tp)+'">'+fmt$(tp)+'</td></tr>';
-    });
-    html+='</table>';
-  }
-  el.innerHTML=html;
-}
-
-function renderPoly(s){
-  const el=document.getElementById('polyContent');
-  const nav=s.nav??s.portfolio_value??s.bankroll??0;
-  const start=s.start_bankroll??s.start_nav??1000;
-  const pnl=nav-start;
-  const pnlPct=(pnl/start)*100;
-  const trades=Array.isArray(s.trades)?s.trades:[];
-  const open=trades.filter(t=>{const st=(t.status??'').toUpperCase();return st==='OPEN'||st==='WIN_EXPECTED'||st==='ACTIVE';});
-  const closed=trades.filter(t=>{const st=(t.status??'').toUpperCase();return st==='RESOLVED_WIN'||st==='RESOLVED_LOSS'||st==='CLOSED';});
-  const wins=closed.filter(t=>(t.status??'').toUpperCase()==='RESOLVED_WIN');
-  const wr=closed.length?((wins.length/closed.length)*100).toFixed(0):'--';
-  const scans=s.scan_count??s.total_scans??'--';
-  document.getElementById('polyStatus').innerHTML=pill('LIVE','blue');
-  let html='<table><tr><th>METRIC</th><th>VALUE</th></tr>'+
-    '<tr><td><span class="row-key">NAV</span></td><td style="color:#60a5fa;font-weight:700">'+fmt$(nav)+'</td></tr>'+
-    '<tr><td><span class="row-key">P&amp;L</span></td><td style="color:'+clr(pnl)+'">'+fmt$(pnl)+' <span style="color:#555">('+fmtPct(pnlPct)+')</span></td></tr>'+
-    '<tr><td><span class="row-key">Open</span></td><td>'+open.length+'</td></tr>'+
-    '<tr><td><span class="row-key">Closed</span></td><td>'+closed.length+'</td></tr>'+
-    '<tr><td><span class="row-key">Win Rate</span></td><td style="color:'+(wr>=50?'#4ade80':'#f87171')+'">'+wr+'%</td></tr>'+
-    '<tr><td><span class="row-key">Scans</span></td><td>'+scans+'</td></tr></table>';
-  if(open.length){
-    html+='<div class="divider"></div><div class="panel-title" style="margin-bottom:6px">OPEN POSITIONS</div><table><tr><th>MARKET</th><th>STATUS</th><th>ENTRY</th><th>SIZE</th><th>CURR</th></tr>';
-    open.slice(0,5).forEach(t=>{
-      const st=(t.status??'').toUpperCase();
-      const pc=st==='WIN_EXPECTED'?'green':st==='OPEN'||st==='ACTIVE'?'blue':'yellow';
-      const mkt=(t.market??t.question??'--').substring(0,32);
-      html+='<tr><td style="color:#e8eaf0;font-size:10px">'+mkt+'</td><td>'+pill(st,pc)+'</td><td>'+(t.entry_price!=null?(t.entry_price*100).toFixed(1)+'c':'--')+'</td><td>'+fmt$(t.size??t.amount??null)+'</td><td>'+(t.current_price!=null?(t.current_price*100).toFixed(1)+'c':'--')+'</td></tr>';
-    });
-    html+='</table>';
-  }
-  el.innerHTML=html;
-}
-
-function renderSummary(){
-  const db=degenState?(degenState.bankroll??degenState.portfolio_value??0):0;
-  const ds=degenState?(degenState.start_bankroll??1000):1000;
-  const pn=polyState?(polyState.nav??polyState.portfolio_value??polyState.bankroll??0):0;
-  const ps=polyState?(polyState.start_bankroll??polyState.start_nav??1000):1000;
-  const nav=db+pn, start=ds+ps, pnl=nav-start, pct=(pnl/start)*100;
-  const all=[...(Array.isArray(degenState?.trades)?degenState.trades:[]),...(Array.isArray(polyState?.trades)?polyState.trades:[])];
-  const closed=all.filter(t=>{const st=(t.status??'').toUpperCase();return['RESOLVED_WIN','RESOLVED_LOSS','CLOSED'].includes(st)||(st!=='OPEN'&&st!=='WIN_EXPECTED'&&st!=='ACTIVE'&&t.pnl!=null);});
-  const wins=closed.filter(t=>{const st=(t.status??'').toUpperCase();return st==='RESOLVED_WIN'||(t.pnl??t.realized_pnl??0)>0;});
-  const wr=closed.length?((wins.length/closed.length)*100).toFixed(0)+'%':'--';
-  document.getElementById('nav').textContent=fmt$(nav);
-  document.getElementById('navSub').textContent='DEGEN '+fmt$(db)+' + POLY '+fmt$(pn);
-  document.getElementById('totalPnl').innerHTML='<span style="color:'+clr(pnl)+'">'+fmt$(pnl)+'</span>';
-  document.getElementById('totalPnlSub').textContent=fmtPct(pct)+' since inception';
-  document.getElementById('totalPnlSub').style.color=clr(pnl);
-  document.getElementById('winRate').textContent=wr;
-  document.getElementById('winRate').style.color=closed.length&&(wins.length/closed.length)>=0.5?'#4ade80':'#f87171';
-  document.getElementById('winRateSub').textContent=wins.length+'W / '+(closed.length-wins.length)+'L of '+closed.length+' closed';
-}
-
-function renderTradeLog(){
-  const el=document.getElementById('tradeLogContent');
-  const dt=(Array.isArray(degenState?.trades)?degenState.trades:[]).map(t=>({...t,_book:'DEGEN'}));
-  const pt=(Array.isArray(polyState?.trades)?polyState.trades:[]).map(t=>({...t,_book:'POLY'}));
-  const all=[...dt,...pt].sort((a,b)=>new Date(b.timestamp??b.opened_at??b.created_at??0)-new Date(a.timestamp??a.opened_at??a.created_at??0));
-  document.getElementById('tradeLogMeta').textContent=all.length+' total';
-  if(!all.length){el.innerHTML='<div class="error-state"><p>NO TRADES RECORDED YET</p></div>';return;}
-  let html='<table><tr><th>BOOK</th><th>MARKET / PAIR</th><th>STATUS</th><th>ENTRY</th><th>SIZE</th><th>P&L</th><th>DATE</th></tr>';
-  all.slice(0,30).forEach(t=>{
-    const st=(t.status??'OPEN').toUpperCase();
-    const pc=st==='RESOLVED_WIN'?'green':st==='RESOLVED_LOSS'?'red':st==='WIN_EXPECTED'?'green':st==='OPEN'||st==='ACTIVE'?'blue':'gray';
-    const mkt=(t.market??t.symbol??t.pair??t.question??'--').substring(0,28);
-    const pnl=t.pnl??t.realized_pnl??t.unrealized_pnl??null;
-    const entry=t.entry_price??t.entry??null;
-    const ef=entry==null?'--':t._book==='POLY'?(entry*100).toFixed(1)+'c':fmt$(entry);
-    const dr=t.timestamp??t.opened_at??t.created_at??null;
-    const df=dr?new Date(dr).toISOString().substring(5,10):'--';
-    html+='<tr><td>'+pill(t._book,t._book==='DEGEN'?'yellow':'blue')+'</td><td style="color:#e8eaf0;font-size:10px">'+mkt+'</td><td>'+pill(st.length>12?st.substring(0,12):st,pc)+'</td><td>'+ef+'</td><td>'+fmt$(t.size??t.amount??null)+'</td><td style="color:'+(pnl==null?'#555':clr(pnl))+'">'+(pnl==null?'--':fmt$(pnl))+'</td><td style="color:#555">'+df+'</td></tr>';
-  });
-  html+='</table>';
-  if(all.length>30)html+='<div style="text-align:center;padding:8px;color:#555;font-size:9px">+'+(all.length-30)+' MORE TRADES</div>';
-  el.innerHTML=html;
-}
-
-if(pat){hidePatOverlay();loadAll();}else{showPatOverlay();}
-document.getElementById('patInput').addEventListener('keydown',e=>{if(e.key==='Enter')savePat();});
-</script>
 </body>
 </html>
-<!-- redeploy 2 -->
