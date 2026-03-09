@@ -1,0 +1,15 @@
+{
+  "started_at": null,
+  "last_scan": null,
+  "scan_number": 0,
+  "mode": "deployer",
+  "dry_run": true,
+  "wallet_address": null,
+  "fees_claimed_sol": 0,
+  "deployments_today": 0,
+  "deployments_today_date": "2026-03-08",
+  "last_deploy_time": null,
+  "last_deployed_keywords": [],
+  "deployed_tokens": [],
+  "log": []
+}
