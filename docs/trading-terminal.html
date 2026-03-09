@@ -210,7 +210,7 @@ body {
 </nav>
 
 <!-- PAT OVERLAY -->
-<div class="pat-overlay" id="pat-overlay">
+<div class="pat-overlay" id="pat-overlay" style="display:none">
   <div class="pat-box">
     <label class="pat-title" for="pat-input">GITHUB PERSONAL ACCESS TOKEN</label>
     <div class="pat-sub">Required to read private repo bot-state files via GitHub API.<br>Token is stored locally in your browser. Never sent anywhere except api.github.com.</div>
@@ -333,9 +333,9 @@ body {
 // ══════════════════════════════════════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════════════════════════════════════
-var DEGEN_API = 'https://api.github.com/repos/davedeploys-spec/hyperliquid-bot-v1/contents/data/bot-state-degen.json';
-var POLY_API  = 'https://api.github.com/repos/davedeploys-spec/poly-trading-bot/contents/data/bot-state-poly.json';
-var PUMP_API  = 'https://api.github.com/repos/davedeploys-spec/pumpfun-deploy-v1/contents/pump-bot-state.json';
+var DEGEN_API = 'https://raw.githubusercontent.com/davedeploys-spec/terminal/main/data/bot-state-degen.json';
+var POLY_API  = 'https://raw.githubusercontent.com/davedeploys-spec/terminal/main/data/bot-state-poly.json';
+var PUMP_API  = 'https://raw.githubusercontent.com/davedeploys-spec/terminal/main/data/pump-bot-state.json';
 var REFRESH_INTERVAL = 30;
 var STALE_THRESHOLD_MS = 5 * 60 * 1000;
 var STARTING_CAPITAL = 2000;
@@ -454,39 +454,20 @@ function regimeColor(regime) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// PAT MANAGEMENT
+// PAT MANAGEMENT (disabled -- data now served from public repo)
 // ══════════════════════════════════════════════════════════════════════════════
-function getPat() { return localStorage.getItem('gh_pat') || ''; }
-
-function savePat() {
-  var v = $('pat-input').value.trim();
-  if (!v) { $('pat-err').style.display = 'block'; return; }
-  localStorage.setItem('gh_pat', v);
-  $('pat-overlay').style.display = 'none';
-  loadAll();
-  startAutoRefresh();
-}
-
-function clearPat() {
-  localStorage.removeItem('gh_pat');
-  location.reload();
-}
+function getPat() { return ''; }
+function savePat() {}
+function clearPat() {}
 
 // ══════════════════════════════════════════════════════════════════════════════
-// FETCH WITH AUTH
+// FETCH JSON (public raw.githubusercontent.com -- no auth needed)
 // ══════════════════════════════════════════════════════════════════════════════
 async function fetchJSON(apiUrl) {
-  var pat = getPat();
-  var headers = { 'Accept': 'application/vnd.github.v3+json' };
-  if (pat) headers['Authorization'] = 'token ' + pat;
-  var resp = await fetch(apiUrl, { headers: headers });
-  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' for ' + apiUrl.split('/contents/')[1]);
-  var meta = await resp.json();
-  if (meta.content) {
-    var decoded = atob(meta.content.replace(/\n/g, ''));
-    return JSON.parse(decoded);
-  }
-  return meta;
+  var cacheBust = apiUrl + (apiUrl.indexOf('?') >= 0 ? '&' : '?') + '_t=' + Date.now();
+  var resp = await fetch(cacheBust);
+  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' for ' + apiUrl.split('/main/')[1]);
+  return await resp.json();
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1081,15 +1062,11 @@ async function loadAll() {
 // INIT
 // ══════════════════════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', function() {
-  var pat = getPat();
-  if (pat) {
-    $('pat-overlay').style.display = 'none';
-    loadAll();
-    startAutoRefresh();
-  }
-  $('pat-input').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') savePat();
-  });
+  // No PAT needed -- data is served from public repo
+  var overlay = $('pat-overlay');
+  if (overlay) overlay.style.display = 'none';
+  loadAll();
+  startAutoRefresh();
 });
 </script>
 </body>
