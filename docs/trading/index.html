@@ -264,6 +264,43 @@ body {
 
 </section>
 
+<!-- VPS Infrastructure -->
+<div class="panel" style="margin-bottom:8px;">
+  <div class="panel-header">
+    <span class="panel-title">VPS INFRASTRUCTURE</span>
+    <span id="vps-pill" class="pill pill-stale">OFFLINE</span>
+  </div>
+  <div class="panel-body">
+    <div class="nav-row" style="margin-bottom:0;">
+      <div class="nav-card" style="border-top:none;">
+        <div class="label">STATUS</div>
+        <div class="val" id="vps-status">--</div>
+        <div class="sub" id="vps-hostname">loading...</div>
+      </div>
+      <div class="nav-card" style="border-top:none;">
+        <div class="label">UPTIME</div>
+        <div class="val" id="vps-uptime">--</div>
+        <div class="sub" id="vps-heartbeat">last heartbeat: --</div>
+      </div>
+      <div class="nav-card" style="border-top:none;">
+        <div class="label">MEMORY</div>
+        <div class="val" id="vps-memory">--</div>
+        <div class="sub" id="vps-memory-detail">-- / -- MB</div>
+      </div>
+      <div class="nav-card" style="border-top:none;">
+        <div class="label">POLY SCANS</div>
+        <div class="val" id="vps-poly-scans">--</div>
+        <div class="sub" id="vps-poly-last">last: --</div>
+      </div>
+      <div class="nav-card" style="border-top:none;">
+        <div class="label">DEGEN SCANS</div>
+        <div class="val" id="vps-degen-scans">--</div>
+        <div class="sub" id="vps-degen-last">last: --</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- TRADE HISTORY -->
 <div class="panel" style="margin-bottom:8px;">
   <div class="panel-header">
@@ -315,6 +352,7 @@ body {
 var DEGEN_API = 'https://raw.githubusercontent.com/davedeploys-spec/terminal/main/data/bot-state-degen.json';
 var POLY_API  = 'https://raw.githubusercontent.com/davedeploys-spec/terminal/main/data/bot-state-poly.json';
 var PUMP_API  = 'https://raw.githubusercontent.com/davedeploys-spec/terminal/main/data/pump-bot-state.json';
+var HEALTH_API = 'https://raw.githubusercontent.com/davedeploys-spec/terminal/main/data/health.json';
 var REFRESH_INTERVAL = 30;
 var STALE_THRESHOLD_MS = 5 * 60 * 1000;
 var STARTING_CAPITAL = 2000;
@@ -892,6 +930,53 @@ function drawSparkline(canvasId, dataPoints) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
+// RENDER: HEALTH (VPS Infrastructure)
+// ══════════════════════════════════════════════════════════════════════════════
+function renderHealth(data) {
+  if (!data) return;
+
+  // VPS status pill
+  var heartbeat = new Date(data.last_heartbeat);
+  var ageMs = Date.now() - heartbeat.getTime();
+  var isStale = ageMs > 20 * 60 * 1000; // 20 min threshold for 15-min heartbeat
+
+  setPill('vps-pill', isStale ? 'STALE' : 'ONLINE', isStale ? 'pill-stale' : 'pill-live');
+
+  // Status
+  $('vps-status').textContent = isStale ? 'STALE' : 'ONLINE';
+  $('vps-status').className = 'val ' + (isStale ? 'negative' : 'positive');
+  $('vps-hostname').textContent = (data.hostname || 'vps') + ' | Python ' + (data.python_version || '?');
+
+  // Uptime
+  var uptimeSec = data.uptime_seconds || 0;
+  var days = Math.floor(uptimeSec / 86400);
+  var hours = Math.floor((uptimeSec % 86400) / 3600);
+  var mins = Math.floor((uptimeSec % 3600) / 60);
+  $('vps-uptime').textContent = days + 'd ' + hours + 'h ' + mins + 'm';
+  $('vps-heartbeat').textContent = 'heartbeat: ' + heartbeat.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', timeZone:'America/New_York', hour12:false }) + ' EST';
+
+  // Memory
+  var mem = data.memory_mb || {};
+  var memPct = mem.total > 0 ? Math.round((mem.used / mem.total) * 100) : 0;
+  $('vps-memory').textContent = memPct + '%';
+  $('vps-memory').className = 'val ' + (memPct > 85 ? 'negative' : memPct > 70 ? '' : 'positive');
+  $('vps-memory-detail').textContent = (mem.used || 0) + ' / ' + (mem.total || 0) + ' MB';
+
+  // Bot scan stats
+  var bots = data.bots || {};
+  if (bots.poly) {
+    $('vps-poly-scans').textContent = (bots.poly.scans_today || 0) + ' today';
+    var polyLast = bots.poly.last_scan ? new Date(bots.poly.last_scan).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', timeZone:'America/New_York', hour12:false }) : '--';
+    $('vps-poly-last').textContent = 'last: ' + polyLast + ' EST';
+  }
+  if (bots.degen) {
+    $('vps-degen-scans').textContent = (bots.degen.scans_today || 0) + ' today';
+    var degenLast = bots.degen.last_scan ? new Date(bots.degen.last_scan).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', timeZone:'America/New_York', hour12:false }) : '--';
+    $('vps-degen-last').textContent = 'last: ' + degenLast + ' EST';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
 // KEYBOARD SHORTCUTS
 // ══════════════════════════════════════════════════════════════════════════════
 document.addEventListener('keydown', function(e) {
@@ -918,12 +1003,14 @@ async function loadAll() {
   var results = await Promise.allSettled([
     fetchJSON(DEGEN_API),
     fetchJSON(POLY_API),
-    fetchJSON(PUMP_API)
+    fetchJSON(PUMP_API),
+    fetchJSON(HEALTH_API)
   ]);
 
   var degenResult = results[0];
   var polyResult = results[1];
   var pumpResult = results[2];
+  var healthResult = results[3];
   var allTrades = [];
 
   // ── Degen ──
@@ -967,6 +1054,17 @@ async function loadAll() {
   } else {
     setPill('pump-pill', 'ERROR', 'pill-error');
     errors.push('Pump: ' + (pumpResult.reason ? pumpResult.reason.message : 'fetch failed'));
+  }
+
+  // ── Health ──
+  if (healthResult.status === 'fulfilled') {
+    try { renderHealth(healthResult.value); }
+    catch (e) {
+      console.error('Health render error:', e);
+      setPill('vps-pill', 'ERROR', 'pill-error');
+    }
+  } else {
+    setPill('vps-pill', 'OFFLINE', 'pill-stale');
   }
 
   // ── Summary KPIs (FIXED: use actual field paths) ──
