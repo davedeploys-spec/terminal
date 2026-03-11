@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DaveDeploys Trading Terminal</title>
+<style>
+:root{--bg:#070709;--surface:#0c0c10;--surface-hover:#101018;--surface-alt:#101015;--border:#1e1e2a;--border-light:#2a2a3c;--text:#e8eaf0;--text-secondary:#b8bcc8;--text-muted:#6b7280;--accent:#60a5fa;--green:#22c55e;--red:#ef4444;--yellow:#f0c040;--orange:#f97316;--purple:#a78bfa;--degen-accent:#00d4ff;--poly-accent:#a78bfa;--pump-accent:#f97316;--font-mono:'Courier New','Consolas',monospace;--radius:6px;--transition:all .2s ease}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text-secondary);font-family:var(--font-mono);font-size:11px;min-height:100vh;padding:10px}
+.site-nav{display:flex;gap:0;margin-bottom:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.site-nav-link{padding:8px 20px;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--text-muted);text-decoration:none;font-family:var(--font-mono);transition:var(--transition);border-right:1px solid var(--border)}
+.site-nav-link:last-child{border-right:none}
+.site-nav-link:hover{color:var(--text);background:var(--surface-hover)}
+.site-nav-link.active{color:var(--accent);background:rgba(96,165,250,.08)}
+.topbar{display:flex;justify-content:space-between;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 16px;margin-bottom:8px;flex-wrap:wrap;gap:8px}
+.fund-name{font-size:16px;font-weight:700;letter-spacing:3px;color:var(--accent)}
+.topbar-right{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.clock{color:var(--accent);font-size:11px;font-weight:600;letter-spacing:1px}
+.badge{font-size:9px;color:var(--yellow);letter-spacing:1px;padding:2px 6px;border:1px solid #3a3010;border-radius:3px}
+.refresh-btn{background:#111118;border:1px solid var(--border-light);color:var(--accent);font-family:var(--font-mono);font-size:10px;padding:6px 14px;cursor:pointer;border-radius:4px;letter-spacing:1px;transition:var(--transition)}
+.refresh-btn:hover{border-color:var(--accent);background:#161628}
+.last-update{font-size:9px;color:var(--text-muted);letter-spacing:1px}
+.countdown{font-size:10px;color:var(--text-muted);letter-spacing:1px;font-variant-numeric:tabular-nums}
+.countdown.urgent{color:var(--red)}
+.pat-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:999}
+.pat-box{background:var(--surface);border:1px solid var(--border-light);border-radius:8px;padding:28px 32px;width:420px;max-width:95vw}
+.pat-title{font-size:13px;font-weight:700;letter-spacing:2px;color:var(--accent);margin-bottom:8px;display:block}
+.pat-sub{font-size:10px;color:var(--text-muted);line-height:1.6;margin-bottom:16px}
+.pat-input{width:100%;background:#06060a;border:1px solid var(--border-light);color:var(--text);font-family:var(--font-mono);font-size:11px;padding:8px 10px;border-radius:4px;outline:none;margin-bottom:10px}
+.pat-input:focus{border-color:var(--accent)}
+.pat-btn{background:#1a2a4a;border:1px solid #2a4a7a;color:var(--accent);font-family:var(--font-mono);font-size:11px;padding:7px 18px;border-radius:4px;cursor:pointer;letter-spacing:1px;transition:var(--transition)}
+.pat-btn:hover{background:#1e3060}
+.pat-err{font-size:10px;color:var(--red);margin-top:6px;display:none}
+.error-banner{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);color:var(--red);font-size:11px;padding:8px 16px;border-radius:var(--radius);margin-bottom:8px;letter-spacing:.5px;display:none}
+.panel-warn{display:none;padding:6px 12px;font-size:10px;letter-spacing:.5px;border-bottom:1px solid var(--border);align-items:center;gap:8px}
+.panel-warn.show{display:flex}
+.panel-warn.warn-stale{background:rgba(239,68,68,.06);color:var(--red)}
+.panel-warn.warn-expired{background:rgba(240,192,64,.06);color:var(--yellow)}
+.panel-warn.warn-error{background:rgba(239,68,68,.08);color:var(--red)}
+.nav-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:8px}
+.nav-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;transition:var(--transition)}
+.nav-card:hover{border-color:var(--border-light);background:var(--surface-hover)}
+.nav-card .lbl{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.nav-card .val{font-size:24px;font-weight:700;color:var(--text)}
+.nav-card .sub{font-size:9px;color:var(--text-muted);margin-top:2px}
+.main-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:var(--transition)}
+.panel:hover{border-color:var(--border-light)}
+.panel-head{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;background:var(--surface-alt);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:4px}
+.panel-head h2{font-size:12px;font-weight:700;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin:0;font-family:inherit}
+.panel-meta{font-size:9px;color:var(--text-muted)}
+.panel-head-right{display:flex;align-items:center;gap:8px}
+.panel-ts{font-size:9px;color:var(--text-muted);letter-spacing:.5px}
+.pill{font-size:9px;padding:1px 6px;border-radius:3px;border:1px solid var(--text-muted);color:var(--text-muted);letter-spacing:1px}
+.pill.live{border-color:var(--green);color:var(--green)}
+.pill.stale{border-color:var(--red);color:var(--red);animation:pulse-pill 2s infinite}
+.pill.error{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.12)}
+.pill.dormant{border-color:var(--orange);color:var(--orange)}
+@keyframes pulse-pill{0%,100%{opacity:1}50%{opacity:.5}}
+.panel-body{padding:10px 12px}
+.degen-panel{border-left:3px solid var(--degen-accent)}
+.poly-panel{border-left:3px solid var(--poly-accent)}
+.pump-panel{border-left:3px solid var(--pump-accent)}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-bottom:8px}
+.stat{display:flex;justify-content:space-between;padding:2px 0}
+.stat .k{color:var(--text-muted)}
+.stat .v{font-weight:600}
+.kpi-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#1a1a24;border-radius:4px;overflow:hidden;margin-bottom:10px}
+.kpi{background:var(--surface);padding:7px 10px}
+.kpi .k{font-size:9px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
+.kpi .v{font-size:18px;font-weight:700}
+.section-lbl{font-size:9px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin:8px 0 4px}
+.scroll-wrap{max-height:260px;overflow-y:auto;overflow-x:auto}
+.scroll-wrap::-webkit-scrollbar{width:3px;height:3px}
+.scroll-wrap::-webkit-scrollbar-thumb{background:var(--border)}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{color:var(--text-muted);font-weight:400;text-align:left;padding:4px 6px;border-bottom:1px solid #14141c;font-size:9px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+th.sortable{cursor:pointer}
+th.sortable:hover{color:var(--accent)}
+td{padding:4px 6px;border-bottom:1px solid #0e0e14;color:#888;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface-hover)}
+tr.expandable{cursor:pointer;transition:background .15s ease}
+.detail-cell{padding:0!important;border-bottom:1px solid var(--border)!important}
+tr.pnl-pos td{background:rgba(34,197,94,.04)}
+tr.pnl-pos:hover td{background:rgba(34,197,94,.08)}
+tr.pnl-neg td{background:rgba(239,68,68,.04)}
+tr.pnl-neg:hover td{background:rgba(239,68,68,.08)}
+tr.row-expired td{background:rgba(240,192,64,.04);opacity:.7}
+tr.row-expired:hover td{background:rgba(240,192,64,.08);opacity:1}
+.pos-section-hdr{padding:6px 6px 4px;font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;border-bottom:1px solid var(--border)}
+.pos-section-hdr.active{color:var(--green);background:rgba(34,197,94,.04)}
+.pos-section-hdr.expired{color:var(--yellow);background:rgba(240,192,64,.04)}
+.pos-section-hdr.closed{color:var(--text-muted);background:rgba(107,114,128,.04)}
+.tag{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:1px}
+.tag-exit{background:#2d1010;color:var(--red)}
+.tag-hold{background:#0a2010;color:var(--green)}
+.tag-long{background:#0a2010;color:var(--green)}
+.tag-short{background:#2d1010;color:var(--red)}
+.tag-cat{background:#10102a;color:var(--accent)}
+.tag-fav{background:#1a1a10;color:var(--yellow)}
+.tag-yes{background:#0a2010;color:var(--green)}
+.tag-no{background:#2d1010;color:var(--red)}
+.tag-initial{background:#10102a;color:var(--accent)}
+.tag-partial{background:#1a1a10;color:var(--yellow)}
+.tag-trailing{background:#0a2010;color:var(--green)}
+.tag-expired{background:#2a2008;color:var(--yellow);border:1px solid #3a3010}
+.risk-meter{height:3px;background:var(--border);border-radius:2px;margin:2px 6px 4px;overflow:hidden}
+.risk-meter-fill{height:100%;border-radius:2px;transition:width .3s ease}
+.log-box{background:#06060a;border:1px solid #141420;border-radius:4px;height:80px;overflow-y:auto;padding:6px 8px;margin-top:6px}
+.log-box::-webkit-scrollbar{width:3px}
+.log-box::-webkit-scrollbar-thumb{background:var(--border)}
+.log-line{font-size:9px;line-height:1.7}
+.log-line .ts{color:var(--text-muted);margin-right:6px}
+.log-line .msg{color:var(--text-muted)}
+.log-line.sig .msg{color:var(--yellow)}
+.log-line.tr .msg{color:var(--green)}
+.log-line.warn .msg{color:var(--red)}
+.sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.sig-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;transition:var(--transition)}
+.sig-card:hover{border-color:var(--border-light)}
+.sig-ticker{font-size:11px;font-weight:700;color:var(--text);margin-bottom:2px}
+.sig-price{font-size:18px;font-weight:700;margin-bottom:4px}
+.sig-text{font-size:9px;color:var(--text-muted);line-height:1.5}
+.sig-label{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;margin-bottom:4px;font-weight:700}
+.sig-bull{background:#0a2010;color:var(--green);border:1px solid #1a4020}
+.sig-bear{background:#2d1010;color:var(--red);border:1px solid #4a1818}
+.sig-neutral{background:#10101c;color:var(--accent);border:1px solid #1a1a30}
+.green{color:var(--green)}.red{color:var(--red)}.yellow{color:var(--yellow)}.blue{color:var(--accent)}.white{color:var(--text)}.muted{color:var(--text-muted)}
+.pump-kpi-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:#1a1a24;border-radius:4px;overflow:hidden;margin-bottom:10px}
+.pump-pos-tag{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:1px}
+.pump-kol{background:#1a1008;color:var(--orange);border:1px solid #3a2008}
+.pump-scan{background:#0a1020;color:var(--accent);border:1px solid #0a1a30}
+.pump-copy{background:#10101a;color:var(--purple);border:1px solid #1a1030}
+.pump-sig-row{padding:4px 0;border-bottom:1px solid #0e0e14;font-size:10px;display:flex;gap:8px;align-items:flex-start}
+.pump-sig-handle{color:var(--orange);font-weight:700;min-width:90px}
+.pump-sig-mint{color:var(--text-muted);font-size:9px}
+.pump-sig-text{color:var(--text-muted);font-size:9px;flex:1;line-height:1.4}
+.pump-acted{color:var(--green);font-size:9px;font-weight:700}
+.pump-skipped{color:var(--text-muted);font-size:9px}
+.statusbar{display:flex;gap:20px;padding:5px 12px;background:#0a0a0e;border:1px solid var(--border);border-radius:var(--radius);margin-top:8px;font-size:9px;color:var(--text-muted);letter-spacing:1px;flex-wrap:wrap}
+.err{color:var(--red);font-size:10px;text-align:center;padding:16px}
+.empty{color:var(--text-muted);font-size:10px;text-align:center;padding:16px}
+.loading-bar{height:2px;background:var(--border);border-radius:1px;overflow:hidden;margin:20px 0}
+.loading-bar::after{content:'';display:block;height:100%;width:30%;background:var(--accent);border-radius:1px;animation:loading-slide 1.2s ease-in-out infinite}
+@keyframes loading-slide{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
+.shortcut-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:998}
+.shortcut-box{background:var(--surface);border:1px solid var(--border-light);border-radius:8px;padding:24px 32px;min-width:280px}
+.shortcut-box h2{font-size:12px;font-weight:700;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin:0 0 16px;font-family:inherit}
+.shortcut-row{display:flex;align-items:center;padding:6px 0;font-size:11px;color:var(--text-secondary)}
+kbd{display:inline-block;background:var(--surface-hover);border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-family:inherit;font-size:11px;color:var(--accent);margin-right:12px;min-width:28px;text-align:center}
+@media(max-width:1100px){.main-grid{grid-template-columns:1fr}.sig-grid{grid-template-columns:1fr}}
+@media(max-width:768px){body{padding:6px}.nav-row{grid-template-columns:repeat(2,1fr)}.nav-card .val{font-size:18px}.kpi-bar,.pump-kpi-bar{grid-template-columns:repeat(2,1fr)}.topbar{flex-direction:column;align-items:flex-start}.stat-grid{grid-template-columns:1fr}.site-nav{flex-wrap:wrap}.site-nav-link{padding:6px 12px;font-size:9px}table{font-size:10px}td,th{padding:3px 4px}}
+@media(max-width:480px){.nav-row{grid-template-columns:1fr}.fund-name{font-size:13px;letter-spacing:2px}.nav-card .val{font-size:16px}}
+</style>
+</head>
+<body>
+<div class="pat-overlay" id="pat-overlay"><div class="pat-box"><label for="pat-input" class="pat-title">GITHUB ACCESS TOKEN</label><div id="pat-help" class="pat-sub">Your bot state files are in private repos. Enter a GitHub PAT with <strong style="color:var(--text)">repo</strong> scope.<br><br>Generate: github.com/settings/tokens &rarr; New token &rarr; select <em>repo</em></div><input class="pat-input" type="password" id="pat-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" /><br><button class="pat-btn" onclick="savePat()">&rarr; LOAD TERMINAL</button><div class="pat-err" id="pat-err">Invalid token or access denied.</div></div></div>
+<div id="shortcut-overlay" class="shortcut-overlay" style="display:none"><div class="shortcut-box"><h2>KEYBOARD SHORTCUTS</h2><div class="shortcut-row"><kbd>R</kbd> Refresh data</div><div class="shortcut-row"><kbd>C</kbd> Clear token &amp; reset</div><div class="shortcut-row"><kbd>?</kbd> Toggle this overlay</div><div class="shortcut-row"><kbd>Esc</kbd> Close overlay</div></div></div>
+<nav class="site-nav"><a href="trading-terminal.html" class="site-nav-link active">TRADING TERMINAL</a><a href="command-center.html" class="site-nav-link">COMMAND CENTER</a><a href="../reports/agent-network-3d.html" class="site-nav-link">ORG CHART</a></nav>
+<header class="topbar"><div class="fund-name">DEGEN+POLY CAPITAL</div><div class="topbar-right"><span class="clock" id="clock">--:--:-- EST</span><span class="badge">PAPER TRADING</span><span class="countdown" id="countdown">30s</span><span class="last-update" id="last-update">not loaded</span><button class="refresh-btn" onclick="loadAll()">&#8635; REFRESH</button></div></header>
+<nav class="nav-row"><div class="nav-card"><div class="lbl">Fund NAV</div><div class="val" id="nav-total">--</div><div class="sub" id="nav-change">starting $2,000</div></div><div class="nav-card"><div class="lbl">Total P&amp;L</div><div class="val" id="total-pnl">--</div><div class="sub" id="total-pnl-sub">realized + unrealized</div></div><div class="nav-card"><div class="lbl">Degen Bankroll</div><div class="val" id="degen-bankroll">--</div><div class="sub" id="degen-pnl-sub">perps P&amp;L</div></div><div class="nav-card"><div class="lbl">Poly NAV</div><div class="val" id="poly-nav">--</div><div class="sub" id="poly-pnl-sub">prediction markets</div></div><div class="nav-card"><div class="lbl">Open Positions</div><div class="val" id="open-count">--</div><div class="sub" id="open-sub">across both books</div></div></nav>
+<div id="error-banner" class="error-banner" role="alert"></div>
+<section class="panel" style="margin-bottom:8px"><div class="panel-head"><h2>CUMULATIVE P&amp;L (MARK-TO-MARKET)</h2><span class="panel-meta" id="sparkline-meta"></span></div><div class="panel-body" style="padding:8px 12px 4px"><canvas id="pnl-sparkline" style="width:100%;height:80px"></canvas></div></section>
+
+<section class="main-grid">
+  <div class="panel degen-panel">
+    <div class="panel-head"><h2>DEGEN / HYPERLIQUID PERPS</h2><div class="panel-head-right"><span class="panel-ts" id="degen-ts">--</span><span id="degen-pill" class="pill">LOADING</span></div></div>
+    <div class="panel-warn warn-stale" id="degen-stale-banner"><span style="font-weight:700">!</span> <span id="degen-stale-msg">Data is stale.</span></div>
+    <div class="panel-warn warn-error" id="degen-error-banner"><span style="font-weight:700">!</span> <span id="degen-error-msg">Failed to load.</span></div>
+    <div class="panel-body">
+      <div class="kpi-bar"><div class="kpi"><div class="k">BANKROLL</div><div class="v blue" id="d-bankroll">--</div></div><div class="kpi"><div class="k">TOTAL P&amp;L</div><div class="v" id="d-pnl">--</div></div><div class="kpi"><div class="k">WIN RATE</div><div class="v" id="d-winrate">--</div></div><div class="kpi"><div class="k">OPEN POS</div><div class="v blue" id="d-openpos">--</div></div></div>
+      <div class="section-lbl">OPEN POSITIONS</div>
+      <div class="scroll-wrap" style="max-height:140px"><table><thead><tr><th>Symbol</th><th>Side</th><th>Entry</th><th>Mark</th><th>PnL</th><th>Size</th><th>Phase</th></tr></thead><tbody id="degen-pos-body"><tr><td colspan="7"><div class="loading-bar"></div></td></tr></tbody></table></div>
+      <div id="degen-risk-meters"></div>
+      <div class="section-lbl">MARKET PRICES</div><div class="stat-grid" id="degen-prices"></div>
+      <div class="section-lbl">SIGNAL LOG</div><div class="log-box" id="degen-log"><div class="loading-bar"></div></div>
+    </div>
+  </div>
+  <div class="panel poly-panel">
+    <div class="panel-head"><h2>POLY / POLYMARKET</h2><div class="panel-head-right"><span class="panel-ts" id="poly-ts">--</span><span id="poly-pill" class="pill">LOADING</span></div></div>
+    <div class="panel-warn warn-stale" id="poly-stale-banner"><span style="font-weight:700">!</span> <span id="poly-stale-msg">Data is stale.</span></div>
+    <div class="panel-warn warn-expired" id="poly-expired-banner"><span style="font-weight:700">!</span> <span id="poly-expired-msg">Positions past resolution date.</span></div>
+    <div class="panel-warn warn-error" id="poly-error-banner"><span style="font-weight:700">!</span> <span id="poly-error-msg">Failed to load.</span></div>
+    <div class="panel-body">
+      <div class="kpi-bar"><div class="kpi"><div class="k">CURRENT</div><div class="v blue" id="p-current">--</div></div><div class="kpi"><div class="k">UNREAL P&amp;L</div><div class="v" id="p-upnl">--</div></div><div class="kpi"><div class="k">REAL P&amp;L</div><div class="v" id="p-rpnl">--</div></div><div class="kpi"><div class="k">NAV CHANGE</div><div class="v" id="p-nav-pct">--</div></div></div>
+      <div class="stat-grid" style="margin-bottom:8px"><div class="stat"><span class="k">Catalyst trades</span><span class="v blue" id="p-cat-open">--</span></div><div class="stat"><span class="k">Catalyst P&amp;L</span><span class="v" id="p-cat-pnl">--</span></div><div class="stat"><span class="k">Favorite trades</span><span class="v blue" id="p-fav-open">--</span></div><div class="stat"><span class="k">Favorite P&amp;L</span><span class="v" id="p-fav-pnl">--</span></div><div class="stat"><span class="k">Deployed</span><span class="v yellow" id="p-deployed">--</span></div><div class="stat"><span class="k">Cash</span><span class="v green" id="p-cash">--</span></div></div>
+      <div class="section-lbl">POSITIONS</div>
+      <div class="scroll-wrap"><table><thead><tr><th>ID</th><th>Market</th><th>Side</th><th>Strat</th><th>Entry</th><th>Now</th><th>P&amp;L</th><th>Status</th></tr></thead><tbody id="poly-pos-body"><tr><td colspan="8"><div class="loading-bar"></div></td></tr></tbody></table></div>
+    </div>
+  </div>
+</section>
+<section style="margin-bottom:8px"><div class="section-lbl">DEGEN SIGNAL ANALYSIS</div><div class="sig-grid" id="degen-signals"><div class="sig-card"><div class="loading-bar"></div></div><div class="sig-card"></div><div class="sig-card"></div><div class="sig-card"></div></div></section>
+<div class="panel degen-panel" style="margin-bottom:8px"><div class="panel-head"><h2>DEGEN WATCH LIST</h2><span class="panel-meta" id="degen-notes-meta"></span></div><div class="panel-body" id="degen-watchlist"><div class="loading-bar"></div></div></div>
+<section class="panel" style="margin-bottom:8px"><div class="panel-head"><h2>TRADE HISTORY</h2><span class="panel-meta" id="history-count"></span></div><div class="panel-body"><div class="scroll-wrap" style="max-height:200px"><table><thead><tr><th class="sortable" onclick="sortHistory('time')">Time</th><th class="sortable" onclick="sortHistory('symbol')">Symbol</th><th>Side</th><th>Book</th><th class="sortable" onclick="sortHistory('pnl')">P&amp;L</th><th>Duration</th></tr></thead><tbody id="history-body"><tr><td colspan="6" class="empty">No closed trades yet</td></tr></tbody></table></div></div></section>
+<section class="panel pump-panel" style="margin-bottom:8px">
+  <div class="panel-head"><h2>PUMP / PUMP.FUN LAUNCHER + KOL SNIPER</h2><div class="panel-head-right"><span class="panel-ts" id="pump-ts">--</span><span id="pump-pill" class="pill">LOADING</span></div></div>
+  <div class="panel-warn warn-stale" id="pump-stale-banner"><span style="font-weight:700">!</span> <span id="pump-stale-msg">Bot not deployed or stale.</span></div>
+  <div class="panel-warn warn-error" id="pump-error-banner"><span style="font-weight:700">!</span> <span id="pump-error-msg">Failed to load.</span></div>
+  <div class="panel-body">
+    <div class="pump-kpi-bar"><div class="kpi"><div class="k">INVESTED</div><div class="v blue" id="pk-invested">--</div></div><div class="kpi"><div class="k">REALIZED P&amp;L</div><div class="v" id="pk-rpnl">--</div></div><div class="kpi"><div class="k">FEES CLAIMED</div><div class="v green" id="pk-fees">--</div></div><div class="kpi"><div class="k">WIN RATE</div><div class="v" id="pk-winrate">--</div></div><div class="kpi"><div class="k">OPEN POS</div><div class="v blue" id="pk-openpos">--</div></div></div>
+    <div class="section-lbl">OPEN POSITIONS</div>
+    <div class="scroll-wrap" style="max-height:140px"><table><thead><tr><th>Token</th><th>Strategy</th><th>KOL</th><th>Entry SOL</th><th>Current X</th><th>High X</th><th>Partial TP</th><th>Pump.fun</th></tr></thead><tbody id="pump-pos-body"><tr><td colspan="8"><div class="loading-bar"></div></td></tr></tbody></table></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px"><div><div class="section-lbl">KOL SIGNALS</div><div class="scroll-wrap" style="max-height:160px" id="pump-kol-signals"><div class="loading-bar"></div></div></div><div><div class="section-lbl">SCANNER HITS</div><div class="scroll-wrap" style="max-height:80px" id="pump-scanner-hits"><div class="loading-bar"></div></div><div class="section-lbl" style="margin-top:6px">DEPLOYED TOKENS (CREATOR FEES)</div><div class="scroll-wrap" style="max-height:70px" id="pump-deployed"><div class="loading-bar"></div></div></div></div>
+    <div class="section-lbl">BOT LOG</div><div class="log-box" id="pump-log"></div>
+  </div>
+</section>
+<footer class="statusbar"><span>DEGEN: <span id="sb-degen-scan">--</span></span><span>POLY: <span id="sb-poly-updated">--</span></span><span>PUMP: <span id="sb-pump-scan">--</span></span><span>AUTO-REFRESH: 30s</span></footer>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+var DEGEN_API = 'https://api.github.com/repos/davedeploys-spec/hyperliquid-bot-v1/contents/bot-state-degen.json';
+var POLY_API = 'https://api.github.com/repos/davedeploys-spec/polymarket-bot-v1/contents/bot-state-poly.json';
+var PUMP_API = 'https://api.github.com/repos/davedeploys-spec/pumpfun-deploy-v1/contents/pump-bot-state.json';
+var STALE = { degen: 60, poly: 360, pump: 60 }; // minutes
+var REFRESH_SEC = 30;
+var lastDegen = null, lastPoly = null, lastPump = null;
+var countdownVal = REFRESH_SEC;
+var historySortKey = 'time', historySortAsc = false;
+var polyDetailOpen = {};
+
+// ============================================================
+// PAT (GitHub Token)
+// ============================================================
+function getToken() { return localStorage.getItem('gh_pat') || ''; }
+function savePat() {
+  var v = document.getElementById('pat-input').value.trim();
+  if (!v) { document.getElementById('pat-err').style.display = 'block'; return; }
+  localStorage.setItem('gh_pat', v);
+  document.getElementById('pat-overlay').style.display = 'none';
+  loadAll();
+}
+function clearToken() { localStorage.removeItem('gh_pat'); location.reload(); }
+function checkPat() {
+  if (getToken()) { document.getElementById('pat-overlay').style.display = 'none'; loadAll(); }
+}
+
+// ============================================================
+// CLOCK + COUNTDOWN
+// ============================================================
+function updateClock() {
+  var now = new Date();
+  var est = new Intl.DateTimeFormat('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false, timeZone:'America/New_York' }).format(now);
+  document.getElementById('clock').textContent = est + ' EST';
+}
+function tick() {
+  countdownVal--;
+  var el = document.getElementById('countdown');
+  if (countdownVal <= 0) { countdownVal = REFRESH_SEC; loadAll(); }
+  el.textContent = countdownVal + 's';
+  el.className = countdownVal <= 5 ? 'countdown urgent' : 'countdown';
+}
+setInterval(updateClock, 1000);
+setInterval(tick, 1000);
+
+// ============================================================
+// HELPERS
+// ============================================================
+function fmt$(n, d) { d = d === undefined ? 2 : d; var x = parseFloat(n) || 0; return (x < 0 ? '-$' : '$') + Math.abs(x).toFixed(d); }
+function fmtPct(n) { var x = parseFloat(n) || 0; return (x >= 0 ? '+' : '') + x.toFixed(2) + '%'; }
+function cc(n) { return parseFloat(n) >= 0 ? 'green' : 'red'; }
+function pnlRow(n) { var x = parseFloat(n) || 0; return x > 0 ? 'pnl-pos' : x < 0 ? 'pnl-neg' : ''; }
+function timeAgo(iso) {
+  if (!iso) return 'never';
+  var ms = Date.now() - new Date(iso).getTime();
+  var m = Math.floor(ms / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return m + 'm ago';
+  var h = Math.floor(m / 60);
+  if (h < 24) return h + 'h ' + (m % 60) + 'm ago';
+  return Math.floor(h / 24) + 'd ago';
+}
+function staleCheck(iso, thresholdMin) {
+  if (!iso) return { stale: true, minutesAgo: Infinity, label: 'never' };
+  var m = (Date.now() - new Date(iso).getTime()) / 60000;
+  return { stale: m > thresholdMin, minutesAgo: Math.floor(m), label: timeAgo(iso) };
+}
+function truncMarket(s) {
+  if (!s) return '--';
+  return s.length > 40 ? s.substring(0, 37) + '...' : s;
+}
+
+// ============================================================
+// FETCH
+// ============================================================
+async function fetchJSON(url) {
+  var t = getToken();
+  var headers = { 'Accept': 'application/vnd.github.v3.raw' };
+  if (t) headers['Authorization'] = 'token ' + t;
+  var r = await fetch(url + '?_t=' + Date.now(), { headers: headers });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+// ============================================================
+// ERROR BANNERS
+// ============================================================
+function showGlobalError(msg) {
+  var el = document.getElementById('error-banner');
+  el.textContent = msg; el.style.display = 'block';
+}
+function hideGlobalError() { document.getElementById('error-banner').style.display = 'none'; }
+function showPanelWarn(id, msg) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  if (msg) { var span = el.querySelector('span:last-child'); if (span) span.textContent = msg; }
+  el.classList.add('show');
+}
+function hidePanelWarn(id) { var el = document.getElementById(id); if (el) el.classList.remove('show'); }
+function setPill(id, cls, label) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'pill ' + cls; el.textContent = label;
+}
+function setTs(id, label) { var el = document.getElementById(id); if (el) el.textContent = label; }
+
+// ============================================================
+// SPARKLINE (Mark-to-Market)
+// ============================================================
+function drawSparkline() {
+  var canvas = document.getElementById('pnl-sparkline');
+  if (!canvas) return;
+  var dpr = window.devicePixelRatio || 1;
+  var rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
+  var ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  var W = rect.width, H = rect.height;
+
+  // Build cumulative P&L from closed trades
+  var pts = [];
+  var cum = 0;
+  if (lastDegen && lastDegen.trade_log) {
+    lastDegen.trade_log.forEach(function(t) {
+      cum += (t.pnl || t.realized_pnl || 0);
+      pts.push(cum);
+    });
+  }
+  if (lastPoly && lastPoly.positions) {
+    lastPoly.positions.forEach(function(p) {
+      if (p.status === 'EXIT' || p.status === 'CLOSED') {
+        cum += (p.realized_pnl || p.unrealized_pnl || 0);
+        pts.push(cum);
+      }
+    });
+  }
+  // Add mark-to-market: current unrealized as final point
+  var unreal = 0;
+  if (lastDegen && lastDegen.open_positions) {
+    lastDegen.open_positions.forEach(function(p) { unreal += (p.unrealized_pnl || 0); });
+  }
+  if (lastPoly && lastPoly.bankroll) { unreal += (lastPoly.bankroll.unrealized_pnl || 0); }
+  if (pts.length > 0) { pts.push(pts[pts.length - 1] + unreal); }
+  else if (unreal !== 0) { pts.push(unreal); }
+
+  var meta = document.getElementById('sparkline-meta');
+  if (meta) meta.textContent = pts.length + ' data points (includes unrealized)';
+
+  if (pts.length < 2) {
+    ctx.fillStyle = '#6b7280'; ctx.font = '10px monospace';
+    ctx.fillText('Insufficient data for chart', W / 2 - 70, H / 2);
+    return;
+  }
+
+  var mn = Math.min.apply(null, pts), mx = Math.max.apply(null, pts);
+  var range = mx - mn || 1;
+  var pad = 4;
+  function x(i) { return pad + (i / (pts.length - 1)) * (W - pad * 2); }
+  function y(v) { return H - pad - ((v - mn) / range) * (H - pad * 2); }
+
+  // Zero line
+  if (mn < 0 && mx > 0) {
+    ctx.strokeStyle = '#2a2a3c'; ctx.lineWidth = 0.5; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(0, y(0)); ctx.lineTo(W, y(0)); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Gradient fill
+  var last = pts[pts.length - 1];
+  var grad = ctx.createLinearGradient(0, 0, 0, H);
+  if (last >= 0) { grad.addColorStop(0, 'rgba(34,197,94,0.15)'); grad.addColorStop(1, 'rgba(34,197,94,0)'); }
+  else { grad.addColorStop(0, 'rgba(239,68,68,0)'); grad.addColorStop(1, 'rgba(239,68,68,0.15)'); }
+  ctx.beginPath(); ctx.moveTo(x(0), y(pts[0]));
+  for (var i = 1; i < pts.length; i++) ctx.lineTo(x(i), y(pts[i]));
+  ctx.lineTo(x(pts.length - 1), H); ctx.lineTo(x(0), H); ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
+
+  // Line
+  ctx.beginPath(); ctx.moveTo(x(0), y(pts[0]));
+  for (var i = 1; i < pts.length; i++) ctx.lineTo(x(i), y(pts[i]));
+  ctx.strokeStyle = last >= 0 ? '#22c55e' : '#ef4444'; ctx.lineWidth = 1.5; ctx.stroke();
+
+  // End dot
+  ctx.beginPath(); ctx.arc(x(pts.length - 1), y(last), 3, 0, Math.PI * 2);
+  ctx.fillStyle = last >= 0 ? '#22c55e' : '#ef4444'; ctx.fill();
+
+  // Labels
+  ctx.fillStyle = '#6b7280'; ctx.font = '9px monospace';
+  ctx.fillText(fmt$(mx, 0), 4, 12);
+  ctx.fillText(fmt$(mn, 0), 4, H - 4);
+  ctx.fillStyle = last >= 0 ? '#22c55e' : '#ef4444';
+  ctx.fillText(fmt$(last, 2), W - 60, y(last) - 6);
+}
+
+
+// ============================================================
+// RENDER DEGEN
+// ============================================================
+function renderDegen(d) {
+  lastDegen = d;
+  var sc = staleCheck(d.last_scan, STALE.degen);
+  setTs('degen-ts', 'Updated: ' + sc.label);
+  if (sc.stale) { setPill('degen-pill', 'stale', 'STALE'); showPanelWarn('degen-stale-banner', 'Data is stale. Last scan was ' + sc.label + '. Bot may not be running.'); }
+  else { setPill('degen-pill', 'live', 'LIVE'); hidePanelWarn('degen-stale-banner'); }
+  hidePanelWarn('degen-error-banner');
+
+  var bk = parseFloat(d.bankroll) || 0;
+  var pnl = parseFloat(d.total_pnl) || 0;
+  var w = d.wins || 0, l = d.losses || 0;
+  var wr = (w + l) > 0 ? ((w / (w + l)) * 100).toFixed(0) : '0';
+  var ops = (d.open_positions || []);
+  document.getElementById('d-bankroll').textContent = fmt$(bk);
+  document.getElementById('d-pnl').className = 'v ' + cc(pnl);
+  document.getElementById('d-pnl').textContent = fmt$(pnl);
+  document.getElementById('d-winrate').textContent = wr + '% (' + w + 'W/' + l + 'L)';
+  document.getElementById('d-openpos').textContent = ops.length;
+  document.getElementById('degen-bankroll').textContent = fmt$(bk);
+  document.getElementById('degen-pnl-sub').className = 'sub ' + cc(pnl);
+  document.getElementById('degen-pnl-sub').textContent = fmt$(pnl) + ' total P&L';
+  document.getElementById('sb-degen-scan').textContent = sc.label;
+
+  // Open positions with P&L row tinting
+  var tbody = document.getElementById('degen-pos-body');
+  if (ops.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No open positions</td></tr>'; }
+  else {
+    var h = '';
+    ops.forEach(function(p) {
+      var upnl = parseFloat(p.unrealized_pnl) || 0;
+      var side = (p.side || 'LONG').toUpperCase();
+      var phase = p.phase || (p.partial_tp_hit ? 'partial' : 'initial');
+      var phaseTag = phase === 'trailing' ? 'tag-trailing' : phase === 'partial' ? 'tag-partial' : 'tag-initial';
+      h += '<tr class="' + pnlRow(upnl) + '">';
+      h += '<td class="white">' + (p.symbol || p.coin || '--') + '</td>';
+      h += '<td><span class="tag tag-' + side.toLowerCase() + '">' + side + '</span></td>';
+      h += '<td>' + fmt$(p.entry_price, 4) + '</td>';
+      h += '<td>' + fmt$(p.mark_price, 4) + '</td>';
+      h += '<td class="' + cc(upnl) + '">' + fmt$(upnl) + '</td>';
+      h += '<td>' + (p.size || '--') + '</td>';
+      h += '<td><span class="tag ' + phaseTag + '">' + phase.toUpperCase() + '</span></td>';
+      h += '</tr>';
+    });
+    tbody.innerHTML = h;
+  }
+
+  // Risk meters
+  var rm = document.getElementById('degen-risk-meters');
+  var rmh = '';
+  ops.forEach(function(p) {
+    if (p.stop_loss && p.entry_price && p.mark_price) {
+      var entry = parseFloat(p.entry_price), mark = parseFloat(p.mark_price), sl = parseFloat(p.stop_loss);
+      var total = Math.abs(entry - sl);
+      var current = Math.abs(mark - sl);
+      var pct = total > 0 ? Math.min(100, Math.max(0, (current / total) * 100)) : 50;
+      var color = pct > 70 ? '#22c55e' : pct > 30 ? '#f0c040' : '#ef4444';
+      rmh += '<div style="font-size:9px;color:#6b7280;padding:0 6px;">' + (p.symbol || p.coin) + ' SL distance</div>';
+      rmh += '<div class="risk-meter"><div class="risk-meter-fill" style="width:' + pct + '%;background:' + color + '"></div></div>';
+    }
+  });
+  rm.innerHTML = rmh;
+
+  // Market prices
+  var prices = d.current_prices || {};
+  var pp = document.getElementById('degen-prices');
+  var ph = '';
+  for (var k in prices) {
+    ph += '<div class="stat"><span class="k">' + k.toUpperCase() + '</span><span class="v white">' + fmt$(prices[k], 2) + '</span></div>';
+  }
+  pp.innerHTML = ph || '<div class="empty">No price data</div>';
+
+  // Signals
+  var sigs = d.signal_summary || {};
+  var sigGrid = document.getElementById('degen-signals');
+  var coins = ['BTC', 'ETH', 'SOL', 'XRP'];
+  var sh = '';
+  coins.forEach(function(c) {
+    var s = sigs[c] || sigs[c.toLowerCase()] || {};
+    var bias = (s.bias || s.signal || 'neutral').toLowerCase();
+    var labelClass = bias === 'bullish' || bias === 'long' ? 'sig-bull' : bias === 'bearish' || bias === 'short' ? 'sig-bear' : 'sig-neutral';
+    var biasLabel = bias.charAt(0).toUpperCase() + bias.slice(1);
+    sh += '<div class="sig-card">';
+    sh += '<div class="sig-ticker">' + c + '</div>';
+    sh += '<div class="sig-price white">' + fmt$(prices[c] || prices[c.toLowerCase()] || 0, 2) + '</div>';
+    sh += '<span class="sig-label ' + labelClass + '">' + biasLabel + '</span>';
+    sh += '<div class="sig-text">';
+    if (s.daily_trend) sh += 'Daily: ' + s.daily_trend + '<br>';
+    if (s.h4_trend) sh += '4H: ' + s.h4_trend + '<br>';
+    if (s.rsi_5m !== undefined) sh += 'RSI(5m): ' + parseFloat(s.rsi_5m).toFixed(1) + '<br>';
+    if (s.volume_ratio !== undefined) sh += 'Vol ratio: ' + parseFloat(s.volume_ratio).toFixed(2) + 'x';
+    if (!s.daily_trend && !s.h4_trend && s.rsi_5m === undefined) sh += 'No signal data';
+    sh += '</div></div>';
+  });
+  sigGrid.innerHTML = sh;
+
+  // Watch list
+  var wl = d.watch_list || d.notes || [];
+  var wlEl = document.getElementById('degen-watchlist');
+  var metaEl = document.getElementById('degen-notes-meta');
+  if (metaEl) metaEl.textContent = wl.length + ' items';
+  if (wl.length === 0) { wlEl.innerHTML = '<div class="empty">No watch list items</div>'; }
+  else {
+    var wh = '<div class="stat-grid">';
+    wl.forEach(function(w) {
+      if (typeof w === 'string') { wh += '<div class="stat" style="grid-column:1/-1"><span class="k" style="color:var(--text-secondary)">' + w + '</span></div>'; }
+      else { wh += '<div class="stat"><span class="k">' + (w.symbol || w.coin || '--') + '</span><span class="v muted">' + (w.note || w.reason || '') + '</span></div>'; }
+    });
+    wh += '</div>';
+    wlEl.innerHTML = wh;
+  }
+
+  // Log
+  var log = d.log || [];
+  var logEl = document.getElementById('degen-log');
+  if (log.length === 0) { logEl.innerHTML = '<div class="log-line"><span class="msg muted">No log entries</span></div>'; }
+  else {
+    var lh = '';
+    log.slice(-20).forEach(function(l) {
+      var cls = '';
+      var msg = typeof l === 'string' ? l : (l.message || l.msg || JSON.stringify(l));
+      var ts = l.timestamp || l.time || '';
+      if (msg.match(/signal|scan/i)) cls = 'sig';
+      else if (msg.match(/trade|open|close|entry|exit/i)) cls = 'tr';
+      else if (msg.match(/error|fail|stop/i)) cls = 'warn';
+      lh += '<div class="log-line ' + cls + '">';
+      if (ts) lh += '<span class="ts">' + timeAgo(ts) + '</span>';
+      lh += '<span class="msg">' + msg + '</span></div>';
+    });
+    logEl.innerHTML = lh;
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+}
+
+// ============================================================
+// RENDER POLY (with Active/Expired/Closed split + NAV fix)
+// ============================================================
+function renderPoly(p) {
+  lastPoly = p;
+  var bk = p.bankroll || {};
+  var sc = staleCheck(p.updated_at, STALE.poly);
+  setTs('poly-ts', 'Updated: ' + sc.label);
+  if (sc.stale) { setPill('poly-pill', 'stale', 'STALE'); showPanelWarn('poly-stale-banner', 'Data is stale. Last update was ' + sc.label + '.'); }
+  else { setPill('poly-pill', 'live', 'LIVE'); hidePanelWarn('poly-stale-banner'); }
+  hidePanelWarn('poly-error-banner');
+
+  // FIXED NAV: include unrealized P&L
+  var current = parseFloat(bk.current) || 0;
+  var upnl = parseFloat(bk.unrealized_pnl) || 0;
+  var rpnl = parseFloat(bk.realized_pnl) || 0;
+  var polyMTM = current + upnl;
+  var navPct = parseFloat(bk.nav_change_pct) || 0;
+  var deployed = parseFloat(bk.deployed) || 0;
+  var cash = parseFloat(bk.cash) || 0;
+
+  document.getElementById('p-current').textContent = fmt$(current);
+  document.getElementById('p-upnl').className = 'v ' + cc(upnl);
+  document.getElementById('p-upnl').textContent = fmt$(upnl);
+  document.getElementById('p-rpnl').className = 'v ' + cc(rpnl);
+  document.getElementById('p-rpnl').textContent = fmt$(rpnl);
+  document.getElementById('p-nav-pct').className = 'v ' + cc(navPct);
+  document.getElementById('p-nav-pct').textContent = fmtPct(navPct);
+  document.getElementById('p-deployed').textContent = fmt$(deployed);
+  document.getElementById('p-cash').textContent = fmt$(cash);
+
+  // Strategy stats
+  var sp = p.strategy_pnl || {};
+  var cat = sp.catalyst || {}; var fav = sp.favorite || {};
+  document.getElementById('p-cat-open').textContent = (cat.open_trades || 0) + (cat.queued_trades ? '+' + cat.queued_trades + 'q' : '');
+  document.getElementById('p-cat-pnl').className = 'v ' + cc(cat.total);
+  document.getElementById('p-cat-pnl').textContent = fmt$(cat.total || 0);
+  document.getElementById('p-fav-open').textContent = (fav.open_trades || 0) + (fav.queued_trades ? '+' + fav.queued_trades + 'q' : '');
+  document.getElementById('p-fav-pnl').className = 'v ' + cc(fav.total);
+  document.getElementById('p-fav-pnl').textContent = fmt$(fav.total || 0);
+
+  // NAV cards (FIXED: polyMTM includes unrealized)
+  document.getElementById('poly-nav').textContent = fmt$(polyMTM);
+  document.getElementById('poly-pnl-sub').className = 'sub ' + cc(upnl + rpnl);
+  document.getElementById('poly-pnl-sub').textContent = fmt$(upnl + rpnl) + ' total';
+
+  var degenBk = lastDegen ? parseFloat(lastDegen.bankroll) || 0 : 0;
+  var degenPnl = lastDegen ? parseFloat(lastDegen.total_pnl) || 0 : 0;
+  var fundNAV = polyMTM + degenBk;
+  var totalPnl = degenPnl + upnl + rpnl;
+  document.getElementById('nav-total').textContent = fmt$(fundNAV);
+  document.getElementById('nav-change').className = 'sub ' + cc(fundNAV - 2000);
+  document.getElementById('nav-change').textContent = fmt$(fundNAV - 2000) + ' vs $2,000 start';
+  document.getElementById('total-pnl').className = 'val ' + cc(totalPnl);
+  document.getElementById('total-pnl').textContent = fmt$(totalPnl);
+
+  document.getElementById('sb-poly-updated').textContent = sc.label;
+
+  // SPLIT positions: Active / Expired / Closed
+  var positions = p.positions || [];
+  var now = new Date();
+  var active = [], expired = [], closed = [];
+  positions.forEach(function(pos) {
+    if (pos.status === 'EXIT' || pos.status === 'CLOSED') { closed.push(pos); }
+    else if (pos.resolves && new Date(pos.resolves) <= now) { expired.push(pos); }
+    else { active.push(pos); }
+  });
+
+  // Count open positions
+  var openDegenCount = lastDegen ? (lastDegen.open_positions || []).length : 0;
+  document.getElementById('open-count').textContent = active.length + expired.length + openDegenCount;
+  document.getElementById('open-sub').textContent = openDegenCount + ' degen + ' + (active.length + expired.length) + ' poly';
+
+  // Expired banner
+  if (expired.length > 0) {
+    showPanelWarn('poly-expired-banner', expired.length + ' position(s) past resolution date -- awaiting settlement data');
+  } else { hidePanelWarn('poly-expired-banner'); }
+
+  // Build table
+  var tbody = document.getElementById('poly-pos-body');
+  var h = '';
+  function renderPolyRow(pos, isExpired) {
+    var u = parseFloat(pos.unrealized_pnl) || 0;
+    var rowClass = isExpired ? 'row-expired expandable' : pnlRow(u) + ' expandable';
+    var side = (pos.side || 'YES').toUpperCase();
+    var strat = (pos.strategy || '').toLowerCase();
+    var stratTag = strat === 'catalyst' ? 'tag-cat' : strat === 'favorite' ? 'tag-fav' : 'tag-cat';
+    var statusTag = isExpired ? 'tag-expired' : pos.status === 'EXIT' ? 'tag-exit' : 'tag-hold';
+    var statusLabel = isExpired ? 'EXPIRED' : (pos.status || 'HOLD');
+    h += '<tr class="' + rowClass + '" onclick="togglePolyDetail(\'' + pos.id + '\')">';
+    h += '<td class="muted">' + (pos.id || '--') + '</td>';
+    h += '<td class="white" title="' + (pos.market || '') + '">' + truncMarket(pos.market) + '</td>';
+    h += '<td><span class="tag tag-' + (side === 'YES' ? 'yes' : 'no') + '">' + side + '</span></td>';
+    h += '<td><span class="tag ' + stratTag + '">' + (pos.strategy || '--').toUpperCase() + '</span></td>';
+    h += '<td>' + fmt$(pos.entry || 0, 3) + '</td>';
+    h += '<td>' + fmt$(pos.current_price || 0, 3) + '</td>';
+    h += '<td class="' + cc(u) + '">' + fmt$(u) + '</td>';
+    h += '<td><span class="tag ' + statusTag + '">' + statusLabel + '</span></td>';
+    h += '</tr>';
+    // Detail row (hidden by default)
+    h += '<tr id="poly-detail-' + pos.id + '" style="display:' + (polyDetailOpen[pos.id] ? 'table-row' : 'none') + '"><td colspan="8" class="detail-cell"><div style="padding:6px 10px;background:#08080c;font-size:9px;color:var(--text-muted);line-height:1.8">';
+    h += 'Opened: ' + (pos.entry_date || pos.opened_at || '--') + ' | ';
+    h += 'Shares: ' + (pos.shares || pos.amount || '--') + ' | ';
+    if (pos.resolves) h += 'Resolves: ' + pos.resolves + ' | ';
+    h += 'Entry: ' + fmt$(pos.entry || 0, 4) + ' | Current: ' + fmt$(pos.current_price || 0, 4);
+    if (isExpired) h += ' | <span style="color:var(--yellow)">PAST RESOLUTION DATE</span>';
+    h += '</div></td></tr>';
+  }
+
+  if (active.length > 0) {
+    h += '<tr><td colspan="8" class="pos-section-hdr active">ACTIVE POSITIONS (' + active.length + ')</td></tr>';
+    active.forEach(function(pos) { renderPolyRow(pos, false); });
+  }
+  if (expired.length > 0) {
+    h += '<tr><td colspan="8" class="pos-section-hdr expired">EXPIRED -- AWAITING RESOLUTION (' + expired.length + ')</td></tr>';
+    expired.forEach(function(pos) { renderPolyRow(pos, true); });
+  }
+  if (closed.length > 0) {
+    h += '<tr><td colspan="8" class="pos-section-hdr closed">CLOSED (' + closed.length + ')</td></tr>';
+    closed.forEach(function(pos) { renderPolyRow(pos, false); });
+  }
+  if (positions.length === 0) { h = '<tr><td colspan="8" class="empty">No positions</td></tr>'; }
+  tbody.innerHTML = h;
+}
+
+function togglePolyDetail(id) {
+  polyDetailOpen[id] = !polyDetailOpen[id];
+  var el = document.getElementById('poly-detail-' + id);
+  if (el) el.style.display = polyDetailOpen[id] ? 'table-row' : 'none';
+}
+
+
+// ============================================================
+// RENDER PUMP
+// ============================================================
+function renderPump(p) {
+  lastPump = p;
+  var sc = staleCheck(p.last_scan, STALE.pump);
+  setTs('pump-ts', 'Updated: ' + sc.label);
+  if (p.dry_run) { setPill('pump-pill', 'dormant', 'DRY RUN'); }
+  else if (sc.stale) { setPill('pump-pill', 'stale', 'STALE'); showPanelWarn('pump-stale-banner', 'Data is stale. Last scan was ' + sc.label + '.'); }
+  else { setPill('pump-pill', 'live', 'LIVE'); hidePanelWarn('pump-stale-banner'); }
+  hidePanelWarn('pump-error-banner');
+
+  var inv = parseFloat(p.total_invested_sol) || 0;
+  var rpnl = parseFloat(p.realized_pnl_sol) || 0;
+  var fees = parseFloat(p.fees_claimed_sol) || 0;
+  var w = p.wins || 0, l = p.losses || 0;
+  var wr = (w + l) > 0 ? ((w / (w + l)) * 100).toFixed(0) : '0';
+  var ops = p.open_positions || [];
+
+  document.getElementById('pk-invested').textContent = inv.toFixed(3) + ' SOL';
+  document.getElementById('pk-rpnl').className = 'v ' + cc(rpnl);
+  document.getElementById('pk-rpnl').textContent = rpnl.toFixed(3) + ' SOL';
+  document.getElementById('pk-fees').textContent = fees.toFixed(3) + ' SOL';
+  document.getElementById('pk-winrate').textContent = wr + '% (' + w + 'W/' + l + 'L)';
+  document.getElementById('pk-openpos').textContent = ops.length;
+  document.getElementById('sb-pump-scan').textContent = sc.label;
+
+  // Pump positions
+  var tbody = document.getElementById('pump-pos-body');
+  if (ops.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="empty">No open positions</td></tr>'; }
+  else {
+    var h = '';
+    ops.forEach(function(pos) {
+      var curX = parseFloat(pos.current_x) || 0;
+      var hiX = parseFloat(pos.high_x) || 0;
+      var xColor = curX >= 2 ? 'green' : curX >= 1 ? 'yellow' : 'red';
+      var strat = (pos.strategy || 'unknown').toLowerCase();
+      var stratClass = strat === 'kol_snipe' ? 'pump-kol' : strat === 'scanner' ? 'pump-scan' : 'pump-copy';
+      h += '<tr class="' + pnlRow(curX - 1) + '">';
+      h += '<td class="white">' + (pos.token_name || pos.mint || '--') + '</td>';
+      h += '<td><span class="pump-pos-tag ' + stratClass + '">' + strat.toUpperCase() + '</span></td>';
+      h += '<td class="muted">' + (pos.kol || '--') + '</td>';
+      h += '<td>' + (parseFloat(pos.entry_sol) || 0).toFixed(3) + '</td>';
+      h += '<td class="' + xColor + '">' + curX.toFixed(2) + 'x</td>';
+      h += '<td class="white">' + hiX.toFixed(2) + 'x</td>';
+      h += '<td>' + (pos.partial_tp_hit ? '<span class="tag tag-yes">YES</span>' : '<span class="tag tag-no">NO</span>') + '</td>';
+      h += '<td><a href="https://pump.fun/' + (pos.mint || '') + '" target="_blank" style="color:var(--accent);text-decoration:none">View</a></td>';
+      h += '</tr>';
+    });
+    tbody.innerHTML = h;
+  }
+
+  // KOL Signals
+  var kols = p.kol_signals || [];
+  var kolEl = document.getElementById('pump-kol-signals');
+  if (kols.length === 0) { kolEl.innerHTML = '<div class="empty">No KOL signals</div>'; }
+  else {
+    var kh = '';
+    kols.slice(-15).forEach(function(s) {
+      kh += '<div class="pump-sig-row">';
+      kh += '<span class="pump-sig-handle">@' + (s.handle || s.kol || 'unknown') + '</span>';
+      kh += '<span class="pump-sig-text">' + (s.text || s.message || '--') + '</span>';
+      if (s.acted) kh += '<span class="pump-acted">ACTED</span>';
+      else kh += '<span class="pump-skipped">SKIP</span>';
+      kh += '</div>';
+    });
+    kolEl.innerHTML = kh;
+  }
+
+  // Scanner hits
+  var scans = p.scanner_hits || [];
+  var scanEl = document.getElementById('pump-scanner-hits');
+  if (scans.length === 0) { scanEl.innerHTML = '<div class="empty">No scanner hits</div>'; }
+  else {
+    var sch = '';
+    scans.slice(-8).forEach(function(s) {
+      sch += '<div class="pump-sig-row"><span class="pump-sig-handle">' + (s.token || s.name || '--') + '</span>';
+      sch += '<span class="pump-sig-mint">' + (s.mint || '').substring(0, 12) + '...</span>';
+      sch += '<span class="pump-sig-text">' + (s.reason || '') + '</span></div>';
+    });
+    scanEl.innerHTML = sch;
+  }
+
+  // Deployed tokens
+  var deployed = p.deployed_tokens || [];
+  var depEl = document.getElementById('pump-deployed');
+  if (deployed.length === 0) { depEl.innerHTML = '<div class="empty">No deployed tokens</div>'; }
+  else {
+    var dh = '';
+    deployed.forEach(function(t) {
+      dh += '<div class="pump-sig-row"><span class="pump-sig-handle" style="color:var(--green)">' + (t.name || t.token || '--') + '</span>';
+      dh += '<span class="pump-sig-text">Fees: ' + (parseFloat(t.fees_sol) || 0).toFixed(3) + ' SOL</span></div>';
+    });
+    depEl.innerHTML = dh;
+  }
+
+  // Pump log
+  var log = p.log || [];
+  var logEl = document.getElementById('pump-log');
+  if (log.length === 0) { logEl.innerHTML = '<div class="log-line"><span class="msg muted">No log entries</span></div>'; }
+  else {
+    var lh = '';
+    log.slice(-15).forEach(function(l) {
+      var msg = typeof l === 'string' ? l : (l.message || l.msg || JSON.stringify(l));
+      var ts = l.timestamp || l.time || '';
+      var cls = msg.match(/error|fail/i) ? 'warn' : msg.match(/buy|snipe|deploy/i) ? 'tr' : msg.match(/signal|kol/i) ? 'sig' : '';
+      lh += '<div class="log-line ' + cls + '">';
+      if (ts) lh += '<span class="ts">' + timeAgo(ts) + '</span>';
+      lh += '<span class="msg">' + msg + '</span></div>';
+    });
+    logEl.innerHTML = lh;
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+}
+
+// ============================================================
+// TRADE HISTORY (combined from both books)
+// ============================================================
+var allTrades = [];
+function renderHistory(trades) {
+  allTrades = trades || [];
+  var el = document.getElementById('history-body');
+  var meta = document.getElementById('history-count');
+  if (meta) meta.textContent = allTrades.length + ' closed trades';
+  if (allTrades.length === 0) { el.innerHTML = '<tr><td colspan="6" class="empty">No closed trades yet</td></tr>'; return; }
+
+  // Sort
+  allTrades.sort(function(a, b) {
+    var va, vb;
+    if (historySortKey === 'time') { va = new Date(a.time || 0).getTime(); vb = new Date(b.time || 0).getTime(); }
+    else if (historySortKey === 'symbol') { va = (a.symbol || '').toLowerCase(); vb = (b.symbol || '').toLowerCase(); }
+    else if (historySortKey === 'pnl') { va = parseFloat(a.pnl) || 0; vb = parseFloat(b.pnl) || 0; }
+    else { va = 0; vb = 0; }
+    if (va < vb) return historySortAsc ? -1 : 1;
+    if (va > vb) return historySortAsc ? 1 : -1;
+    return 0;
+  });
+
+  var h = '';
+  allTrades.forEach(function(t) {
+    var pnl = parseFloat(t.pnl) || 0;
+    h += '<tr class="' + pnlRow(pnl) + '">';
+    h += '<td class="muted">' + timeAgo(t.time || t.close_time || t.exit_time) + '</td>';
+    h += '<td class="white">' + (t.symbol || t.market || '--') + '</td>';
+    h += '<td><span class="tag tag-' + ((t.side || 'LONG').toLowerCase()) + '">' + (t.side || '--') + '</span></td>';
+    h += '<td class="muted">' + (t.book || '--') + '</td>';
+    h += '<td class="' + cc(pnl) + '">' + fmt$(pnl) + '</td>';
+    h += '<td class="muted">' + (t.duration || '--') + '</td>';
+    h += '</tr>';
+  });
+  el.innerHTML = h;
+}
+function sortHistory(key) {
+  if (historySortKey === key) historySortAsc = !historySortAsc;
+  else { historySortKey = key; historySortAsc = false; }
+  renderHistory(allTrades);
+}
+
+// ============================================================
+// LOAD ALL (Promise.allSettled + per-panel error handling)
+// ============================================================
+async function loadAll() {
+  hideGlobalError();
+  var errors = [];
+
+  var results = await Promise.allSettled([
+    fetchJSON(DEGEN_API),
+    fetchJSON(POLY_API),
+    fetchJSON(PUMP_API)
+  ]);
+
+  // Degen
+  if (results[0].status === 'fulfilled') {
+    try { renderDegen(results[0].value); } catch(e) { errors.push('Degen render: ' + e.message); setPill('degen-pill', 'error', 'ERROR'); showPanelWarn('degen-error-banner', 'Render error: ' + e.message); }
+  } else {
+    errors.push('Degen fetch: ' + (results[0].reason || 'unknown'));
+    setPill('degen-pill', 'error', 'ERROR');
+    showPanelWarn('degen-error-banner', 'Failed to load: ' + (results[0].reason && results[0].reason.message || 'network error'));
+  }
+
+  // Poly
+  if (results[1].status === 'fulfilled') {
+    try { renderPoly(results[1].value); } catch(e) { errors.push('Poly render: ' + e.message); setPill('poly-pill', 'error', 'ERROR'); showPanelWarn('poly-error-banner', 'Render error: ' + e.message); }
+  } else {
+    errors.push('Poly fetch: ' + (results[1].reason || 'unknown'));
+    setPill('poly-pill', 'error', 'ERROR');
+    showPanelWarn('poly-error-banner', 'Failed to load: ' + (results[1].reason && results[1].reason.message || 'network error'));
+  }
+
+  // Pump
+  if (results[2].status === 'fulfilled') {
+    try { renderPump(results[2].value); } catch(e) { errors.push('Pump render: ' + e.message); setPill('pump-pill', 'error', 'ERROR'); showPanelWarn('pump-error-banner', 'Render error: ' + e.message); }
+  } else {
+    errors.push('Pump fetch: ' + (results[2].reason || 'unknown'));
+    setPill('pump-pill', 'error', 'ERROR');
+    showPanelWarn('pump-error-banner', 'Failed to load: ' + (results[2].reason && results[2].reason.message || 'network error'));
+  }
+
+  // Build trade history from both books
+  var trades = [];
+  if (lastDegen && lastDegen.trade_log) {
+    lastDegen.trade_log.forEach(function(t) {
+      trades.push({ time: t.close_time || t.exit_time || t.time, symbol: t.symbol || t.coin, side: t.side, book: 'DEGEN', pnl: t.pnl || t.realized_pnl, duration: t.duration || '--' });
+    });
+  }
+  if (lastPoly && lastPoly.positions) {
+    lastPoly.positions.forEach(function(p) {
+      if (p.status === 'EXIT' || p.status === 'CLOSED') {
+        trades.push({ time: p.exit_date || p.closed_at || p.entry_date, symbol: p.market, side: p.side, book: 'POLY', pnl: p.realized_pnl || p.unrealized_pnl, duration: '--' });
+      }
+    });
+  }
+  renderHistory(trades);
+  drawSparkline();
+
+  // Global error if ALL failed
+  if (errors.length >= 3) { showGlobalError('All data sources failed. Check your GitHub token and network connection.'); }
+  else if (errors.length > 0) { /* per-panel errors already shown */ }
+
+  document.getElementById('last-update').textContent = 'Last: ' + new Date().toLocaleTimeString('en-US', { hour12: false, timeZone: 'America/New_York' });
+  countdownVal = REFRESH_SEC;
+}
+
+// ============================================================
+// KEYBOARD SHORTCUTS
+// ============================================================
+document.addEventListener('keydown', function(e) {
+  if (document.getElementById('pat-overlay').style.display !== 'none' && document.getElementById('pat-overlay').style.display !== '') {
+    if (e.key === 'Enter') savePat();
+    return;
+  }
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'r' || e.key === 'R') { loadAll(); }
+  else if (e.key === 'c' || e.key === 'C') { clearToken(); }
+  else if (e.key === '?') {
+    var ol = document.getElementById('shortcut-overlay');
+    ol.style.display = ol.style.display === 'none' ? 'flex' : 'none';
+  }
+  else if (e.key === 'Escape') { document.getElementById('shortcut-overlay').style.display = 'none'; }
+});
+
+// ============================================================
+// INIT
+// ============================================================
+updateClock();
+checkPat();
+</script>
+</body>
+</html>
