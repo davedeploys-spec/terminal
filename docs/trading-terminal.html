@@ -844,6 +844,25 @@ async function fetchBot(url, key) {
     if (data.bankroll && !data.capital) {
       data.capital = { current: data.bankroll.current, initial: data.bankroll.starting };
     }
+    // Normalize Poly position fields
+    if (key === 'poly' && data.positions) {
+      data.positions = data.positions.map(function(p) {
+        if (!p.avg_price && p.entry != null) p.avg_price = p.entry;
+        if (!p.shares && p.size != null) p.shares = p.size;
+        if (!p.outcome && p.side) p.outcome = p.side;
+        if (!p.resolution_date && p.resolves) p.resolution_date = p.resolves;
+        if (!p.cost_basis && p.entry != null && p.size != null) p.cost_basis = p.entry * p.size;
+        if (!p.current_value && p.current_price != null && p.size != null) p.current_value = p.current_price * p.size;
+        // Map bot statuses to terminal active/resolved
+        var s = (p.status || '').toUpperCase();
+        if (s === 'WINNING' || s === 'HOLDING' || s === 'AT-RISK') {
+          p.status = 'active';
+        } else if (s === 'RESOLVED' || s === 'CLOSED' || s === 'EXPIRED') {
+          p.status = s.toLowerCase();
+        }
+        return p;
+      });
+    }
     state[key] = data;
     errors[key] = null;
   } catch (e) {
@@ -1230,7 +1249,8 @@ function renderPoly() {
   const pyPnl = d.capital ? d.capital.current - d.capital.initial : 0;
   $('py-pnl').textContent = (pyPnl >= 0 ? '+' : '') + fmtUSD(pyPnl);
   $('py-pnl').style.color = pnlColor(pyPnl);
-  $('py-mode').innerHTML = badgeHTML((d.mode||'paper').toUpperCase(), d.mode==='live' ? 'badge-green' : 'badge-purple');
+  var pyModeRaw = (d.mode||'paper').toLowerCase();
+  $('py-mode').innerHTML = badgeHTML((d.mode||'PAPER').toUpperCase(), pyModeRaw.includes('live') ? 'badge-green' : 'badge-purple');
   const activeCount = d.positions ? d.positions.filter(p => p.status === 'active').length : 0;
   $('py-active-count').textContent = activeCount;
   
