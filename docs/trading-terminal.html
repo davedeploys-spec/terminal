@@ -839,6 +839,11 @@ async function fetchBot(url, key) {
     const res = await fetch(url + '?t=' + Date.now());
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
+    // Normalize field names across bots
+    if (data.updated_at && !data.last_updated) data.last_updated = data.updated_at;
+    if (data.bankroll && !data.capital) {
+      data.capital = { current: data.bankroll.current, initial: data.bankroll.starting };
+    }
     state[key] = data;
     errors[key] = null;
   } catch (e) {
