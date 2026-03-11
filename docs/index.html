@@ -98,86 +98,78 @@ body {
 /* Status Badge */
 .card-status {
   display: inline-flex; align-items: center; gap: 6px;
-  font-size: 9px; font-weight: 600; letter-spacing: 1.5px;
-  text-transform: uppercase; margin-top: 16px; padding: 4px 10px;
-  border-radius: 3px; width: fit-content;
+  font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+  margin-top: 20px; padding: 6px 10px; border-radius: 4px;
 }
 .card-status.live {
   color: var(--green); background: var(--green-dim);
-  border: 1px solid rgba(34,197,94,0.2);
 }
-.card-status.paused {
-  color: var(--text-muted); background: rgba(107,114,128,0.1);
-  border: 1px solid rgba(107,114,128,0.2);
+.card-status.wip {
+  color: var(--yellow); background: var(--yellow-dim);
 }
-
-/* Pulse dot */
-.pulse-dot {
-  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
-  animation: pulse 2s ease-in-out infinite;
+.card-status.coming {
+  color: var(--text-muted); background: var(--accent-dim);
 }
+.card-status::before {
+  content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor;
+}
+.card-status.live::before { animation: pulse 1.4s infinite ease-in-out; }
 @keyframes pulse {
-  0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
 
 /* Footer */
 .hq-footer {
-  margin-top: 48px; text-align: center;
-  font-size: 9px; color: var(--text-muted); letter-spacing: 2px;
-  text-transform: uppercase;
+  margin-top: 60px; font-size: 9px; color: var(--text-muted);
+  letter-spacing: 2px; text-transform: uppercase;
 }
-.hq-footer a {
-  color: var(--text-muted); text-decoration: none; transition: var(--transition);
-}
-.hq-footer a:hover { color: var(--accent); }
 </style>
 </head>
 <body>
 
 <div class="hq-header">
-  <div class="hq-logo">Internal Tools</div>
-  <div class="hq-title">Dave<span>Deploys</span> HQ</div>
-  <div class="hq-sub">Operations Dashboard Network</div>
+  <div class="hq-logo">&#9656; &#9656; &#9656;</div>
+  <div class="hq-title">DAVE <span>DEPLOYS</span> HQ</div>
+  <div class="hq-sub">Operations Hub &middot; V1.0</div>
 </div>
 
 <div class="card-grid">
 
-  <a class="card" href="trading/">
-    <div class="card-icon">[$]</div>
+  <!-- Trading Terminal -->
+  <a href="trading-terminal.html" class="card">
+    <div class="card-icon">[ TRADE ]</div>
     <div class="card-title">Trading Terminal</div>
     <div class="card-desc">
-      Real-time fund dashboard tracking Degen (crypto perps),
-      Poly (prediction markets), and Pump (meme coins).
-      Live P&amp;L, positions, and NAV.
+      Live trading dashboard. Monitor positions, P&amp;L, and bot activity across all strategies.
     </div>
-    <div class="card-status live"><span class="pulse-dot"></span> LIVE</div>
+    <span class="card-status live">Live</span>
   </a>
 
-  <a class="card" href="org-chart/">
-    <div class="card-icon green">[#]</div>
-    <div class="card-title">Org Chart</div>
-    <div class="card-desc">
-      Interactive network map of the full agent roster.
-      27 agents across 7 divisions -- hierarchy,
-      roles, and capabilities at a glance.
-    </div>
-    <div class="card-status live"><span class="pulse-dot"></span> LIVE</div>
-  </a>
-
-  <div class="card disabled">
-    <div class="card-icon yellow">[&gt;_]</div>
+  <!-- Command Center -->
+  <a href="command-center/" class="card">
+    <div class="card-icon green">[~ CHQ >]</div>
     <div class="card-title">Command Center</div>
     <div class="card-desc">
-      Centralized ops terminal for agent task dispatch,
-      system health monitoring, and workflow orchestration.
+      Operational OS. Agent army, mission control, leaderboards, and progress tracking towards $1B.
     </div>
-    <div class="card-status paused">COMING SOON</div>
-  </div>
+    <span class="card-status live">Live</span>
+  </a>
+
+  <!-- Org Chart -->
+  <a href="org-chart/" class="card">
+    <div class="card-icon yellow">[< ORG >]</div>
+    <div class="card-title">Org Chart</div>
+    <div class="card-desc">
+      3D interactive organization chart. Explore the full agent network and reporting structure.
+    </div>
+    <span class="card-status live">Live</span>
+  </a>
 
 </div>
 
 <div class="hq-footer">
-  <a href="https://github.com/davedeploys-spec/terminal">davedeploys-spec/terminal</a>
+  DaveDeploys &bull; 2026
 </div>
 
 </body>
