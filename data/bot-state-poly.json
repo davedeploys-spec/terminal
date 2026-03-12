@@ -1,7 +1,7 @@
 {
   "bot": "Poly",
   "mode": "Paper Trading",
-  "updated_at": "2026-03-12T04:00:03.659729+00:00",
+  "updated_at": "2026-03-12T04:05:03.134171+00:00",
   "bankroll": {
     "starting": 1000,
     "current": 2442.37,
@@ -422,11 +422,11 @@
     }
   ],
   "last_scan": {
-    "scan_number": 559,
+    "scan_number": 560,
     "markets_scanned": 500,
     "new_trades": 0,
     "summary": "0 new trades from 500 markets",
-    "timestamp": "2026-03-12T04:00:03.659702+00:00"
+    "timestamp": "2026-03-12T04:05:03.134143+00:00"
   },
   "risk_flags": [
     "US recession by Q3 2026: +77.40 (at-risk)",
