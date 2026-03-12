@@ -745,9 +745,10 @@ body {
 <!-- ==================== JAVASCRIPT ==================== -->
 <script>
 // ===== CONFIGURATION =====
-const DEGEN_API = 'https://raw.githubusercontent.com/davedeploys-spec/hyperliquid-bot-v1/main/bot-state-degen.json';
+const DEGEN_API  = 'https://raw.githubusercontent.com/davedeploys-spec/terminal/main/data/bot-state-degen.json';
 const POLY_API  = 'https://raw.githubusercontent.com/davedeploys-spec/terminal/main/data/bot-state-poly.json';
-const PUMP_API = 'https://raw.githubusercontent.com/davedeploys-spec/pumpfun-deploy-v1/main/pump-bot-state.json';
+const PUMP_API   = 'https://raw.githubusercontent.com/davedeploys-spec/pumpfun-deploy-v1/main/pump-bot-state.json';
+const KALSHI_API = 'https://raw.githubusercontent.com/davedeploys-spec/terminal/main/data/bot-state-kalshi.json';
 const REFRESH_INTERVAL = 30000;
 const STALE_THRESHOLDS = { degen: 60*60*1000, poly: 6*60*60*1000, pump: 60*60*1000 };
 
@@ -876,7 +877,8 @@ async function fetchAll() {
   await Promise.all([
     fetchBot(DEGEN_API, 'degen'),
     fetchBot(POLY_API, 'poly'),
-    fetchBot(PUMP_API, 'pump')
+    fetchBot(PUMP_API, 'pump'),
+    fetchBot(KALSHI_API, 'kalshi')
   ]);
   if (ind) setTimeout(() => ind.classList.remove('active'), 800);
   renderAll();
