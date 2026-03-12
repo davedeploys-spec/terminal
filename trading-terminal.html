@@ -156,11 +156,11 @@ kbd{display:inline-block;background:var(--surface-hover);border:1px solid var(--
 </style>
 </head>
 <body>
-<div class="pat-overlay" id="pat-overlay"><div class="pat-box"><label for="pat-input" class="pat-title">GITHUB ACCESS TOKEN</label><div id="pat-help" class="pat-sub">Your bot state files are in private repos. Enter a GitHub PAT with <strong style="color:var(--text)">repo</strong> scope.<br><br>Generate: github.com/settings/tokens &rarr; New token &rarr; select <em>repo</em></div><input class="pat-input" type="password" id="pat-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" /><br><button class="pat-btn" onclick="savePat()">&rarr; LOAD TERMINAL</button><div class="pat-err" id="pat-err">Invalid token or access denied.</div></div></div>
+<div class="pat-overlay" id="pat-overlay"><div class="pat-box"><label for="pat-input" class="pat-title">GITHUB ACCESS TOKEN</label><div id="pat-help" class="pat-sub">Dashboard data loads from a public repo — no token needed. Optionally add a GitHub PAT with <strong style="color:var(--text)">repo</strong> scope for extended access.<br><br><button class="pat-btn" style="margin-bottom:8px" onclick="skipPat()">Skip &rarr; Load without token</button></div><input class="pat-input" type="password" id="pat-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" /><br><button class="pat-btn" onclick="savePat()">&rarr; LOAD TERMINAL</button><div class="pat-err" id="pat-err">Invalid token or access denied.</div></div></div>
 <div id="shortcut-overlay" class="shortcut-overlay" style="display:none"><div class="shortcut-box"><h2>KEYBOARD SHORTCUTS</h2><div class="shortcut-row"><kbd>R</kbd> Refresh data</div><div class="shortcut-row"><kbd>C</kbd> Clear token &amp; reset</div><div class="shortcut-row"><kbd>?</kbd> Toggle this overlay</div><div class="shortcut-row"><kbd>Esc</kbd> Close overlay</div></div></div>
 <nav class="site-nav"><a href="trading-terminal.html" class="site-nav-link active">TRADING TERMINAL</a><a href="command-center.html" class="site-nav-link">COMMAND CENTER</a><a href="../reports/agent-network-3d.html" class="site-nav-link">ORG CHART</a></nav>
-<header class="topbar"><div class="fund-name">DEGEN+POLY CAPITAL</div><div class="topbar-right"><span class="clock" id="clock">--:--:-- EST</span><span class="badge">PAPER TRADING</span><span class="countdown" id="countdown">30s</span><span class="last-update" id="last-update">not loaded</span><button class="refresh-btn" onclick="loadAll()">&#8635; REFRESH</button></div></header>
-<nav class="nav-row"><div class="nav-card"><div class="lbl">Fund NAV</div><div class="val" id="nav-total">--</div><div class="sub" id="nav-change">starting $2,000</div></div><div class="nav-card"><div class="lbl">Total P&amp;L</div><div class="val" id="total-pnl">--</div><div class="sub" id="total-pnl-sub">realized + unrealized</div></div><div class="nav-card"><div class="lbl">Degen Bankroll</div><div class="val" id="degen-bankroll">--</div><div class="sub" id="degen-pnl-sub">perps P&amp;L</div></div><div class="nav-card"><div class="lbl">Poly NAV</div><div class="val" id="poly-nav">--</div><div class="sub" id="poly-pnl-sub">prediction markets</div></div><div class="nav-card"><div class="lbl">Open Positions</div><div class="val" id="open-count">--</div><div class="sub" id="open-sub">across both books</div></div></nav>
+<header class="topbar"><div class="fund-name">HQ CAPITAL</div><div class="topbar-right"><span class="clock" id="clock">--:--:-- EST</span><span class="badge">PAPER TRADING</span><span class="countdown" id="countdown">30s</span><span class="last-update" id="last-update">not loaded</span><button class="refresh-btn" onclick="loadAll()">&#8635; REFRESH</button></div></header>
+<nav class="nav-row"><div class="nav-card"><div class="lbl">Fund NAV</div><div class="val" id="nav-total">--</div><div class="sub" id="nav-change">starting $3,000</div></div><div class="nav-card"><div class="lbl">Total P&amp;L</div><div class="val" id="total-pnl">--</div><div class="sub" id="total-pnl-sub">realized + unrealized</div></div><div class="nav-card"><div class="lbl">Degen Bankroll</div><div class="val" id="degen-bankroll">--</div><div class="sub" id="degen-pnl-sub">perps P&amp;L</div></div><div class="nav-card"><div class="lbl">Poly NAV</div><div class="val" id="poly-nav">--</div><div class="sub" id="poly-pnl-sub">prediction markets</div></div><div class="nav-card"><div class="lbl">Kalshi NAV</div><div class="val" id="kalshi-nav">--</div><div class="sub" id="kalshi-pnl-sub">prediction markets</div></div><div class="nav-card"><div class="lbl">Open Positions</div><div class="val" id="open-count">--</div><div class="sub" id="open-sub">across all books</div></div></nav>
 <div id="error-banner" class="error-banner" role="alert"></div>
 <section class="panel" style="margin-bottom:8px"><div class="panel-head"><h2>CUMULATIVE P&amp;L (MARK-TO-MARKET)</h2><span class="panel-meta" id="sparkline-meta"></span></div><div class="panel-body" style="padding:8px 12px 4px"><canvas id="pnl-sparkline" style="width:100%;height:80px"></canvas></div></section>
 
@@ -206,18 +206,29 @@ kbd{display:inline-block;background:var(--surface-hover);border:1px solid var(--
     <div class="section-lbl">BOT LOG</div><div class="log-box" id="pump-log"></div>
   </div>
 </section>
-<footer class="statusbar"><span>DEGEN: <span id="sb-degen-scan">--</span></span><span>POLY: <span id="sb-poly-updated">--</span></span><span>PUMP: <span id="sb-pump-scan">--</span></span><span>AUTO-REFRESH: 30s</span></footer>
+<section class="panel" style="margin-bottom:8px;border-left:3px solid #10b981">
+  <div class="panel-head"><h2>KALSHI / PREDICTION MARKETS</h2><div class="panel-head-right"><span class="panel-ts" id="kalshi-ts">--</span><span id="kalshi-pill" class="pill">LOADING</span></div></div>
+  <div class="panel-warn warn-stale" id="kalshi-stale-banner"><span style="font-weight:700">!</span> <span id="kalshi-stale-msg">Data is stale.</span></div>
+  <div class="panel-warn warn-error" id="kalshi-error-banner"><span style="font-weight:700">!</span> <span id="kalshi-error-msg">Failed to load.</span></div>
+  <div class="panel-body">
+    <div class="kpi-bar"><div class="kpi"><div class="k">EQUITY</div><div class="v blue" id="k-equity">--</div></div><div class="kpi"><div class="k">TOTAL P&amp;L</div><div class="v" id="k-pnl">--</div></div><div class="kpi"><div class="k">WIN RATE</div><div class="v" id="k-winrate">--</div></div><div class="kpi"><div class="k">TOTAL TRADES</div><div class="v blue" id="k-trades">--</div></div></div>
+    <div class="section-lbl">POSITIONS</div>
+    <div class="scroll-wrap" style="max-height:120px"><table><thead><tr><th>Market</th><th>Side</th><th>Entry</th><th>P&amp;L</th><th>Status</th></tr></thead><tbody id="kalshi-pos-body"><tr><td colspan="5"><div class="loading-bar"></div></td></tr></tbody></table></div>
+  </div>
+</section>
+<footer class="statusbar"><span>DEGEN: <span id="sb-degen-scan">--</span></span><span>POLY: <span id="sb-poly-updated">--</span></span><span>PUMP: <span id="sb-pump-scan">--</span></span><span>KALSHI: <span id="sb-kalshi-updated">--</span></span><span>AUTO-REFRESH: 30s</span></footer>
 
 <script>
 // ============================================================
 // CONFIG
 // ============================================================
-var DEGEN_API = 'https://api.github.com/repos/davedeploys-spec/hyperliquid-bot-v1/contents/bot-state-degen.json';
-var POLY_API = 'https://api.github.com/repos/davedeploys-spec/polymarket-bot-v1/contents/bot-state-poly.json';
-var PUMP_API = 'https://api.github.com/repos/davedeploys-spec/pumpfun-deploy-v1/contents/pump-bot-state.json';
-var STALE = { degen: 60, poly: 360, pump: 60 }; // minutes
+var DEGEN_API  = 'https://api.github.com/repos/davedeploys-spec/terminal/contents/data/bot-state-degen.json';
+var POLY_API   = 'https://api.github.com/repos/davedeploys-spec/terminal/contents/data/bot-state-poly.json';
+var KALSHI_API = 'https://api.github.com/repos/davedeploys-spec/terminal/contents/data/bot-state-kalshi.json';
+var PUMP_API   = 'https://api.github.com/repos/davedeploys-spec/terminal/contents/data/pump-bot-state.json';
+var STALE = { degen: 60, poly: 360, kalshi: 360, pump: 60 }; // minutes
 var REFRESH_SEC = 30;
-var lastDegen = null, lastPoly = null, lastPump = null;
+var lastDegen = null, lastPoly = null, lastKalshi = null, lastPump = null;
 var countdownVal = REFRESH_SEC;
 var historySortKey = 'time', historySortAsc = false;
 var polyDetailOpen = {};
@@ -234,8 +245,14 @@ function savePat() {
   loadAll();
 }
 function clearToken() { localStorage.removeItem('gh_pat'); location.reload(); }
+function skipPat() {
+  document.getElementById('pat-overlay').style.display = 'none';
+  loadAll();
+}
 function checkPat() {
-  if (getToken()) { document.getElementById('pat-overlay').style.display = 'none'; loadAll(); }
+  // Data is from public terminal repo — no token required
+  document.getElementById('pat-overlay').style.display = 'none';
+  loadAll();
 }
 
 // ============================================================
@@ -406,6 +423,34 @@ function drawSparkline() {
 }
 
 
+
+// ============================================================
+// FUND NAV (recalculated after any bot renders)
+// ============================================================
+function refreshFundNAV() {
+  var degenBk  = lastDegen  ? (parseFloat(lastDegen.bankroll) || 0) : 0;
+  var polyMTM  = lastPoly   ? (parseFloat((lastPoly.bankroll || {}).current) || 0) + (parseFloat((lastPoly.bankroll || {}).unrealized_pnl) || 0) : 0;
+  var kalshiEq = lastKalshi ? (parseFloat(lastKalshi.equity) || 0) : 0;
+  var fundNAV  = degenBk + polyMTM + kalshiEq;
+  var totalPnl = (lastDegen  ? parseFloat(lastDegen.total_pnl)  || 0 : 0)
+               + (lastPoly   ? (parseFloat((lastPoly.bankroll || {}).unrealized_pnl) || 0) + (parseFloat((lastPoly.bankroll || {}).realized_pnl) || 0) : 0)
+               + (lastKalshi ? parseFloat(lastKalshi.total_pnl) || 0 : 0);
+  var degenOpen  = lastDegen  ? (lastDegen.open_positions || []).length : 0;
+  var polyOpen   = lastPoly   ? (lastPoly.positions || []).filter(function(p) { return p.status !== 'EXIT' && p.status !== 'CLOSED'; }).length : 0;
+  var kalshiOpen = lastKalshi ? (lastKalshi.positions || []).length : 0;
+
+  var navEl = document.getElementById('nav-total');
+  if (navEl) navEl.textContent = fmt$(fundNAV);
+  var navChEl = document.getElementById('nav-change');
+  if (navChEl) { navChEl.className = 'sub ' + cc(fundNAV - 3000); navChEl.textContent = fmt$(fundNAV - 3000) + ' vs $3,000 start'; }
+  var tpEl = document.getElementById('total-pnl');
+  if (tpEl) { tpEl.className = 'val ' + cc(totalPnl); tpEl.textContent = fmt$(totalPnl); }
+  var ocEl = document.getElementById('open-count');
+  if (ocEl) ocEl.textContent = degenOpen + polyOpen + kalshiOpen;
+  var osEl = document.getElementById('open-sub');
+  if (osEl) osEl.textContent = degenOpen + ' degen + ' + polyOpen + ' poly + ' + kalshiOpen + ' kalshi';
+}
+
 // ============================================================
 // RENDER DEGEN
 // ============================================================
@@ -540,6 +585,7 @@ function renderDegen(d) {
     logEl.innerHTML = lh;
     logEl.scrollTop = logEl.scrollHeight;
   }
+  refreshFundNAV();
 }
 
 // ============================================================
@@ -572,6 +618,10 @@ function renderPoly(p) {
   document.getElementById('p-nav-pct').textContent = fmtPct(navPct);
   document.getElementById('p-deployed').textContent = fmt$(deployed);
   document.getElementById('p-cash').textContent = fmt$(cash);
+  // Kalshi NAV card
+  document.getElementById('poly-nav').textContent = fmt$(polyMTM);
+  document.getElementById('poly-pnl-sub').className = 'sub ' + cc(upnl + rpnl);
+  document.getElementById('poly-pnl-sub').textContent = fmt$(upnl + rpnl) + ' total';
 
   // Strategy stats
   var sp = p.strategy_pnl || {};
@@ -582,21 +632,6 @@ function renderPoly(p) {
   document.getElementById('p-fav-open').textContent = (fav.open_trades || 0) + (fav.queued_trades ? '+' + fav.queued_trades + 'q' : '');
   document.getElementById('p-fav-pnl').className = 'v ' + cc(fav.total);
   document.getElementById('p-fav-pnl').textContent = fmt$(fav.total || 0);
-
-  // NAV cards (FIXED: polyMTM includes unrealized)
-  document.getElementById('poly-nav').textContent = fmt$(polyMTM);
-  document.getElementById('poly-pnl-sub').className = 'sub ' + cc(upnl + rpnl);
-  document.getElementById('poly-pnl-sub').textContent = fmt$(upnl + rpnl) + ' total';
-
-  var degenBk = lastDegen ? parseFloat(lastDegen.bankroll) || 0 : 0;
-  var degenPnl = lastDegen ? parseFloat(lastDegen.total_pnl) || 0 : 0;
-  var fundNAV = polyMTM + degenBk;
-  var totalPnl = degenPnl + upnl + rpnl;
-  document.getElementById('nav-total').textContent = fmt$(fundNAV);
-  document.getElementById('nav-change').className = 'sub ' + cc(fundNAV - 2000);
-  document.getElementById('nav-change').textContent = fmt$(fundNAV - 2000) + ' vs $2,000 start';
-  document.getElementById('total-pnl').className = 'val ' + cc(totalPnl);
-  document.getElementById('total-pnl').textContent = fmt$(totalPnl);
 
   document.getElementById('sb-poly-updated').textContent = sc.label;
 
@@ -610,10 +645,7 @@ function renderPoly(p) {
     else { active.push(pos); }
   });
 
-  // Count open positions
-  var openDegenCount = lastDegen ? (lastDegen.open_positions || []).length : 0;
-  document.getElementById('open-count').textContent = active.length + expired.length + openDegenCount;
-  document.getElementById('open-sub').textContent = openDegenCount + ' degen + ' + (active.length + expired.length) + ' poly';
+  // Count open positions (refreshFundNAV handles the totals)
 
   // Expired banner
   if (expired.length > 0) {
@@ -665,6 +697,7 @@ function renderPoly(p) {
   }
   if (positions.length === 0) { h = '<tr><td colspan="8" class="empty">No positions</td></tr>'; }
   tbody.innerHTML = h;
+  refreshFundNAV();
 }
 
 function togglePolyDetail(id) {
@@ -673,6 +706,58 @@ function togglePolyDetail(id) {
   if (el) el.style.display = polyDetailOpen[id] ? 'table-row' : 'none';
 }
 
+
+
+// ============================================================
+// RENDER KALSHI
+// ============================================================
+function renderKalshi(k) {
+  lastKalshi = k;
+  var sc = staleCheck(k.last_updated, STALE.kalshi);
+  setTs('kalshi-ts', 'Updated: ' + sc.label);
+  if (sc.stale) { setPill('kalshi-pill', 'stale', 'STALE'); showPanelWarn('kalshi-stale-banner', 'Data is stale. Last update was ' + sc.label + '.'); }
+  else { setPill('kalshi-pill', 'live', 'LIVE'); hidePanelWarn('kalshi-stale-banner'); }
+  hidePanelWarn('kalshi-error-banner');
+
+  var eq = parseFloat(k.equity) || 0;
+  var pnl = parseFloat(k.total_pnl) || 0;
+  var wr = parseFloat(k.win_rate) || 0;
+  var tt = parseInt(k.total_trades) || 0;
+
+  document.getElementById('k-equity').textContent = fmt$(eq);
+  document.getElementById('k-pnl').className = 'v ' + cc(pnl);
+  document.getElementById('k-pnl').textContent = fmt$(pnl);
+  document.getElementById('k-winrate').textContent = (wr * 100).toFixed(0) + '%';
+  document.getElementById('k-trades').textContent = tt;
+  document.getElementById('sb-kalshi-updated').textContent = sc.label;
+
+  // Kalshi NAV card
+  document.getElementById('kalshi-nav').textContent = fmt$(eq);
+  document.getElementById('kalshi-pnl-sub').className = 'sub ' + cc(pnl);
+  document.getElementById('kalshi-pnl-sub').textContent = fmt$(pnl) + ' total P&L';
+
+  // Positions table
+  var positions = k.positions || [];
+  var tbody = document.getElementById('kalshi-pos-body');
+  if (positions.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">No open positions</td></tr>';
+  } else {
+    var h = '';
+    positions.forEach(function(p) {
+      var upnl = parseFloat(p.unrealized_pnl || p.pnl) || 0;
+      h += '<tr class="' + pnlRow(upnl) + '">';
+      h += '<td class="white" title="' + (p.market || '') + '">' + truncMarket(p.market || p.title || '--') + '</td>';
+      h += '<td><span class="tag tag-' + ((p.side || 'YES').toLowerCase()) + '">' + (p.side || 'YES') + '</span></td>';
+      h += '<td>' + fmt$(p.entry_price || p.entry || 0, 3) + '</td>';
+      h += '<td class="' + cc(upnl) + '">' + fmt$(upnl) + '</td>';
+      h += '<td class="muted">' + (p.status || 'OPEN') + '</td>';
+      h += '</tr>';
+    });
+    tbody.innerHTML = h;
+  }
+
+  refreshFundNAV();
+}
 
 // ============================================================
 // RENDER PUMP
@@ -842,6 +927,7 @@ async function loadAll() {
   var results = await Promise.allSettled([
     fetchJSON(DEGEN_API),
     fetchJSON(POLY_API),
+    fetchJSON(KALSHI_API),
     fetchJSON(PUMP_API)
   ]);
 
@@ -863,16 +949,24 @@ async function loadAll() {
     showPanelWarn('poly-error-banner', 'Failed to load: ' + (results[1].reason && results[1].reason.message || 'network error'));
   }
 
-  // Pump
+  // Kalshi
   if (results[2].status === 'fulfilled') {
-    try { renderPump(results[2].value); } catch(e) { errors.push('Pump render: ' + e.message); setPill('pump-pill', 'error', 'ERROR'); showPanelWarn('pump-error-banner', 'Render error: ' + e.message); }
+    try { renderKalshi(results[2].value); } catch(e) { errors.push('Kalshi render: ' + e.message); setPill('kalshi-pill', 'error', 'ERROR'); showPanelWarn('kalshi-error-banner', 'Render error: ' + e.message); }
   } else {
-    errors.push('Pump fetch: ' + (results[2].reason || 'unknown'));
-    setPill('pump-pill', 'error', 'ERROR');
-    showPanelWarn('pump-error-banner', 'Failed to load: ' + (results[2].reason && results[2].reason.message || 'network error'));
+    setPill('kalshi-pill', 'dormant', 'NO DATA');
+    showPanelWarn('kalshi-error-banner', 'No Kalshi state found. Bot not yet active.');
   }
 
-  // Build trade history from both books
+  // Pump
+  if (results[3].status === 'fulfilled') {
+    try { renderPump(results[3].value); } catch(e) { errors.push('Pump render: ' + e.message); setPill('pump-pill', 'error', 'ERROR'); showPanelWarn('pump-error-banner', 'Render error: ' + e.message); }
+  } else {
+    errors.push('Pump fetch: ' + (results[3].reason || 'unknown'));
+    setPill('pump-pill', 'error', 'ERROR');
+    showPanelWarn('pump-error-banner', 'Failed to load: ' + (results[3].reason && results[3].reason.message || 'network error'));
+  }
+
+  // Build trade history from all books
   var trades = [];
   if (lastDegen && lastDegen.trade_log) {
     lastDegen.trade_log.forEach(function(t) {
@@ -886,11 +980,16 @@ async function loadAll() {
       }
     });
   }
+  if (lastKalshi && lastKalshi.trade_log) {
+    lastKalshi.trade_log.forEach(function(t) {
+      trades.push({ time: t.close_time || t.time, symbol: t.market || t.title, side: t.side, book: 'KALSHI', pnl: t.pnl || t.realized_pnl, duration: '--' });
+    });
+  }
   renderHistory(trades);
   drawSparkline();
 
   // Global error if ALL failed
-  if (errors.length >= 3) { showGlobalError('All data sources failed. Check your GitHub token and network connection.'); }
+  if (errors.length >= 4) { showGlobalError('All data sources failed. Check network connection.'); }
   else if (errors.length > 0) { /* per-panel errors already shown */ }
 
   document.getElementById('last-update').textContent = 'Last: ' + new Date().toLocaleTimeString('en-US', { hour12: false, timeZone: 'America/New_York' });
@@ -923,3 +1022,4 @@ checkPat();
 </script>
 </body>
 </html>
+
