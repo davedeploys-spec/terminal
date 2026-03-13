@@ -1,4 +1,118 @@
 {
-  "updated_at": "2026-03-13T05:45:29.383838+00:00",
-  "scans": []
+  "updated_at": "2026-03-13T16:00:06.901749+00:00",
+  "scans": [
+    {
+      "timestamp": "2026-03-13T16:00:06.901684+00:00",
+      "scan_number": 1,
+      "markets_scanned": 500,
+      "signals_found": 13,
+      "new_trades": 13,
+      "trades": [
+        {
+          "id": "T001",
+          "market": "Spread: Cavaliers (-13.5)",
+          "side": "NO",
+          "entry": null,
+          "size": 12.8,
+          "strategy": "catalyst_momentum"
+        },
+        {
+          "id": "T002",
+          "market": "Spread: Rockets (-7.5)",
+          "side": "NO",
+          "entry": null,
+          "size": 13.8,
+          "strategy": "catalyst_momentum"
+        },
+        {
+          "id": "T003",
+          "market": "Will Torino FC win on 2026-03-13?",
+          "side": "NO",
+          "entry": null,
+          "size": 16.2,
+          "strategy": "catalyst_momentum"
+        },
+        {
+          "id": "T004",
+          "market": "Oilers vs. Blues",
+          "side": "YES",
+          "entry": null,
+          "size": 16.9,
+          "strategy": "catalyst_momentum"
+        },
+        {
+          "id": "T005",
+          "market": "US forces enter Iran by March 31?",
+          "side": "NO",
+          "entry": null,
+          "size": 23.2,
+          "strategy": "catalyst_momentum"
+        },
+        {
+          "id": "T006",
+          "market": "Will Bitcoin reach $75,000 in March?",
+          "side": "YES",
+          "entry": null,
+          "size": 26.0,
+          "strategy": "catalyst_momentum"
+        },
+        {
+          "id": "T007",
+          "market": "Will the Iranian regime fall by April 30?",
+          "side": "NO",
+          "entry": null,
+          "size": 100.0,
+          "strategy": "high_prob_favorite"
+        },
+        {
+          "id": "T008",
+          "market": "US x Iran ceasefire by March 31?",
+          "side": "NO",
+          "entry": null,
+          "size": 48.5,
+          "strategy": "catalyst_momentum"
+        },
+        {
+          "id": "T009",
+          "market": "ODI Series Bangladesh vs Pakistan: Bangladesh vs Pakistan",
+          "side": "NO",
+          "entry": null,
+          "size": 90.0,
+          "strategy": "high_prob_favorite"
+        },
+        {
+          "id": "T010",
+          "market": "Will the Iranian regime fall by March 31?",
+          "side": "NO",
+          "entry": null,
+          "size": 100.0,
+          "strategy": "high_prob_favorite"
+        },
+        {
+          "id": "T011",
+          "market": "US forces enter Iran by March 14?",
+          "side": "NO",
+          "entry": null,
+          "size": 100.0,
+          "strategy": "high_prob_favorite"
+        },
+        {
+          "id": "T012",
+          "market": "Will Bodo Glimt win the 2025\u201326 Champions League?",
+          "side": "NO",
+          "entry": null,
+          "size": 100.0,
+          "strategy": "high_prob_favorite"
+        },
+        {
+          "id": "T013",
+          "market": "Will the price of Bitcoin be above $72,000 on March 13?",
+          "side": "NO",
+          "entry": null,
+          "size": 100.0,
+          "strategy": "high_prob_favorite"
+        }
+      ]
+    }
+  ]
 }
