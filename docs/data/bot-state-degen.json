@@ -1,0 +1,152 @@
+{
+  "strategy": "Asymmetric Elite v2",
+  "version": "2.0",
+  "scan_number": 188,
+  "last_scan_time": "2026-03-09T15:01:00Z",
+  "bankroll": {
+    "starting": 1000,
+    "current": 980,
+    "high_water_mark": 1000,
+    "drawdown_pct": 2.0
+  },
+  "positions": [],
+  "scan_results": {
+    "BTC": {
+      "price": 83073,
+      "regime": "BEAR",
+      "regime_score": 90,
+      "daily": {
+        "ema20": 89458,
+        "ema50": 93355,
+        "ema_separation_pct": 4.18,
+        "adx14": 34.31,
+        "rsi14": 34.21,
+        "atr14": 4911
+      },
+      "h4": {
+        "ema9": 84144,
+        "ema21": 85944,
+        "atr14": 2381,
+        "atr_avg10": 2395,
+        "atr_ratio": 0.99,
+        "bear_aligned": true
+      },
+      "l1_pass": true,
+      "l2_pass": true,
+      "l3_pass": null,
+      "l3_reason": "5m candles unavailable from MAINNET API",
+      "entry_signal": null,
+      "strategy_paths_checked": [
+        "VOL_BREAK: NO (ATR 0.99x < 1.5x)",
+        "STANDARD: L3 unavailable",
+        "TREND_CONT: N/A (L2 passes)",
+        "MEAN_REV: NO (BEAR not RANGING)",
+        "BEAR_BOUNCE: NO (RSI14 34.21 > 30)"
+      ]
+    },
+    "ETH": {
+      "price": 2070,
+      "regime": "BEAR",
+      "regime_score": 90,
+      "daily": {
+        "ema20": 2360,
+        "ema50": 2678,
+        "ema_separation_pct": 11.87,
+        "adx14": 38.73,
+        "rsi14": 33.68
+      },
+      "h4": {
+        "ema9": 2116,
+        "ema21": 2186,
+        "atr_ratio": 0.93,
+        "bear_aligned": true
+      },
+      "l1_pass": true,
+      "l2_pass": true,
+      "l3_pass": null,
+      "l3_reason": "5m candles unavailable from MAINNET API",
+      "entry_signal": null,
+      "strategy_paths_checked": [
+        "VOL_BREAK: NO (ATR 0.93x < 1.5x)",
+        "STANDARD: L3 unavailable",
+        "TREND_CONT: N/A (L2 passes)",
+        "MEAN_REV: NO (BEAR not RANGING)",
+        "BEAR_BOUNCE: NO (RSI14 33.68 > 30)"
+      ]
+    },
+    "SOL": {
+      "price": 130,
+      "regime": "BEAR",
+      "regime_score": 90,
+      "daily": {
+        "ema20": 153,
+        "ema50": 175,
+        "ema_separation_pct": 12.2,
+        "adx14": 31.05,
+        "rsi14": 34.62
+      },
+      "h4": {
+        "ema9": 134,
+        "ema21": 139,
+        "atr_ratio": 0.88,
+        "bear_aligned": true
+      },
+      "l1_pass": true,
+      "l2_pass": true,
+      "l3_pass": null,
+      "l3_reason": "5m candles unavailable from MAINNET API",
+      "entry_signal": null,
+      "strategy_paths_checked": [
+        "VOL_BREAK: NO (ATR 0.88x < 1.5x)",
+        "STANDARD: L3 unavailable",
+        "TREND_CONT: N/A (L2 passes)",
+        "MEAN_REV: NO (BEAR not RANGING)",
+        "BEAR_BOUNCE: NO (RSI14 34.62 > 30)"
+      ]
+    },
+    "XRP": {
+      "price": 2.2,
+      "regime": "BEAR",
+      "regime_score": 65,
+      "daily": {
+        "ema20": 2.43,
+        "ema50": 2.5,
+        "ema_separation_pct": 2.53,
+        "adx14": 23.18,
+        "rsi14": 41.13
+      },
+      "h4": {
+        "ema9": 2.24,
+        "ema21": 2.29,
+        "atr_ratio": 1.0,
+        "bear_aligned": true
+      },
+      "l1_pass": true,
+      "l2_pass": true,
+      "l3_pass": null,
+      "l3_reason": "5m candles unavailable from MAINNET API",
+      "entry_signal": null,
+      "strategy_paths_checked": [
+        "VOL_BREAK: NO (ATR 1.0x < 1.5x)",
+        "STANDARD: L3 unavailable",
+        "TREND_CONT: N/A (L2 passes)",
+        "MEAN_REV: NO (BEAR not RANGING)",
+        "BEAR_BOUNCE: NO (RSI14 41.13 > 30)"
+      ]
+    }
+  },
+  "trade_log": [],
+  "stats": {
+    "total_trades": 1,
+    "wins": 0,
+    "losses": 1,
+    "win_rate": 0,
+    "total_pnl": -20,
+    "avg_pnl": -20,
+    "largest_win": 0,
+    "largest_loss": -20,
+    "consecutive_losses": 1,
+    "scans_today": 0,
+    "scans_today_date": "2026-03-09"
+  }
+}
