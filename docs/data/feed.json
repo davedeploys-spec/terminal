@@ -110,47 +110,47 @@
           "market": "US x Iran ceasefire by March 31?",
           "side": "NO",
           "entry": null,
-          "size": 48.5,
-          "strategy": "catalyst_momentum"
+          "size": 46.84,
+          "strategy": "high_prob_favorite"
         },
         {
           "id": "T009",
-          "market": "ODI Series Bangladesh vs Pakistan: Bangladesh vs Pakistan",
-          "side": "NO",
+          "market": "Trump approval 3/15?",
+          "side": "HIGHER",
           "entry": null,
-          "size": 90.0,
+          "size": 28.76,
           "strategy": "high_prob_favorite"
         },
         {
           "id": "T010",
-          "market": "Will the Iranian regime fall by March 31?",
+          "market": "BTC above $75K on 3/14?",
           "side": "NO",
           "entry": null,
-          "size": 100.0,
+          "size": 20.16,
           "strategy": "high_prob_favorite"
         },
         {
           "id": "T011",
-          "market": "US forces enter Iran by March 14?",
+          "market": "Trump attends Putin meeting by 3/31?",
           "side": "NO",
           "entry": null,
-          "size": 100.0,
+          "size": 25.92,
           "strategy": "high_prob_favorite"
         },
         {
           "id": "T012",
-          "market": "Will Bodo Glimt win the 2025\u201326 Champions League?",
-          "side": "NO",
+          "market": "Total crypto market cap above $2.75 Trillion on March 31?",
+          "side": "YES",
           "entry": null,
-          "size": 100.0,
-          "strategy": "high_prob_favorite"
+          "size": 16.94,
+          "strategy": "catalyst_momentum"
         },
         {
           "id": "T013",
-          "market": "Will the price of Bitcoin be above $72,000 on March 13?",
-          "side": "NO",
+          "market": "US announce new sanctions on Iran by March 31?",
+          "side": "YES",
           "entry": null,
-          "size": 100.0,
+          "size": 45.92,
           "strategy": "high_prob_favorite"
         }
       ]
