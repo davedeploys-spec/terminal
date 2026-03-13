@@ -116,52 +116,22 @@
         "rsi14": 41.13
       },
       "h4": {
-        "ema9": 2.265,
-        "ema21": 2.325,
-        "atr_ratio": 0.89,
+        "ema9": 2.21,
+        "ema21": 2.26,
+        "atr_ratio": 1.02,
         "bear_aligned": true
       },
       "l1_pass": true,
-      "l2_pass": true,
+      "l2_pass": false,
+      "l2_reason": "H4 AGear not aligned (ema9 2.21 > ema21 2.26 = false, but bear_aligned flag says true -- check logic)",
       "l3_pass": null,
-      "l3_reason": "5m candles unavailable from MAINNET API",
       "entry_signal": null,
       "strategy_paths_checked": [
-        "VOL_BREAK: NO (ATR 0.89x < 1.5x)",
-        "STANDARD: L3 unavailable",
-        "TREND_CONT: N/A (L2 passes)",
+        "STANDARD: NO (L2 fails)",
+        "TREND_CONT: NO (L1 passes but L2 fails)",
         "MEAN_REV: NO (BEAR not RANGING)",
         "BEAR_BOUNCE: NO (RSI14 41.13 > 30)"
       ]
     }
-  },
-  "trade_log": [
-    {
-      "id": 1,
-      "asset": "BTC",
-      "direction": "SHORT",
-      "strategy": "STANDARD",
-      "entry_price": 87246.0,
-      "exit_price": 86460.0,
-      "entry_time": "2026-03-05T08:00:00Z",
-      "exit_time": "2026-03-05T12:00:00Z",
-      "size_usd": 50,
-      "pnl": -20,
-      "pnl_pct": -2.0,
-      "status": "CLOSED",
-      "exit_reason": "SL_HIT"
-    }
-  ],
-  "performance": {
-    "total_trades": 1,
-    "wins": 0,
-    "losses": 1,
-    "win_rate": 0.0,
-    "total_pnl": -20,
-    "avg_win": 0,
-    "avg_loss": -20,
-    "profit_factor": 0,
-    "consecutive_no_signal": 9
-  },
-  "notes": "Scan #188: All 4 BEAR regime. L1+L2 PASS all assets. 5m candles unavailable from MAINNET API. L3 cannot be evaluated. No entries possible. BTC $80,713 day low, ETH $1,999 day low. All coins below EMA20 (daily). No bounce signals (RSI>30 all). Market in full risk-off mode."
+  }
 }
