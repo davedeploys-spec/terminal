@@ -110,20 +110,20 @@
           "market": "US x Iran ceasefire by March 31?",
           "side": "NO",
           "entry": null,
-          "size": 100.0,
-          "strategy": "high_prob_favorite"
+          "size": 48.5,
+          "strategy": "catalyst_momentum"
         },
         {
           "id": "T009",
-          "market": "US airstrike on Iran by March 31?",
+          "market": "ODI Series Bangladesh vs Pakistan: Bangladesh vs Pakistan",
           "side": "NO",
           "entry": null,
-          "size": 100.0,
+          "size": 90.0,
           "strategy": "high_prob_favorite"
         },
         {
           "id": "T010",
-          "market": "Will Trump order a ground invasion of Iran by March 31?",
+          "market": "Will the Iranian regime fall by March 31?",
           "side": "NO",
           "entry": null,
           "size": 100.0,
@@ -131,7 +131,7 @@
         },
         {
           "id": "T011",
-          "market": "Iran nuclear weapon test by March 31?",
+          "market": "US forces enter Iran by March 14?",
           "side": "NO",
           "entry": null,
           "size": 100.0,
@@ -139,7 +139,7 @@
         },
         {
           "id": "T012",
-          "market": "Other country joins US strikes on Iran by April 30?",
+          "market": "Will Bodo Glimt win the 2025\u201326 Champions League?",
           "side": "NO",
           "entry": null,
           "size": 100.0,
@@ -147,7 +147,7 @@
         },
         {
           "id": "T013",
-          "market": "Will Iran launch missiles at Israel by April 30?",
+          "market": "Will the price of Bitcoin be above $72,000 on March 13?",
           "side": "NO",
           "entry": null,
           "size": 100.0,
