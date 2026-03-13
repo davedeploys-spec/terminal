@@ -530,19 +530,24 @@ function renderPoly(){
   // Active table
   var at=$('py-active-tbody');
   if(at){
-    if(!active.length){at.innerHTML='<tr class="empty"><td colspan="9">NO ACTIVE POSITIONS</td></tr>'}
+    if(!active.length){at.innerHTML='<tr class="empty"><td colspan="10">NO ACTIVE POSITIONS</td></tr>'}
     else at.innerHTML=active.map(function(p){
       var e=p.entry!=null?p.entry:p.avg_price;
       var n=p.current_price;var u=p.unrealized_pnl;
       var s=p.side||p.outcome||'—';
       var sc=pc(u);
-      return'<tr><td class="d">'+p.id+'</td><td title="'+( p.market||'')+'">'+trunc(p.market,50)+'</td>'+
+      var res=p.resolves||p.resolution_date;
+      var dl=res?Math.ceil((new Date(res).getTime()-Date.now())/86400000):null;
+      var dlcls=dl==null?'d':(dl<0?'red':(dl<7?'y':'d'));
+      var dlStr=dl==null?'—':(dl<0?'EXP':dl+'d');
+      return'<tr><td class="d">'+p.id+'</td><td title="'+( p.market||'')+'">'+ trunc(p.market,50)+'</td>'+
         '<td>'+sideB(s)+'</td>'+
         '<td class="r">'+(e!=null?e.toFixed(3):'—')+'</td>'+
         '<td class="r">'+(n!=null?n.toFixed(3):'—')+'</td>'+
         '<td class="r '+(sc)+'">'+sgn(u)+'</td>'+
         '<td class="r">'+usd(p.size||p.shares)+'</td>'+
-        '<td class="d">'+trunc(p.resolves||p.resolution_date,11)+'</td>'+
+        '<td class="r '+dlcls+'">'+dlStr+'</td>'+
+        '<td class="d">'+trunc(res,11)+'</td>'+
         '<td><span class="b bd">'+(p.status||'—').toUpperCase()+'</span></td></tr>';
     }).join('');
   }
