@@ -2,8 +2,8 @@
   "bot_name": "poly_v2",
   "version": "2.0.0",
   "dry_run": true,
-  "boot_time": "2026-03-13T14:36:16.068807+00:00",
-  "last_sync": "2026-03-13T14:37:21.919484+00:00",
+  "boot_time": "2026-03-13T15:00:37.385270+00:00",
+  "last_sync": "2026-03-13T15:02:31.880401+00:00",
   "bankroll": {
     "starting": 500.0,
     "current_equity": 500.0,
@@ -99,5 +99,5 @@
     "total_trades": 0,
     "total_volume": 0.0
   },
-  "_checksum": "22e2b3d36c27a2dc"
+  "_checksum": "1bcd72cc02cf9208"
 }
