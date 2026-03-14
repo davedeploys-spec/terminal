@@ -1,6 +1,39 @@
 {
-  "updated_at": "2026-03-14T00:00:08.961947+00:00",
+  "updated_at": "2026-03-14T04:00:06.011757+00:00",
   "scans": [
+    {
+      "timestamp": "2026-03-14T04:00:06.011717+00:00",
+      "scan_number": 4,
+      "markets_scanned": 500,
+      "signals_found": 3,
+      "new_trades": 3,
+      "trades": [
+        {
+          "id": "T017",
+          "market": "Bulls vs. Clippers",
+          "side": "NO",
+          "entry": null,
+          "size": 98.28,
+          "strategy": "high_prob_favorite"
+        },
+        {
+          "id": "T018",
+          "market": "Spread: Timberwolves (-6.5)",
+          "side": "YES",
+          "entry": null,
+          "size": 10.52,
+          "strategy": "catalyst_momentum"
+        },
+        {
+          "id": "T019",
+          "market": "Jazz vs. Trail Blazers",
+          "side": "NO",
+          "entry": null,
+          "size": 93.66,
+          "strategy": "high_prob_favorite"
+        }
+      ]
+    },
     {
       "timestamp": "2026-03-14T00:00:08.961915+00:00",
       "scan_number": 3,
