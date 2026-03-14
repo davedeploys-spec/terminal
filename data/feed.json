@@ -1,6 +1,23 @@
 {
-  "updated_at": "2026-03-13T20:00:06.033842+00:00",
+  "updated_at": "2026-03-14T00:00:08.961947+00:00",
   "scans": [
+    {
+      "timestamp": "2026-03-14T00:00:08.961915+00:00",
+      "scan_number": 3,
+      "markets_scanned": 500,
+      "signals_found": 1,
+      "new_trades": 1,
+      "trades": [
+        {
+          "id": "T018",
+          "market": "Suns vs. Raptors",
+          "side": "NO",
+          "entry": null,
+          "size": 14.89,
+          "strategy": "catalyst_momentum"
+        }
+      ]
+    },
     {
       "timestamp": "2026-03-13T20:00:06.033812+00:00",
       "scan_number": 2,
