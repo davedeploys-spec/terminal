@@ -1,6 +1,39 @@
 {
-  "updated_at": "2026-03-15T12:00:06.769310+00:00",
+  "updated_at": "2026-03-15T16:00:05.792515+00:00",
   "scans": [
+    {
+      "timestamp": "2026-03-15T16:00:05.792488+00:00",
+      "scan_number": 13,
+      "markets_scanned": 500,
+      "signals_found": 3,
+      "new_trades": 3,
+      "trades": [
+        {
+          "id": "T022",
+          "market": "Liverpool FC vs. Tottenham Hotspur FC: O/U 3.5",
+          "side": "NO",
+          "entry": null,
+          "size": 13.33,
+          "strategy": "catalyst_momentum"
+        },
+        {
+          "id": "T023",
+          "market": "Will the Iranian regime fall by June 30?",
+          "side": "NO",
+          "entry": null,
+          "size": 28.88,
+          "strategy": "catalyst_momentum"
+        },
+        {
+          "id": "T024",
+          "market": "Will Crystal Palace FC win on 2026-03-15?",
+          "side": "NO",
+          "entry": null,
+          "size": 54.36,
+          "strategy": "high_prob_favorite"
+        }
+      ]
+    },
     {
       "timestamp": "2026-03-15T12:00:06.769274+00:00",
       "scan_number": 12,
