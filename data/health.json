@@ -1,16 +1,16 @@
 {
   "vps_status": "online",
-  "last_heartbeat": "2026-03-16T07:00:07.996516+00:00",
-  "uptime_seconds": 308893,
+  "last_heartbeat": "2026-03-16T07:05:04.077788+00:00",
+  "uptime_seconds": 309189,
   "memory_mb": {
-    "used": 409.4,
+    "used": 393.5,
     "total": 961.5
   },
   "hostname": "droplets-v1",
   "python_version": "3.12.3",
   "bots": {
     "degen": {
-      "last_scan": "2026-03-16T07:00:07.996478+00:00",
+      "last_scan": "2026-03-16T07:05:04.077752+00:00",
       "status": "error",
       "scans_today": 0
     }
