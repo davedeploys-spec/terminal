@@ -1,6 +1,31 @@
 {
-  "updated_at": "2026-03-15T20:00:07.092021+00:00",
+  "updated_at": "2026-03-16T00:00:08.686731+00:00",
   "scans": [
+    {
+      "timestamp": "2026-03-16T00:00:08.684608+00:00",
+      "scan_number": 15,
+      "markets_scanned": 500,
+      "signals_found": 2,
+      "new_trades": 2,
+      "trades": [
+        {
+          "id": "T025",
+          "market": "Trail Blazers vs. 76ers",
+          "side": "NO",
+          "entry": null,
+          "size": 16.97,
+          "strategy": "catalyst_momentum"
+        },
+        {
+          "id": "T026",
+          "market": "Netanyahu out by March 31?",
+          "side": "NO",
+          "entry": null,
+          "size": 99.83,
+          "strategy": "high_prob_favorite"
+        }
+      ]
+    },
     {
       "timestamp": "2026-03-15T20:00:07.091989+00:00",
       "scan_number": 14,
