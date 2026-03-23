@@ -1,6 +1,14 @@
 {
-  "updated_at": "2026-03-23T08:00:05.345954+00:00",
+  "updated_at": "2026-03-23T12:00:06.224905+00:00",
   "scans": [
+    {
+      "timestamp": "2026-03-23T12:00:06.224857+00:00",
+      "scan_number": 60,
+      "markets_scanned": 500,
+      "signals_found": 0,
+      "new_trades": 0,
+      "trades": []
+    },
     {
       "timestamp": "2026-03-23T08:00:05.345918+00:00",
       "scan_number": 59,
