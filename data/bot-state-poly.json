@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "dry_run": true,
   "boot_time": "2026-03-13T19:40:30.413788+00:00",
-  "last_sync": "2026-03-27T04:08:09.404907+00:00",
+  "last_sync": "2026-03-27T04:13:10.732646+00:00",
   "bankroll": {
     "starting": 500.0,
     "current_equity": 500.0,
@@ -99,5 +99,5 @@
     "total_trades": 0,
     "total_volume": 0.0
   },
-  "_checksum": "17e6ab569b5d48a3"
+  "_checksum": "053444fb08c1af24"
 }
