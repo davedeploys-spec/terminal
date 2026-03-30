@@ -1,6 +1,31 @@
 {
-  "updated_at": "2026-03-30T16:00:07.052291+00:00",
+  "updated_at": "2026-03-30T20:00:06.198416+00:00",
   "scans": [
+    {
+      "timestamp": "2026-03-30T20:00:06.198375+00:00",
+      "scan_number": 104,
+      "markets_scanned": 500,
+      "signals_found": 2,
+      "new_trades": 2,
+      "trades": [
+        {
+          "id": "T031",
+          "market": "76ers vs. Heat",
+          "side": "YES",
+          "entry": null,
+          "size": 15.36,
+          "strategy": "catalyst_momentum"
+        },
+        {
+          "id": "T032",
+          "market": "Celtics vs. Hawks",
+          "side": "NO",
+          "entry": null,
+          "size": 15.36,
+          "strategy": "catalyst_momentum"
+        }
+      ]
+    },
     {
       "timestamp": "2026-03-30T16:00:07.052254+00:00",
       "scan_number": 103,
@@ -969,23 +994,6 @@
           "entry": null,
           "size": 93.66,
           "strategy": "high_prob_favorite"
-        }
-      ]
-    },
-    {
-      "timestamp": "2026-03-14T00:00:08.961915+00:00",
-      "scan_number": 3,
-      "markets_scanned": 500,
-      "signals_found": 1,
-      "new_trades": 1,
-      "trades": [
-        {
-          "id": "T018",
-          "market": "Suns vs. Raptors",
-          "side": "NO",
-          "entry": null,
-          "size": 14.89,
-          "strategy": "catalyst_momentum"
         }
       ]
     }
