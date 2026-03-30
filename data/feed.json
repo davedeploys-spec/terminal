@@ -1,6 +1,14 @@
 {
-  "updated_at": "2026-03-30T12:00:05.961397+00:00",
+  "updated_at": "2026-03-30T16:00:07.052291+00:00",
   "scans": [
+    {
+      "timestamp": "2026-03-30T16:00:07.052254+00:00",
+      "scan_number": 103,
+      "markets_scanned": 500,
+      "signals_found": 0,
+      "new_trades": 0,
+      "trades": []
+    },
     {
       "timestamp": "2026-03-30T12:00:05.961357+00:00",
       "scan_number": 102,
@@ -978,47 +986,6 @@
           "entry": null,
           "size": 14.89,
           "strategy": "catalyst_momentum"
-        }
-      ]
-    },
-    {
-      "timestamp": "2026-03-13T20:00:06.033812+00:00",
-      "scan_number": 2,
-      "markets_scanned": 500,
-      "signals_found": 4,
-      "new_trades": 4,
-      "trades": [
-        {
-          "id": "T014",
-          "market": "Will Villarreal CF win on 2026-03-13?",
-          "side": "NO",
-          "entry": null,
-          "size": 15.64,
-          "strategy": "catalyst_momentum"
-        },
-        {
-          "id": "T015",
-          "market": "Will Borussia M\u00f6nchengladbach win on 2026-03-13?",
-          "side": "NO",
-          "entry": null,
-          "size": 16.94,
-          "strategy": "catalyst_momentum"
-        },
-        {
-          "id": "T016",
-          "market": "Timberwolves vs. Warriors",
-          "side": "YES",
-          "entry": null,
-          "size": 22.76,
-          "strategy": "catalyst_momentum"
-        },
-        {
-          "id": "T017",
-          "market": "Knicks vs. Pacers",
-          "side": "YES",
-          "entry": null,
-          "size": 47.92,
-          "strategy": "high_prob_favorite"
         }
       ]
     }
