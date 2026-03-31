@@ -1,6 +1,23 @@
 {
-  "updated_at": "2026-03-31T00:00:08.008737+00:00",
+  "updated_at": "2026-03-31T04:00:06.603921+00:00",
   "scans": [
+    {
+      "timestamp": "2026-03-31T04:00:06.603882+00:00",
+      "scan_number": 106,
+      "markets_scanned": 500,
+      "signals_found": 1,
+      "new_trades": 1,
+      "trades": [
+        {
+          "id": "T033",
+          "market": "Pistons vs. Thunder",
+          "side": "YES",
+          "entry": null,
+          "size": 17.42,
+          "strategy": "catalyst_momentum"
+        }
+      ]
+    },
     {
       "timestamp": "2026-03-31T00:00:08.008690+00:00",
       "scan_number": 105,
@@ -946,31 +963,6 @@
       "signals_found": 0,
       "new_trades": 0,
       "trades": []
-    },
-    {
-      "timestamp": "2026-03-14T08:00:06.252511+00:00",
-      "scan_number": 5,
-      "markets_scanned": 500,
-      "signals_found": 2,
-      "new_trades": 2,
-      "trades": [
-        {
-          "id": "T020",
-          "market": "Netanyahu out by March 31?",
-          "side": "NO",
-          "entry": null,
-          "size": 97.16,
-          "strategy": "high_prob_favorite"
-        },
-        {
-          "id": "T021",
-          "market": "Will Jesus Christ return before 2027?",
-          "side": "NO",
-          "entry": null,
-          "size": 12.63,
-          "strategy": "high_prob_favorite"
-        }
-      ]
     }
   ]
 }
