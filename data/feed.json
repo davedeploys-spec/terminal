@@ -1,6 +1,14 @@
 {
-  "updated_at": "2026-04-01T16:00:06.598486+00:00",
+  "updated_at": "2026-04-01T20:00:06.835221+00:00",
   "scans": [
+    {
+      "timestamp": "2026-04-01T20:00:06.835173+00:00",
+      "scan_number": 116,
+      "markets_scanned": 500,
+      "signals_found": 0,
+      "new_trades": 0,
+      "trades": []
+    },
     {
       "timestamp": "2026-04-01T16:00:06.598454+00:00",
       "scan_number": 115,
@@ -912,39 +920,6 @@
           "entry": null,
           "size": 99.83,
           "strategy": "high_prob_favorite"
-        }
-      ]
-    },
-    {
-      "timestamp": "2026-03-15T20:00:07.091989+00:00",
-      "scan_number": 14,
-      "markets_scanned": 500,
-      "signals_found": 3,
-      "new_trades": 3,
-      "trades": [
-        {
-          "id": "T025",
-          "market": "Pistons vs. Raptors",
-          "side": "NO",
-          "entry": null,
-          "size": 11.22,
-          "strategy": "catalyst_momentum"
-        },
-        {
-          "id": "T026",
-          "market": "Mavericks vs. Cavaliers",
-          "side": "NO",
-          "entry": null,
-          "size": 67.2,
-          "strategy": "high_prob_favorite"
-        },
-        {
-          "id": "T027",
-          "market": "Pacers vs. Bucks",
-          "side": "NO",
-          "entry": null,
-          "size": 28.42,
-          "strategy": "catalyst_momentum"
         }
       ]
     }
