@@ -1,6 +1,14 @@
 {
-  "updated_at": "2026-04-02T08:00:05.905176+00:00",
+  "updated_at": "2026-04-02T12:00:06.243536+00:00",
   "scans": [
+    {
+      "timestamp": "2026-04-02T12:00:06.243492+00:00",
+      "scan_number": 120,
+      "markets_scanned": 500,
+      "signals_found": 0,
+      "new_trades": 0,
+      "trades": []
+    },
     {
       "timestamp": "2026-04-02T08:00:05.905141+00:00",
       "scan_number": 119,
@@ -870,23 +878,6 @@
       "signals_found": 0,
       "new_trades": 0,
       "trades": []
-    },
-    {
-      "timestamp": "2026-03-16T12:00:07.130044+00:00",
-      "scan_number": 18,
-      "markets_scanned": 500,
-      "signals_found": 1,
-      "new_trades": 1,
-      "trades": [
-        {
-          "id": "T028",
-          "market": "Netanyahu out by March 31?",
-          "side": "NO",
-          "entry": null,
-          "size": 99.26,
-          "strategy": "high_prob_favorite"
-        }
-      ]
     }
   ]
 }
