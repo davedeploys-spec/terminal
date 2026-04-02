@@ -1,6 +1,14 @@
 {
-  "updated_at": "2026-04-02T00:00:08.214329+00:00",
+  "updated_at": "2026-04-02T04:00:06.533256+00:00",
   "scans": [
+    {
+      "timestamp": "2026-04-02T04:00:06.533217+00:00",
+      "scan_number": 118,
+      "markets_scanned": 500,
+      "signals_found": 0,
+      "new_trades": 0,
+      "trades": []
+    },
     {
       "timestamp": "2026-04-02T00:00:08.214283+00:00",
       "scan_number": 117,
@@ -885,23 +893,6 @@
           "side": "NO",
           "entry": null,
           "size": 99.36,
-          "strategy": "high_prob_favorite"
-        }
-      ]
-    },
-    {
-      "timestamp": "2026-03-16T04:00:06.426618+00:00",
-      "scan_number": 16,
-      "markets_scanned": 500,
-      "signals_found": 1,
-      "new_trades": 1,
-      "trades": [
-        {
-          "id": "T027",
-          "market": "Jazz vs. Kings",
-          "side": "NO",
-          "entry": null,
-          "size": 16.92,
           "strategy": "high_prob_favorite"
         }
       ]
