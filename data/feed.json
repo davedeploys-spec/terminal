@@ -1,6 +1,14 @@
 {
-  "updated_at": "2026-04-04T20:00:05.538600+00:00",
+  "updated_at": "2026-04-05T00:00:10.461052+00:00",
   "scans": [
+    {
+      "timestamp": "2026-04-05T00:00:10.461010+00:00",
+      "scan_number": 135,
+      "markets_scanned": 500,
+      "signals_found": 0,
+      "new_trades": 0,
+      "trades": []
+    },
     {
       "timestamp": "2026-04-04T20:00:05.538569+00:00",
       "scan_number": 134,
@@ -844,31 +852,6 @@
       "signals_found": 0,
       "new_trades": 0,
       "trades": []
-    },
-    {
-      "timestamp": "2026-03-19T00:00:07.702431+00:00",
-      "scan_number": 33,
-      "markets_scanned": 500,
-      "signals_found": 2,
-      "new_trades": 2,
-      "trades": [
-        {
-          "id": "T028",
-          "market": "Lehigh Mountain Hawks vs. Prairie View A&M Panthers",
-          "side": "NO",
-          "entry": null,
-          "size": 16.08,
-          "strategy": "catalyst_momentum"
-        },
-        {
-          "id": "T029",
-          "market": "Warriors vs. Celtics",
-          "side": "NO",
-          "entry": null,
-          "size": 83.16,
-          "strategy": "high_prob_favorite"
-        }
-      ]
     }
   ]
 }
