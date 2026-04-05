@@ -1,6 +1,23 @@
 {
-  "updated_at": "2026-04-05T00:00:10.461052+00:00",
+  "updated_at": "2026-04-05T04:00:06.467719+00:00",
   "scans": [
+    {
+      "timestamp": "2026-04-05T04:00:06.465615+00:00",
+      "scan_number": 136,
+      "markets_scanned": 500,
+      "signals_found": 1,
+      "new_trades": 1,
+      "trades": [
+        {
+          "id": "T034",
+          "market": "Flames vs. Ducks",
+          "side": "YES",
+          "entry": null,
+          "size": 39.27,
+          "strategy": "high_prob_favorite"
+        }
+      ]
+    },
     {
       "timestamp": "2026-04-05T00:00:10.461010+00:00",
       "scan_number": 135,
@@ -840,14 +857,6 @@
     {
       "timestamp": "2026-03-19T08:00:05.564477+00:00",
       "scan_number": 35,
-      "markets_scanned": 500,
-      "signals_found": 0,
-      "new_trades": 0,
-      "trades": []
-    },
-    {
-      "timestamp": "2026-03-19T04:00:07.126383+00:00",
-      "scan_number": 34,
       "markets_scanned": 500,
       "signals_found": 0,
       "new_trades": 0,
