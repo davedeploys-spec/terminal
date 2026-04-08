@@ -1,6 +1,39 @@
 {
-  "updated_at": "2026-04-08T00:00:08.958562+00:00",
+  "updated_at": "2026-04-08T04:00:08.147101+00:00",
   "scans": [
+    {
+      "timestamp": "2026-04-08T04:00:08.147067+00:00",
+      "scan_number": 154,
+      "markets_scanned": 500,
+      "signals_found": 3,
+      "new_trades": 3,
+      "trades": [
+        {
+          "id": "T035",
+          "market": "Iran x Israel/US conflict ends by April 7?",
+          "side": "NO",
+          "entry": null,
+          "size": 10.27,
+          "strategy": "catalyst_momentum"
+        },
+        {
+          "id": "T036",
+          "market": "Spread: Warriors (-14.5)",
+          "side": "NO",
+          "entry": null,
+          "size": 49.86,
+          "strategy": "high_prob_favorite"
+        },
+        {
+          "id": "T037",
+          "market": "Oilers vs. Utah",
+          "side": "YES",
+          "entry": null,
+          "size": 37.64,
+          "strategy": "catalyst_momentum"
+        }
+      ]
+    },
     {
       "timestamp": "2026-04-08T00:00:08.958524+00:00",
       "scan_number": 153,
@@ -849,14 +882,6 @@
     {
       "timestamp": "2026-03-22T08:00:05.431370+00:00",
       "scan_number": 53,
-      "markets_scanned": 500,
-      "signals_found": 0,
-      "new_trades": 0,
-      "trades": []
-    },
-    {
-      "timestamp": "2026-03-22T04:00:06.333103+00:00",
-      "scan_number": 52,
       "markets_scanned": 500,
       "signals_found": 0,
       "new_trades": 0,
