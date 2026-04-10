@@ -1,7 +1,7 @@
 {
   "vps_status": "online",
-  "last_heartbeat": "2026-04-10T23:05:04.519514+00:00",
-  "uptime_seconds": 2526790,
+  "last_heartbeat": "2026-04-10T23:10:04.230401+00:00",
+  "uptime_seconds": 2527090,
   "memory_mb": {
     "used": 370.5,
     "total": 961.5
@@ -10,7 +10,7 @@
   "python_version": "3.12.3",
   "bots": {
     "degen": {
-      "last_scan": "2026-04-10T23:05:04.519482+00:00",
+      "last_scan": "2026-04-10T23:10:04.230369+00:00",
       "status": "error",
       "scans_today": 0
     }
