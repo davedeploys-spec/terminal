@@ -1,6 +1,14 @@
 {
-  "updated_at": "2026-04-11T04:00:06.477409+00:00",
+  "updated_at": "2026-04-11T08:00:05.583720+00:00",
   "scans": [
+    {
+      "timestamp": "2026-04-11T08:00:05.581612+00:00",
+      "scan_number": 173,
+      "markets_scanned": 500,
+      "signals_found": 0,
+      "new_trades": 0,
+      "trades": []
+    },
     {
       "timestamp": "2026-04-11T04:00:06.477368+00:00",
       "scan_number": 172,
@@ -874,14 +882,6 @@
     {
       "timestamp": "2026-03-25T16:00:07.111162+00:00",
       "scan_number": 73,
-      "markets_scanned": 500,
-      "signals_found": 0,
-      "new_trades": 0,
-      "trades": []
-    },
-    {
-      "timestamp": "2026-03-25T12:00:05.934305+00:00",
-      "scan_number": 72,
       "markets_scanned": 500,
       "signals_found": 0,
       "new_trades": 0,
