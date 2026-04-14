@@ -1,6 +1,14 @@
 {
-  "updated_at": "2026-04-14T00:00:08.243668+00:00",
+  "updated_at": "2026-04-14T04:00:06.451308+00:00",
   "scans": [
+    {
+      "timestamp": "2026-04-14T04:00:06.451271+00:00",
+      "scan_number": 190,
+      "markets_scanned": 500,
+      "signals_found": 0,
+      "new_trades": 0,
+      "trades": []
+    },
     {
       "timestamp": "2026-04-14T00:00:08.243606+00:00",
       "scan_number": 189,
@@ -861,31 +869,6 @@
       "signals_found": 0,
       "new_trades": 0,
       "trades": []
-    },
-    {
-      "timestamp": "2026-03-28T08:00:08.029702+00:00",
-      "scan_number": 89,
-      "markets_scanned": 500,
-      "signals_found": 2,
-      "new_trades": 2,
-      "trades": [
-        {
-          "id": "T030",
-          "market": "US forces enter Iran by April 30?",
-          "side": "YES",
-          "entry": null,
-          "size": 15.78,
-          "strategy": "catalyst_momentum"
-        },
-        {
-          "id": "T031",
-          "market": "Will Crude Oil (CL) hit (HIGH) $100 by end of March?",
-          "side": "YES",
-          "entry": null,
-          "size": 31.75,
-          "strategy": "catalyst_momentum"
-        }
-      ]
     }
   ]
 }
