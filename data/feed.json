@@ -1,6 +1,14 @@
 {
-  "updated_at": "2026-04-13T20:00:07.421253+00:00",
+  "updated_at": "2026-04-14T00:00:08.243668+00:00",
   "scans": [
+    {
+      "timestamp": "2026-04-14T00:00:08.243606+00:00",
+      "scan_number": 189,
+      "markets_scanned": 500,
+      "signals_found": 0,
+      "new_trades": 0,
+      "trades": []
+    },
     {
       "timestamp": "2026-04-13T20:00:07.421214+00:00",
       "scan_number": 188,
@@ -878,14 +886,6 @@
           "strategy": "catalyst_momentum"
         }
       ]
-    },
-    {
-      "timestamp": "2026-03-28T04:00:06.643205+00:00",
-      "scan_number": 88,
-      "markets_scanned": 500,
-      "signals_found": 0,
-      "new_trades": 0,
-      "trades": []
     }
   ]
 }
