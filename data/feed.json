@@ -1,6 +1,14 @@
 {
-  "updated_at": "2026-04-19T12:00:05.787139+00:00",
+  "updated_at": "2026-04-19T16:00:05.986233+00:00",
   "scans": [
+    {
+      "timestamp": "2026-04-19T16:00:05.986206+00:00",
+      "scan_number": 207,
+      "markets_scanned": 500,
+      "signals_found": 0,
+      "new_trades": 0,
+      "trades": []
+    },
     {
       "timestamp": "2026-04-19T12:00:05.787105+00:00",
       "scan_number": 206,
@@ -832,23 +840,6 @@
           "side": "YES",
           "entry": null,
           "size": 23.25,
-          "strategy": "catalyst_momentum"
-        }
-      ]
-    },
-    {
-      "timestamp": "2026-03-31T04:00:06.603882+00:00",
-      "scan_number": 106,
-      "markets_scanned": 500,
-      "signals_found": 1,
-      "new_trades": 1,
-      "trades": [
-        {
-          "id": "T033",
-          "market": "Pistons vs. Thunder",
-          "side": "YES",
-          "entry": null,
-          "size": 17.42,
           "strategy": "catalyst_momentum"
         }
       ]
