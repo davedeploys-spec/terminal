@@ -1,6 +1,14 @@
 {
-  "updated_at": "2026-04-19T16:00:05.986233+00:00",
+  "updated_at": "2026-04-19T20:00:06.517260+00:00",
   "scans": [
+    {
+      "timestamp": "2026-04-19T20:00:06.517227+00:00",
+      "scan_number": 208,
+      "markets_scanned": 500,
+      "signals_found": 0,
+      "new_trades": 0,
+      "trades": []
+    },
     {
       "timestamp": "2026-04-19T16:00:05.986206+00:00",
       "scan_number": 207,
@@ -826,23 +834,6 @@
       "signals_found": 0,
       "new_trades": 0,
       "trades": []
-    },
-    {
-      "timestamp": "2026-03-31T08:00:06.322290+00:00",
-      "scan_number": 107,
-      "markets_scanned": 500,
-      "signals_found": 1,
-      "new_trades": 1,
-      "trades": [
-        {
-          "id": "T034",
-          "market": "US forces enter Iran by December 31?",
-          "side": "YES",
-          "entry": null,
-          "size": 23.25,
-          "strategy": "catalyst_momentum"
-        }
-      ]
     }
   ]
 }
